@@ -107,7 +107,7 @@ export default function ProfileScreen({ navigation }) {
             </AppText>
             <AppText style={styles.loginSubtitle}>
               Accede para revisar tus compras, seguir cada pedido y aprovechar
-              tus beneficios en Bodega 12.
+              tus beneficios en Cibox.
             </AppText>
             <AppButton
               title="Iniciar sesión"

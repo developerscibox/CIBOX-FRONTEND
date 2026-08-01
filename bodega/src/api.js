@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-// Cliente del backend Bodega 12. Sin VITE_API_URL, el panel corre en modo
+// Cliente del backend de Cibox. Sin VITE_API_URL, el panel corre en modo
 // demostración con los datos de src/data.js (mismas formas que el backend real).
 const BASE = import.meta.env.VITE_API_URL || "";
 
@@ -10,9 +10,9 @@ export const usingMock = !BASE;
 export const streamUrl = () => (BASE ? `${BASE}/orders/stream` : null);
 
 // ── Sesión por usuario (reemplaza el VITE_API_TOKEN admin compartido) ─────────
-const TOKEN_KEY = "b12_wms_token";
-const USER_KEY = "b12_wms_user";
-const REFRESH_KEY = "b12_wms_refresh";
+const TOKEN_KEY = "cibox_wms_token";
+const USER_KEY = "cibox_wms_user";
+const REFRESH_KEY = "cibox_wms_refresh";
 
 export const getToken = () => {
   try { return localStorage.getItem(TOKEN_KEY) || ""; } catch { return ""; }
@@ -37,7 +37,7 @@ export const clearSession = () => setSession(null, null, null);
 // ── Puente Reposición → Recepción (borrador one-shot en sessionStorage) ────────
 // La pantalla de Reposición escribe el borrador; Recepción lo lee y lo borra al
 // montar (siembra sus filas). Forma: [{ product_id, barcode, name, box_qty, cajas }].
-const RECEPCION_DRAFT_KEY = "b12_recepcion_draft";
+const RECEPCION_DRAFT_KEY = "cibox_recepcion_draft";
 export const setRecepcionDraft = (items) => {
   try { sessionStorage.setItem(RECEPCION_DRAFT_KEY, JSON.stringify(items || [])); } catch { /* almacenamiento no disponible */ }
 };
@@ -94,7 +94,7 @@ async function req(path, { method = "GET", body, auth = true, _retry = false } =
       return req(path, { method, body, auth, _retry: true });
     }
     clearSession();
-    if (typeof window !== "undefined") window.dispatchEvent(new Event("b12-unauth"));
+    if (typeof window !== "undefined") window.dispatchEvent(new Event("cibox-unauth"));
   }
   if (!res.ok) {
     // Propagar el HTTP status y el code del backend para ramificar por código
@@ -124,7 +124,7 @@ async function reqForm(path, formData, { _retry = false } = {}) {
       return reqForm(path, formData, { _retry: true });
     }
     clearSession();
-    if (typeof window !== "undefined") window.dispatchEvent(new Event("b12-unauth"));
+    if (typeof window !== "undefined") window.dispatchEvent(new Event("cibox-unauth"));
   }
   if (!res.ok) {
     const err = new Error(json?.message || json?.error || `${res.status} ${res.statusText}`);

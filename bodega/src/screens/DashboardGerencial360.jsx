@@ -1,5 +1,5 @@
 // ============================================================
-// DashboardGerencial360.jsx — Bodega 12 · Plataforma 360°
+// DashboardGerencial360.jsx — Cibox · Plataforma 360°
 // Vista ejecutiva del rol GERENTE. Diseño de la maqueta aprobada.
 // Requiere: tailwindcss, recharts, lucide-react.
 // Datos: GET /gerencia/dashboard360 (api.dashboard360). Sin backend
@@ -26,6 +26,7 @@ import {
 import { api, useLoad, usingMock } from "../api.js";
 import "../dashboard360.css";
 
+import { brand } from "../brand.js";
 // ---------- mapas de iconos (los datos usan strings) ----------
 const KPI_ICONS = { dollar: DollarSign, tag: Tag, clipboard: ClipboardList, package: Package, check: CheckCircle2, truck: Truck };
 const ALERT_ICONS = { tag: Tag, packagex: PackageX, clock: Clock, truck: Truck, calendar: CalendarClock, merma: TrendingDown };
@@ -798,7 +799,7 @@ function Footer({ stamp }) {
     <footer className="flex flex-wrap items-center justify-between gap-2 border-t border-pink-100 bg-white px-4 py-2 text-[10.5px] text-slate-400 xl:px-6">
       <span>{stamp}</span>
       <span>{HEADER.nota}</span>
-      <span>Bodega 12 © 2025 · Plataforma 360° · {HEADER.version}</span>
+      <span>{brand.name} · Plataforma 360° · {HEADER.version}</span>
     </footer>
   );
 }

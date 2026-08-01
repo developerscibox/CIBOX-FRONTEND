@@ -1,9 +1,12 @@
+/* Paleta Cibox. Los nombres --magenta/--rosa se conservan como alias para no
+   tocar cientos de reglas; los valores son los de brand.js (verde Cibox). */
 :root{
-  --magenta:#E6007E; --brand:#E6007E; --magenta-d:#9B007A; --morado:#7A1B73; --rosa:#FF3DA6;
-  --rosa-soft:#FBCFE8; --bg:#f6f7f9; --surface:#fff; --text:#2a1022; --muted:#8a6e80;
-  --border:#e7e5ea; --border-soft:#f0eff2; --ok:#16794a; --warn:#d97706; --danger:#b00020;
+  --magenta:#4E9B27; --brand:#4E9B27; --magenta-d:#3B7A1D; --morado:#3B7A1D; --rosa:#C3E062;
+  --rosa-soft:#E8F4CE; --bg:#f7f8f5; --surface:#fff; --text:#111811; --muted:#5f6b5f;
+  --border:#e3e8e0; --border-soft:#eef2ec; --ok:#16794a; --warn:#d97706; --danger:#b00020;
+  --accent:#F7B81C;
   --shadow:0 1px 2px rgba(16,24,40,.06);
-  --grad:linear-gradient(120deg,#7A1B73 0%,#C0067A 45%,#E6007E 75%,#FF3DA6 100%);
+  --grad:linear-gradient(120deg,#3B7A1D 0%,#4E9B27 55%,#C3E062 100%);
 }
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins','Segoe UI',system-ui,-apple-system,sans-serif;}
 body{background:var(--bg);color:var(--text);}
@@ -23,19 +26,19 @@ td,.num,.kpi .v,.kpi-v,.mono{font-variant-numeric:tabular-nums;}
 
 /* Layout */
 .app{display:flex;min-height:100vh;}
-.sidebar{width:248px;background:#2a0e22;color:#fff;display:flex;flex-direction:column;flex-shrink:0;position:sticky;top:0;height:100vh;}
+.sidebar{width:248px;background:#16240f;color:#fff;display:flex;flex-direction:column;flex-shrink:0;position:sticky;top:0;height:100vh;}
 .brand{display:flex;align-items:center;gap:11px;padding:18px 18px;border-bottom:1px solid rgba(255,255,255,.1);}
 .brand-logo{height:36px;width:auto;max-width:160px;object-fit:contain;display:block;}
-.brand .badge{width:46px;height:46px;border-radius:50%;background:var(--grad);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(230,0,126,.4);}
+.brand .badge{width:46px;height:46px;border-radius:50%;background:var(--grad);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(78,155,39,.4);}
 .brand .badge b{color:#fff;font-weight:800;font-size:22px;letter-spacing:-1px;}
 .brand .nm{font-weight:800;font-size:17px;line-height:1;}
-.brand .nm i{color:var(--rosa-soft);font-style:normal;}
-.brand .nm small{display:block;font-weight:600;font-size:9.5px;color:#d9a9c6;letter-spacing:1.6px;margin-top:3px;}
+.brand .nm i{color:var(--rosa);font-style:normal;}
+.brand .nm small{display:block;font-weight:600;font-size:9.5px;color:#b8cfa0;letter-spacing:1.6px;margin-top:3px;}
 .nav{padding:14px 12px;flex:1;overflow-y:auto;min-height:0;}
-.nav .lbl{font-size:10.5px;font-weight:700;color:#a06a8a;letter-spacing:1.5px;padding:10px 12px 6px;}
+.nav .lbl{font-size:10.5px;font-weight:700;color:#8fa87c;letter-spacing:1.5px;padding:10px 12px 6px;}
 .nav-grp{margin-bottom:2px;}
-.nav .grp-h{display:flex;align-items:center;gap:8px;width:100%;background:none;border:none;cursor:pointer;font-size:10.5px;font-weight:700;color:#a06a8a;letter-spacing:1.5px;padding:11px 12px 6px;text-transform:uppercase;}
-.nav .grp-h:hover{color:#d9a9c6;}
+.nav .grp-h{display:flex;align-items:center;gap:8px;width:100%;background:none;border:none;cursor:pointer;font-size:10.5px;font-weight:700;color:#8fa87c;letter-spacing:1.5px;padding:11px 12px 6px;text-transform:uppercase;}
+.nav .grp-h:hover{color:#cfe0b8;}
 .nav .grp-name{flex:1;text-align:left;}
 .nav .grp-chev{font-size:11px;display:inline-block;transition:transform .15s;opacity:.8;}
 .nav .grp-chev.col{transform:rotate(-90deg);}
@@ -170,7 +173,7 @@ tr:hover td{background:#fafafa;}
 .ped-grid.open{grid-template-columns:1fr 380px;}
 .row-sel td{background:#fdf0f7 !important;}
 .tag-venc{background:#fee2e2;color:#b91c1c;margin-top:4px;}
-.tag-hoy{background:#fce7f3;color:var(--magenta);margin-top:4px;}
+.tag-hoy{background:#e9f3da;color:var(--magenta);margin-top:4px;}
 .ped-detail{position:sticky;top:88px;}
 .ped-body{padding:18px 20px;}
 .ped-cols{display:grid;grid-template-columns:1fr 1fr;gap:20px;}

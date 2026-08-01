@@ -4,6 +4,7 @@ import { api, usingMock } from "../api.js";
 import { Tabla, Skel } from "../components/Ui.jsx";
 import { clp } from "../theme.js";
 
+import { brand } from "../brand.js";
 // Importador masivo de productos desde Excel/CSV (POST /products/import-bulk).
 // 3 pasos: (1) plantilla + archivo → (2) preview con validación local + dry_run
 // del backend → (3) importación real con reporte por fila. Máx 500 filas.
@@ -91,7 +92,7 @@ export default function ImportProductos({ onClose }) {
     const aoa = [CAMPOS, ...EJEMPLOS.map((e) => CAMPOS.map((c) => e[c] ?? ""))];
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(aoa), "Productos");
-    XLSX.writeFile(wb, "Plantilla-Productos-Bodega12.xlsx");
+    XLSX.writeFile(wb, `Plantilla-Productos-${brand.name}.xlsx`);
   }
 
   async function onFile(e) {

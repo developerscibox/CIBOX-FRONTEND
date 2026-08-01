@@ -31,13 +31,14 @@ import { readCache, writeCache } from "../utils/catalogCache";
 import { useHomeSlots, cmsText } from "../services/contentService";
 
 // Gradiente magenta de marca (igual al de los íconos de accesos rápidos).
-const GRAD = ["#F4439A", "#E81E86", "#9B007A"];
+const GRAD = ["#F4439A", "#E81E86", "#3B7A1D"];
 // Canasto del hero, extraído de la propuesta de marca y fundido al degradado.
 const HERO_BASKET = require("../../assets/home/hero-basket.png");
 // Ícono "NEWS" de marca para el newsletter.
 const NEWS_ICON = require("../../assets/home/qa-news.png");
-// Logo Bodega 12 en blanco (transparente) para el hero magenta.
-const LOGO_BLANCO = require("../../assets/home/logo-blanco.png");
+// Logo de Cibox para el hero. PENDIENTE: falta la versión en blanco
+// (monocromática) para fondos de color — ver PLAN.md §7.
+const LOGO_BLANCO = require("../../assets/logo-cibox.png");
 // Fondo temático del banner (provisto por el diseño).
 const BANNER_BG = require("../../assets/home/banner-hero.jpg");
 
@@ -690,7 +691,7 @@ export default function HomeScreen({ navigation }) {
               </View>
             )}
 
-            {/* Categorías principales + ¿Por qué elegir Bodega 12? */}
+            {/* Categorías principales + ¿Por qué elegir Cibox? */}
             <View style={{ flexDirection: isWide ? "row" : "column", gap: spacing.lg, marginBottom: spacing.lg }}>
               {/* Categorías principales */}
               <View style={{ flex: isWide ? 1 : undefined, backgroundColor: colors.surface, borderRadius: 20, borderWidth: 1, borderColor: colors.border, padding: spacing.md, ...shadows.card }}>
@@ -717,9 +718,9 @@ export default function HomeScreen({ navigation }) {
                 )}
               </View>
 
-              {/* ¿Por qué elegir Bodega 12? */}
+              {/* ¿Por qué elegir Cibox? */}
               <View style={{ flex: isWide ? 1.2 : undefined }}>
-                <AppText style={{ fontSize: 18, fontWeight: "900", color: colors.text }}>¿Por qué elegir Bodega 12?</AppText>
+                <AppText style={{ fontSize: 18, fontWeight: "900", color: colors.text }}>¿Por qué elegir Cibox?</AppText>
                 <AppText style={{ fontSize: 12.5, color: colors.muted, marginTop: 2, marginBottom: 12 }}>Más de 10.000 clientes confían en nosotros</AppText>
                 <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 12 }}>
                   {whyCards.map((w, i) => (

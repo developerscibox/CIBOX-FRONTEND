@@ -29,6 +29,7 @@ import {
 } from "../services/couponService";
 import useAuthStore from "../store/authStore";
 
+import brand from "../constants/brand";
 const normalizeEmail = (email = "") => String(email).trim().toLowerCase();
 
 const isValidEmail = (email = "") =>
@@ -100,10 +101,10 @@ const isValidRut = (rut = "") => {
 };
 
 // ── Retiro en bodega ──────────────────────────────────────────────────────────
+// Nombre y dirección salen de constants/brand.js (fuente de verdad: backend).
 const PICKUP_LOCATION = {
-  name: "Bodega 12 — Liquidadora y Supermercado Mayorista",
-  address:
-    "Av. Lo Espejo 01565, Patio 6, Bodega 826, Centro Logístico Mersan, Lo Espejo",
+  get name() { return brand.name; },
+  get address() { return brand.address.one_line; },
   hint: "2da entrada por Américo Vespucio",
   hours: "Lun a Vie 09:00–18:00 · Sáb 09:00–13:00",
 };
@@ -563,7 +564,7 @@ export default function CheckoutScreen({ navigation }) {
               lineHeight: 22,
             }}
           >
-            Agrega productos de Bodega 12 a tu carrito antes de continuar al
+            Agrega productos de Cibox a tu carrito antes de continuar al
             checkout.
           </AppText>
 
@@ -1289,7 +1290,7 @@ export default function CheckoutScreen({ navigation }) {
             >
               Política de Privacidad
             </AppText>
-            {" "}de Bodega 12.
+            {" "}de Cibox.
           </AppText>
         </Pressable>
 

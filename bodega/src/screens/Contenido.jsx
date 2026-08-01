@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { api, useLoad, usingMock, getToken } from "../api.js";
 import { Skel } from "../components/Ui.jsx";
 
+import { brand } from "../brand.js";
 // CONTENIDO DE LA TIENDA — editor de la portada que ve el cliente final.
 // Pensado para una persona NO técnica: cada bloque muestra su nombre, para qué
 // sirve, el tamaño de imagen recomendado y cuántas letras caben. Las imágenes
@@ -377,7 +378,7 @@ export default function Contenido() {
 
       {/* Hero */}
       <SlotCard spec={specs.hero}>
-        <CampoTexto label={FIELD_LABELS.title} value={slots.hero.title} max={specs.hero.campos.title.max} placeholder="Ej: Bienvenido a Bodega 12" onChange={(v) => setCampo("hero", "title", v)} />
+        <CampoTexto label={FIELD_LABELS.title} value={slots.hero.title} max={specs.hero.campos.title.max} placeholder={`Ej: Bienvenido a ${brand.name}`} onChange={(v) => setCampo("hero", "title", v)} />
         <CampoTexto label={FIELD_LABELS.subtitle} value={slots.hero.subtitle} max={specs.hero.campos.subtitle.max} placeholder="Ej: Precios de mayorista, atención de barrio" onChange={(v) => setCampo("hero", "subtitle", v)} />
         <CampoTexto label={FIELD_LABELS.cta} value={slots.hero.cta} max={specs.hero.campos.cta.max} placeholder="Ej: Ver ofertas" onChange={(v) => setCampo("hero", "cta", v)} />
         <ImagenSlot spec={specs.hero} keyId="hero" currentUrl={slots.hero.image_url} onConfirm={(k) => onConfirm(k, (url) => setCampo("hero", "image_url", url))} {...imgProps} />

@@ -11,7 +11,7 @@ import { t, clp, ORDER_STATUS } from "../theme.js";
 const SUMMARY_FALLBACK = { totals: { sku: 0, units: 0, cajas: 0, low: 0, value: 0 }, by_category: [], top_products: [] };
 const SALES_FALLBACK = { totals: { total_orders: 0, total_sales: 0, average_ticket: 0 }, series: [] };
 
-const TOP_COLOR = ["#E6007E", "#C0067A", "#B5006A", "#7A1B73", "#FF3DA6", "#9d174d"];
+const TOP_COLOR = ["#4E9B27", "#3B7A1D", "#2E6116", "#2E6116", "#C3E062", "#6B8F4E"];
 
 // Rangos de período (días hacia atrás desde hoy, inclusive).
 const RANGES = [
@@ -60,7 +60,7 @@ function HBars({ items }) {
             <span style={{ fontWeight: 600, color: t.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{it.label}</span>
             <span style={{ color: t.muted, fontWeight: 600, flex: "0 0 auto" }}>{it.display ?? v}</span>
           </div>
-          <div style={{ height: 10, background: "#f1e6ef", borderRadius: 6, overflow: "hidden" }}>
+          <div style={{ height: 10, background: "#eef4e7", borderRadius: 6, overflow: "hidden" }}>
             <div style={{ height: "100%", width: `${(v / max) * 100}%`, background: it.color || t.magenta, borderRadius: 6, minWidth: v > 0 ? 4 : 0 }} />
           </div>
         </div>
@@ -79,7 +79,7 @@ function Donut({ segments, size = 132, stroke = 20, centerTop, centerBottom }) {
   return (
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
       <g transform={`rotate(-90 ${size / 2} ${size / 2})`}>
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#f1e6ef" strokeWidth={stroke} />
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#eef4e7" strokeWidth={stroke} />
         {segments.map((s, i) => {
           const len = ((Number(s.value) || 0) / total) * c;
           const el = <circle key={i} cx={size / 2} cy={size / 2} r={r} fill="none" stroke={s.color} strokeWidth={stroke} strokeDasharray={`${len} ${c - len}`} strokeDashoffset={-offset} />;
@@ -156,7 +156,7 @@ export default function Ventas() {
 
   const kpis = [
     { ic: "💰", bg: "#fde7f1", v: sales.loading ? "…" : clp(salesT.total_sales ?? 0), l: `Ventas · ${range.label}` },
-    { ic: "🧾", bg: "#fce7f3", v: sales.loading ? "…" : (salesT.total_orders ?? 0).toLocaleString("es-CL"), l: `Pedidos pagados · ${range.label}` },
+    { ic: "🧾", bg: "#e9f3da", v: sales.loading ? "…" : (salesT.total_orders ?? 0).toLocaleString("es-CL"), l: `Pedidos pagados · ${range.label}` },
     { ic: "📦", bg: "#ede9fe", v: stock.loading ? "…" : (stockT.cajas ?? 0).toLocaleString("es-CL"), l: "Cajas en bodega" },
     { ic: "⚠️", bg: "#fef3c7", v: stock.loading ? "…" : (stockT.low ?? 0).toLocaleString("es-CL"), l: "SKUs en stock crítico" },
   ];

@@ -29,8 +29,8 @@ function VencBadge({ expiry }) {
   const vencido = dl < 0;
   const critico = !vencido && dl <= 7;
   const proximo = !vencido && !critico && dl <= 30;
-  const bg = vencido ? "#fee2e2" : critico ? "#fef3c7" : proximo ? "#fde7f1" : "#f1e6ef";
-  const fg = vencido ? "#b91c1c" : critico ? "#92400e" : proximo ? "#9d174d" : t.muted;
+  const bg = vencido ? "#fee2e2" : critico ? "#fef3c7" : proximo ? "#fde7f1" : "#eef4e7";
+  const fg = vencido ? "#b91c1c" : critico ? "#92400e" : proximo ? "#6B8F4E" : t.muted;
   const label = vencido ? "VENCIDO" : dl === 0 ? "Vence hoy" : `${dl} día${dl === 1 ? "" : "s"}`;
   return (
     <span style={{ display: "inline-block", padding: "3px 10px", borderRadius: 999, fontSize: 12, fontWeight: 700, background: bg, color: fg }}>

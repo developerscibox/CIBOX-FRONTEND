@@ -261,7 +261,7 @@ export default function RegisterScreen({ navigation }) {
                     paddingHorizontal: 8,
                   }}
                 >
-                  Regístrate en Bodega 12 para guardar tus pedidos, favoritos y
+                  Regístrate en Cibox para guardar tus pedidos, favoritos y
                   datos de compra.
                 </AppText>
               </View>

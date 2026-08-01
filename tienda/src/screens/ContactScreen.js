@@ -14,6 +14,7 @@ import AppButton from "../components/AppButton";
 import { colors, radius, shadows, spacing } from "../constants/theme";
 import { showAppAlert } from "../utils/appAlerts";
 
+import brand, { links } from "../constants/brand";
 const PRIMARY = colors.primary;
 
 // ─── Tarjeta de contacto directo ─────────────────────────────────────────────
@@ -78,11 +79,11 @@ export default function ContactScreen({ navigation }) {
     setSending(true);
     try {
       const body = `Nombre: ${name}\nEmail: ${email}\nAsunto: ${subject}\n\n${message}`;
-      const mailto = `mailto:soporte@bodega12.cl?subject=${encodeURIComponent(subject || "Contacto desde Bodega 12 App")}&body=${encodeURIComponent(body)}`;
+      const mailto = links.mailto(subject || `Contacto desde ${brand.name}`, body);
       await Linking.openURL(mailto);
       setForm({ name: "", email: "", subject: "", message: "" });
     } catch {
-      showAppAlert("Error", "No se pudo abrir el cliente de correo. Escríbenos directamente a soporte@bodega12.cl");
+      showAppAlert("Error", `No se pudo abrir el cliente de correo. Escríbenos directamente a ${brand.contact.email_soporte}`);
     } finally {
       setSending(false);
     }
@@ -141,26 +142,26 @@ export default function ContactScreen({ navigation }) {
           <ContactCard
             icon="logo-whatsapp"
             title="WhatsApp"
-            value="+56 9 3244 5772"
+            value={brand.contact.phone}
             onPress={() => Linking.openURL("https://wa.me/56932445772")}
           />
           <ContactCard
             icon="mail-outline"
             title="Email"
-            value="soporte@bodega12.cl"
-            onPress={() => Linking.openURL("mailto:soporte@bodega12.cl")}
+            value={brand.contact.email_soporte}
+            onPress={() => Linking.openURL(`mailto:${brand.contact.email_soporte}`)}
           />
           <ContactCard
             icon="logo-instagram"
             title="Instagram"
-            value="@bodega12.cl"
-            onPress={() => Linking.openURL("https://instagram.com/bodega12.cl")}
+            value={`@${brand.contact.instagram}`}
+            onPress={() => Linking.openURL(links.instagram())}
           />
           <ContactCard
             icon="logo-tiktok"
             title="TikTok"
-            value="@bodega12.cl"
-            onPress={() => Linking.openURL("https://www.tiktok.com/@bodega12.cl")}
+            value={`@${brand.contact.tiktok}`}
+            onPress={() => Linking.openURL(links.tiktok())}
           />
         </View>
 
@@ -183,7 +184,7 @@ export default function ContactScreen({ navigation }) {
               Retiro en bodega
             </AppText>
             <AppText style={{ fontSize: 13, color: colors.muted, lineHeight: 19 }}>
-              Av. Lo Espejo 01565, Patio 6, Bodega 826, Centro Logístico Mersan, Lo Espejo.
+              {brand.address.one_line}
               {"\n"}2da entrada por Américo Vespucio.
             </AppText>
           </View>

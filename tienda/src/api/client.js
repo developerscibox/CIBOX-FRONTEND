@@ -7,7 +7,7 @@ const client = axios.create({
  baseURL: process.env.EXPO_PUBLIC_API_URL,
   //baseURL: "http://localhost:3001/api",
   //baseURL: "https://backend-app-cibox-tmvlv.ondigitalocean.app/api"
-  // Envía la cookie httpOnly del refresh token (b12_rt) en producción
+  // Envía la cookie httpOnly del refresh token (cibox_rt) en producción
   // same-site/HTTPS. En dev cross-origin la cookie no viaja y el refresh cae al
   // body (fallback), sin romper el desarrollo local.
   withCredentials: true,
@@ -66,7 +66,7 @@ client.interceptors.response.use(
       try {
         const { refreshToken, user } = useAuthStore.getState();
 
-        // El backend renueva la sesión con la cookie httpOnly (b12_rt) gracias a
+        // El backend renueva la sesión con la cookie httpOnly (cibox_rt) gracias a
         // withCredentials. El refreshToken del store es solo un fallback (dev
         // cross-origin donde la cookie no viaja); lo enviamos en el body si existe.
         const res = await client.post(

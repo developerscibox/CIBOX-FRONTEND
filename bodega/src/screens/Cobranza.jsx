@@ -83,11 +83,11 @@ export default function Cobranza({ onNav }) {
     .slice(0, 10);
 
   // Puente sin router hacia la pantalla Clientes: se deja el _id del cliente en
-  // sessionStorage "b12_cliente_open" (Clientes.jsx lo lee UNA vez al montar,
+  // sessionStorage "cibox_cliente_open" (Clientes.jsx lo lee UNA vez al montar,
   // borra la clave y abre la ficha) y se navega con onNav("clientes").
   const abrirCliente = (c) => {
     if (!c?._id) return;
-    try { sessionStorage.setItem("b12_cliente_open", String(c._id)); } catch { /* sin storage */ }
+    try { sessionStorage.setItem("cibox_cliente_open", String(c._id)); } catch { /* sin storage */ }
     onNav?.("clientes");
   };
 

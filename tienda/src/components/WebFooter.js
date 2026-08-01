@@ -6,10 +6,11 @@ import AppText from "./AppText";
 import useAuthStore from "../store/authStore";
 import { useHomeSlots, cmsText } from "../services/contentService";
 
+import brand, { links } from "../constants/brand";
 const TEXT = "#FFFFFF";
 const MUTED = "rgba(255,255,255,0.82)";
 const LINE = "rgba(255,255,255,0.22)";
-const GRAD = ["#E81E86", "#C0006F", "#9B007A"];
+const GRAD = ["#E81E86", "#C0006F", "#3B7A1D"];
 
 // ─── Link de columna ─────────────────────────────────────────────────────────
 function FooterLink({ label, onPress }) {
@@ -61,7 +62,7 @@ function SocialBtn({ name, url }) {
 function PayChip({ label }) {
   return (
     <View style={{ backgroundColor: "#fff", borderRadius: 7, paddingHorizontal: 12, paddingVertical: 7 }}>
-      <AppText style={{ fontSize: 12, fontWeight: "900", color: "#9B007A", letterSpacing: 0.3 }}>
+      <AppText style={{ fontSize: 12, fontWeight: "900", color: "#3B7A1D", letterSpacing: 0.3 }}>
         {label}
       </AppText>
     </View>
@@ -98,7 +99,7 @@ export default function WebFooter() {
         {/* Marca */}
         <View style={{ flex: 1.4, minWidth: 240 }}>
           <Image
-            source={require("../../assets/home/logo-blanco.png")}
+            source={require("../../assets/logo-cibox.png")}
             resizeMode="contain"
             style={{ width: 132, height: 170, marginBottom: 14, marginLeft: -4 }}
           />
@@ -106,9 +107,9 @@ export default function WebFooter() {
             {footerNote}
           </AppText>
           <View style={{ flexDirection: "row", gap: 10 }}>
-            <SocialBtn name="logo-instagram" url="https://instagram.com/bodega12.cl" />
-            <SocialBtn name="logo-tiktok" url="https://www.tiktok.com/@bodega12.cl" />
-            <SocialBtn name="logo-whatsapp" url="https://wa.me/56932445772" />
+            <SocialBtn name="logo-instagram" url={links.instagram()} />
+            <SocialBtn name="logo-tiktok" url={links.tiktok()} />
+            <SocialBtn name="logo-whatsapp" url={links.whatsapp()} />
           </View>
         </View>
 
@@ -138,16 +139,16 @@ export default function WebFooter() {
         <Col title="Contacto">
           <Pressable onPress={() => Linking.openURL("https://wa.me/56932445772")} style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 12 }}>
             <Ionicons name="call-outline" size={16} color="#fff" />
-            <AppText style={{ fontSize: 13, color: MUTED }}>+56 9 3244 5772</AppText>
+            <AppText style={{ fontSize: 13, color: MUTED }}>{brand.contact.phone}</AppText>
           </Pressable>
-          <Pressable onPress={() => Linking.openURL("mailto:contacto@bodega12.cl")} style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 12 }}>
+          <Pressable onPress={() => Linking.openURL(`mailto:${brand.contact.email}`)} style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 12 }}>
             <Ionicons name="mail-outline" size={16} color="#fff" />
-            <AppText style={{ fontSize: 13, color: MUTED }}>contacto@bodega12.cl</AppText>
+            <AppText style={{ fontSize: 13, color: MUTED }}>{brand.contact.email}</AppText>
           </Pressable>
           <View style={{ flexDirection: "row", alignItems: "flex-start", gap: 8, marginBottom: 12 }}>
             <Ionicons name="location-outline" size={16} color="#fff" style={{ marginTop: 2 }} />
             <AppText style={{ fontSize: 12.5, color: MUTED, lineHeight: 17, flex: 1 }}>
-              Av. Lo Espejo 01565, Patio 6, Bodega 826, Lo Espejo · Santiago, Chile
+              {brand.address.one_line}
             </AppText>
           </View>
           <View style={{ flexDirection: "row", alignItems: "flex-start", gap: 8 }}>
@@ -176,7 +177,7 @@ export default function WebFooter() {
           }}
         >
           <AppText style={{ fontSize: 12.5, color: MUTED }}>
-            © 2026 Bodega 12 Mayorista. Todos los derechos reservados.
+            © {new Date().getFullYear()} {brand.legal.razon_social || brand.name}. Todos los derechos reservados.
           </AppText>
           <View style={{ flexDirection: "row", gap: 8, alignItems: "center" }}>
             <PayChip label="webpay" />

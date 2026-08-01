@@ -11,8 +11,9 @@ import { pickReceiptImage } from "../utils/imagePicker";
 import { showAppAlert } from "../utils/appAlerts";
 import { showToast } from "../store/toastStore";
 
+import brand from "../constants/brand";
 const CONTACT_FALLBACK =
-  "Aún no publicamos los datos bancarios aquí. Escríbenos por la sección Contacto o al WhatsApp de Bodega 12 y te los enviamos al instante.";
+  `Aún no publicamos los datos bancarios aquí. Escríbenos por la sección Contacto o al WhatsApp de ${brand.name} y te los enviamos al instante.`;
 
 /**
  * Tarjeta "Datos para transferir": muestra los datos bancarios (endpoint

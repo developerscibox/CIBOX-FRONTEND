@@ -4,6 +4,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { colors } from "../constants/theme";
 import AppText from "./AppText";
 
+import brand from "../constants/brand";
 // Dirección real de la bodega (Centro Logístico Mersan, Lo Espejo).
 export const BODEGA_ADDRESS =
   "Av. Lo Espejo 01565, Patio 6, Bodega 826, Lo Espejo, Santiago, Chile";
@@ -35,7 +36,7 @@ export default function MapEmbed({ height = 320 }) {
         // RNW renderiza a DOM: createElement('iframe') es válido en web.
         React.createElement("iframe", {
           src: EMBED_URL,
-          title: "Mapa Bodega 12",
+          title: `Mapa ${brand.name}`,
           loading: "lazy",
           referrerPolicy: "no-referrer-when-downgrade",
           style: { width: "100%", height, border: 0, display: "block" },

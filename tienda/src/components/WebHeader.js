@@ -17,6 +17,7 @@ import useAuthStore from "../store/authStore";
 import AppText from "./AppText";
 import CategoryMegaMenu from "./CategoryMegaMenu";
 
+import brand from "../constants/brand";
 // Mega-nav magenta (debajo del header). Cada link a su pantalla propia.
 const NAV_LINKS = [
   { label: "Inicio", screen: "Inicio" },
@@ -215,7 +216,7 @@ export default function WebHeader() {
       {/* Barra superior utilitaria */}
       <View style={{ backgroundColor: colors.accent, paddingHorizontal: 28, paddingVertical: 7 }}>
         <View style={{ width: "100%", maxWidth: 1280, alignSelf: "center", flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-          <AppText style={{ color: "rgba(255,255,255,0.95)", fontSize: 12.5, fontWeight: "600" }}>Bienvenido a Bodega 12 Mayorista</AppText>
+          <AppText style={{ color: "rgba(255,255,255,0.95)", fontSize: 12.5, fontWeight: "600" }}>Bienvenido a {brand.name} · {brand.tagline}</AppText>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 18 }}>
             <Pressable onPress={() => navigation.navigate("Stores")} style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
               <Ionicons name="location-outline" size={14} color="#fff" />
@@ -263,7 +264,7 @@ export default function WebHeader() {
           style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
         >
           <Image
-            source={require("../../assets/logo-full.png")}
+            source={require("../../assets/logo-cibox.png")}
             style={{ width: 82, height: 86, resizeMode: "contain" }}
           />
           {width >= 1040 ? (

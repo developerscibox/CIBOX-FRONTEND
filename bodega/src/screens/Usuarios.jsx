@@ -3,7 +3,7 @@ import { api, useLoad, usingMock } from "../api.js";
 import { t } from "../theme.js";
 import { useAuth } from "../auth.jsx";
 
-// Roles asignables (espejo del backend Bodega 12, incluye los del relay de sala).
+// Roles asignables (espejo de ROLES del backend).
 const ROLES = ["customer", "vendor", "admin", "manager", "vendedor", "cashier", "operator", "pantalla"];
 
 const ROLE_LABEL = {
@@ -19,9 +19,9 @@ const ROLE_LABEL = {
 
 // Color del .badge por rol.
 const ROLE_BADGE = {
-  customer: { bg: "#f1e6ef", text: "#7A1B73" },
+  customer: { bg: "#eef4e7", text: "#2E6116" },
   vendor:   { bg: "#e0f2fe", text: "#0369a1" },
-  admin:    { bg: "#fce7f3", text: "#9d174d" },
+  admin:    { bg: "#e9f3da", text: "#6B8F4E" },
   manager:  { bg: "#ede9fe", text: "#6d28d9" },
   vendedor: { bg: "#e0e7ff", text: "#3730a3" },
   cashier:  { bg: "#fef3c7", text: "#92400e" },
@@ -33,9 +33,9 @@ const ROLE_BADGE = {
 const MOCK_USERS = {
   users: [
     { _id: "u1", name: "Gabriel Farías",  email: "g.fariaslisboa@gmail.com", role: "admin",    is_active: true },
-    { _id: "u2", name: "Carla Soto",      email: "carla.soto@bodega12.cl",   role: "manager",  is_active: true },
-    { _id: "u3", name: "Diego Muñoz",     email: "diego.munoz@bodega12.cl",  role: "operator", is_active: true },
-    { _id: "u4", name: "Valentina Rojas", email: "vale.rojas@bodega12.cl",   role: "cashier",  is_active: true },
+    { _id: "u2", name: "Carla Soto",      email: "carla.soto@cibox.cl",   role: "manager",  is_active: true },
+    { _id: "u3", name: "Diego Muñoz",     email: "diego.munoz@cibox.cl",  role: "operator", is_active: true },
+    { _id: "u4", name: "Valentina Rojas", email: "vale.rojas@cibox.cl",   role: "cashier",  is_active: true },
     { _id: "u5", name: "Pedro Vendedor",  email: "pedro@proveedor.cl",       role: "vendor",   is_active: false },
     { _id: "u6", name: "Cliente Demo",    email: "cliente@correo.cl",        role: "customer", is_active: true },
   ],
@@ -43,7 +43,7 @@ const MOCK_USERS = {
 };
 
 function RoleBadge({ role }) {
-  const c = ROLE_BADGE[role] || { bg: "#f1e6ef", text: t.morado };
+  const c = ROLE_BADGE[role] || { bg: "#eef4e7", text: t.morado };
   return (
     <span className="badge" style={{ background: c.bg, color: c.text }}>
       {ROLE_LABEL[role] || role}
@@ -148,7 +148,7 @@ export default function Usuarios() {
       <div className="card" style={{ marginBottom: 0 }}>
         <div className="card-h">
           <h2>Usuarios</h2>
-          <span className="badge" style={{ background: "#fce7f3", color: "#9d174d" }}>
+          <span className="badge" style={{ background: "#e9f3da", color: "#6B8F4E" }}>
             {res.loading ? "Cargando…" : `${total} ${total === 1 ? "usuario" : "usuarios"}`}
           </span>
         </div>

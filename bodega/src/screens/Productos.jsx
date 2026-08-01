@@ -5,6 +5,7 @@ import BarcodeScanner from "../components/BarcodeScanner.jsx";
 import FichaProducto from "./FichaProducto.jsx";
 import ImportProductos from "./ImportProductos.jsx";
 
+import { brand } from "../brand.js";
 // Catálogo de ejemplo para el modo demostración (sin backend).
 const MOCK_PRODUCTS = {
   items: [
@@ -270,7 +271,7 @@ export default function Productos() {
     const category = { id: form.category_id, name: cat?.name || "" };
     const payload = {
       name: form.name.trim(),
-      description: form.description.trim() || `${form.name.trim()} — Bodega 12.`,
+      description: form.description.trim() || `${form.name.trim()} — ${brand.name}.`,
       category,
       pricing: { tiers: buildTiers(form) },
       ...(form.id ? {} : { stock: Number(form.stock) }),
@@ -517,7 +518,7 @@ export default function Productos() {
       <div className="card" style={{ marginBottom: 0 }}>
         <div className="card-h">
           <h2>Productos</h2>
-          <span className="badge" style={{ background: "#fce7f3", color: "var(--magenta-d)" }}>
+          <span className="badge" style={{ background: "#e9f3da", color: "var(--magenta-d)" }}>
             {res.loading ? "…" : products.length === 1 ? "1 producto" : `${products.length} productos`}
           </span>
         </div>

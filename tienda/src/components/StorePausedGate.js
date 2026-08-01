@@ -5,6 +5,7 @@ import useAuthStore from "../store/authStore";
 import AppText from "./AppText";
 import { colors } from "../constants/theme";
 
+import brand from "../constants/brand";
 // PAUSA DE LA TIENDA: el panel de gestión puede pausar la tienda online
 // (mantención, inventario, demo). Mientras está pausada, los CLIENTES ven esta
 // pantalla en vez de la app; el personal interno (admin/gerente/vendor) entra
@@ -46,7 +47,7 @@ export default function StorePausedGate({ children }) {
   return (
     <View style={{ flex: 1, backgroundColor: "#fff", alignItems: "center", justifyContent: "center", padding: 28 }}>
       <Image
-        source={require("../../assets/logo-full.png")}
+        source={require("../../assets/logo-cibox.png")}
         style={{ width: 220, height: 66, resizeMode: "contain", marginBottom: 26 }}
       />
       <AppText style={{ fontSize: 26, fontWeight: "800", color: colors.text, textAlign: "center", marginBottom: 10 }}>
@@ -65,7 +66,7 @@ export default function StorePausedGate({ children }) {
           : <AppText style={{ color: "#fff", fontWeight: "700", fontSize: 16 }}>Reintentar</AppText>}
       </Pressable>
       <AppText style={{ fontSize: 12.5, color: "#9ca3af", marginTop: 30 }}>
-        Bodega 12 · Supermercado mayorista · Lo Espejo
+        {brand.name} · {brand.tagline}
       </AppText>
     </View>
   );

@@ -4,6 +4,12 @@ import ScreenContainer from "../components/ScreenContainer";
 import AppText from "../components/AppText";
 import { colors, radius, shadows, spacing } from "../constants/theme";
 
+import brand from "../constants/brand";
+
+// Identidad: viene de constants/brand.js (que a su vez la trae del backend).
+const EMPRESA = brand.name;
+const EMAIL = brand.contact.email;
+const SITIO = brand.web.site_url;
 const SECTIONS = [
   {
     roman: "I",
@@ -14,12 +20,12 @@ const SECTIONS = [
         title: "Objeto",
         content: `El presente instrumento regula:
 
-• El uso del sitio web www.bodega12.cl
+• El uso del sitio web ${SITIO}
 • La compra de productos.
 • Las condiciones de retiro de los pedidos en bodega.
 • Las políticas sanitarias.
 • El tratamiento de datos personales.
-• La relación contractual entre Bodega 12 y el cliente.
+• La relación contractual entre ${EMPRESA} y el cliente.
 
 Este documento constituye contrato electrónico y se regulan conforme a la Ley N°19.496.
 
@@ -43,7 +49,7 @@ Este documento constituye contrato electrónico y se regulan conforme a la Ley N
       {
         num: "3",
         title: "Modelo",
-        content: `Bodega 12 opera como:
+        content: `${EMPRESA} opera como:
 
 • Supermercado mayorista digital.
 • Venta directa de productos por caja.
@@ -52,12 +58,12 @@ Este documento constituye contrato electrónico y se regulan conforme a la Ley N
 
 La venta es exclusivamente por caja y el retiro se realiza únicamente en nuestra bodega de Av. Lo Espejo, comuna de Lo Espejo, Santiago. No se realiza despacho a domicilio.
 
-Bodega 12 podrá abastecer productos desde:
+${EMPRESA} podrá abastecer productos desde:
 
 • Bodega y centros de almacenamiento propios.
 • Proveedores autorizados.
 
-Bodega 12 actúa como vendedor directo de los productos ofrecidos en el Sitio.`,
+${EMPRESA} actúa como vendedor directo de los productos ofrecidos en el Sitio.`,
       },
       {
         num: "4",
@@ -81,7 +87,7 @@ El usuario es responsable de la confidencialidad de su clave de acceso y de toda
 
 El pago se realiza de forma presencial al momento del retiro, en efectivo o mediante transferencia.
 
-Bodega 12 podrá anular pedidos en caso de:
+${EMPRESA} podrá anular pedidos en caso de:
 
 • Error evidente en precios.
 • Falta de stock no informada oportunamente.
@@ -102,7 +108,7 @@ Medios de pago aceptados:
 • Efectivo.
 • Transferencia bancaria.
 
-El pago se realiza de forma presencial al momento del retiro del pedido en bodega. Bodega 12 no procesa pagos en línea a través del Sitio.`,
+El pago se realiza de forma presencial al momento del retiro del pedido en bodega. ${EMPRESA} no procesa pagos en línea a través del Sitio.`,
       },
     ],
   },
@@ -117,11 +123,11 @@ El pago se realiza de forma presencial al momento del retiro del pedido en bodeg
 
 • El cliente acepta los términos.
 • El cliente reserva su pedido para retiro en bodega.
-• Bodega 12 envía confirmación electrónica.
+• ${EMPRESA} envía confirmación electrónica.
 
 El pago se efectúa al momento del retiro, en efectivo o por transferencia. Hasta ese momento, la orden es una reserva de compra.
 
-Bodega 12 podrá rechazar pedidos por:
+${EMPRESA} podrá rechazar pedidos por:
 
 • Error manifiesto de precio.
 • Sospecha de fraude.
@@ -138,7 +144,7 @@ Bodega 12 podrá rechazar pedidos por:
         title: null,
         content: `En caso de error tipográfico evidente:
 
-• Bodega 12 podrá dejar sin efecto la orden.
+• ${EMPRESA} podrá dejar sin efecto la orden.
 • Se devolverá íntegramente el monto pagado.
 • No procederán indemnizaciones adicionales.`,
       },
@@ -169,7 +175,7 @@ El cliente debe revisar los productos al momento del retiro.`,
       {
         num: "10",
         title: "Disponibilidad",
-        content: `Bodega 12 preparará los pedidos para su retiro en bodega según la disponibilidad de stock informada en el Sitio.`,
+        content: `${EMPRESA} preparará los pedidos para su retiro en bodega según la disponibilidad de stock informada en el Sitio.`,
       },
       {
         num: "11",
@@ -180,7 +186,7 @@ El cliente debe revisar los productos al momento del retiro.`,
 • La disponibilidad de stock al momento de preparar el pedido.
 • Condiciones operativas propias de la bodega.
 
-Bodega 12 avisará al cliente cuando su pedido esté listo para ser retirado.`,
+${EMPRESA} avisará al cliente cuando su pedido esté listo para ser retirado.`,
       },
       {
         num: "12",
@@ -192,7 +198,7 @@ Bodega 12 avisará al cliente cuando su pedido esté listo para ser retirado.`,
 • Pagar de forma presencial, en efectivo o por transferencia, al momento del retiro.
 • Revisar los productos al momento del retiro.
 
-Si el cliente no retira su pedido dentro del plazo informado, Bodega 12 podrá liberar el stock y anular la orden según corresponda.`,
+Si el cliente no retira su pedido dentro del plazo informado, ${EMPRESA} podrá liberar el stock y anular la orden según corresponda.`,
       },
       {
         num: "13",
@@ -202,7 +208,7 @@ Si el cliente no retira su pedido dentro del plazo informado, Bodega 12 podrá l
 • Efectivo.
 • Transferencia bancaria.
 
-Bodega 12 no procesa pagos en línea ni cobra costos de envío, por cuanto la única modalidad de entrega es el retiro presencial en bodega.`,
+${EMPRESA} no procesa pagos en línea ni cobra costos de envío, por cuanto la única modalidad de entrega es el retiro presencial en bodega.`,
       },
     ],
   },
@@ -213,13 +219,13 @@ Bodega 12 no procesa pagos en línea ni cobra costos de envío, por cuanto la ú
       {
         num: null,
         title: null,
-        content: `Bodega 12 cumple con:
+        content: `${EMPRESA} cumple con:
 
 • Reglamento Sanitario de los Alimentos (DS 977/96).
 • Normativa de cadena de frío.
 • Exigencias de almacenamiento y manipulación.
 
-Bodega 12 garantiza:
+${EMPRESA} garantiza:
 
 • Almacenamiento en condiciones adecuadas.
 • Control de temperatura.
@@ -281,13 +287,13 @@ Dentro de los 6 meses siguientes a la recepción, conforme Ley 19.496.`,
       {
         num: null,
         title: null,
-        content: `Bodega 12 podrá sustituir productos por:
+        content: `${EMPRESA} podrá sustituir productos por:
 
 • Marca equivalente.
 • Calidad similar o superior.
 • Igual o mayor gramaje.
 
-En caso de quiebre de stock, Bodega 12 podrá:
+En caso de quiebre de stock, ${EMPRESA} podrá:
 
 • Contactar al cliente para ofrecer reemplazo equivalente.
 • Reembolsar el monto correspondiente.
@@ -303,7 +309,7 @@ Si el cliente no acepta, se reembolsará la diferencia.`,
       {
         num: null,
         title: null,
-        content: `Bodega 12 no será responsable por:
+        content: `${EMPRESA} no será responsable por:
 
 • Pérdidas indirectas.
 • Lucro cesante.
@@ -311,11 +317,11 @@ Si el cliente no acepta, se reembolsará la diferencia.`,
 • Eventos de fuerza mayor.
 • Eventos climáticos extremos.
 • Deterioro posterior a la entrega por mal almacenamiento del cliente.
-• Fallas de terceros no atribuibles a Bodega 12.
+• Fallas de terceros no atribuibles a ${EMPRESA}.
 
 La responsabilidad total máxima estará limitada al valor del pedido.
 
-Bodega 12 será responsable conforme a la normativa vigente por:
+${EMPRESA} será responsable conforme a la normativa vigente por:
 
 • Incumplimientos contractuales.
 • Entrega defectuosa imputable al proveedor.`,
@@ -362,7 +368,7 @@ El cliente podrá ejercer derechos ARCO (Acceso, Rectificación, Cancelación y 
       {
         num: null,
         title: null,
-        content: `Bodega 12 emitirá documentos tributarios electrónicos conforme a la normativa del SII. El cliente es responsable de proporcionar datos correctos para efectos de facturación.`,
+        content: `${EMPRESA} emitirá documentos tributarios electrónicos conforme a la normativa del SII. El cliente es responsable de proporcionar datos correctos para efectos de facturación.`,
       },
     ],
   },
@@ -392,7 +398,7 @@ Las condiciones específicas de membresías, incluyendo beneficios, descuentos, 
         title: null,
         content: `En caso de alerta sanitaria:
 
-• Bodega 12 notificará a clientes afectados.
+• ${EMPRESA} notificará a clientes afectados.
 • Coordinará retiro del producto.
 • Procederá a reembolso o reemplazo.`,
       },
@@ -405,7 +411,7 @@ Las condiciones específicas de membresías, incluyendo beneficios, descuentos, 
       {
         num: null,
         title: null,
-        content: `Todo contenido del sitio es propiedad de Bodega 12. Queda prohibida su reproducción sin autorización escrita previa.`,
+        content: `Todo contenido del sitio es propiedad de ${EMPRESA}. Queda prohibida su reproducción sin autorización escrita previa.`,
       },
     ],
   },
@@ -416,7 +422,7 @@ Las condiciones específicas de membresías, incluyendo beneficios, descuentos, 
       {
         num: null,
         title: null,
-        content: `Bodega 12 podrá modificar estos términos. Las nuevas versiones serán publicadas en el Sitio con fecha de actualización.`,
+        content: `${EMPRESA} podrá modificar estos términos. Las nuevas versiones serán publicadas en el Sitio con fecha de actualización.`,
       },
     ],
   },
@@ -468,7 +474,7 @@ Las condiciones específicas de membresías, incluyendo beneficios, descuentos, 
         title: null,
         content: `Para consultas, reclamos o solicitudes:
 
-📧 contacto@bodega12.cl
+📧 ${EMAIL}
 📞 +56 9 3244 5772
 📍 La Concepción 81, Oficina 214, Providencia.`,
       },
@@ -503,13 +509,13 @@ Las condiciones específicas de membresías, incluyendo beneficios, descuentos, 
       {
         num: null,
         title: null,
-        content: `Bodega 12 pone a disposición del usuario una plataforma tecnológica que permite:
+        content: `${EMPRESA} pone a disposición del usuario una plataforma tecnológica que permite:
 
 • Visualizar los productos ofrecidos.
 • Realizar pedidos por caja.
 • Reservar pedidos para su retiro en bodega.
 
-Bodega 12 actúa como vendedor directo de los productos ofrecidos en el Sitio. La entrega se realiza exclusivamente mediante retiro presencial en bodega y el pago se efectúa al momento del retiro, en efectivo o por transferencia. Bodega 12 no opera despacho a domicilio ni procesa pagos en línea a través del Sitio.`,
+${EMPRESA} actúa como vendedor directo de los productos ofrecidos en el Sitio. La entrega se realiza exclusivamente mediante retiro presencial en bodega y el pago se efectúa al momento del retiro, en efectivo o por transferencia. ${EMPRESA} no opera despacho a domicilio ni procesa pagos en línea a través del Sitio.`,
       },
     ],
   },
@@ -655,7 +661,7 @@ export default function TermsScreen() {
             <AppText style={{ fontSize: 12, color: colors.muted }}>
               La Concepción 81, Oficina 214, Providencia, Región Metropolitana, Chile
             </AppText>
-            <AppText style={{ fontSize: 12, color: colors.muted }}>📧 contacto@bodega12.cl</AppText>
+            <AppText style={{ fontSize: 12, color: colors.muted }}>📧 {EMAIL}</AppText>
             <AppText style={{ fontSize: 12, color: colors.muted }}>📞 +56 9 3244 5772</AppText>
           </View>
 

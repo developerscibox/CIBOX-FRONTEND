@@ -203,7 +203,7 @@ export default function Picking() {
     <div className="pick-grid">
       <div>
         <div style={{ fontSize: 12, fontWeight: 700, color: "var(--muted)", letterSpacing: ".5px", margin: "2px 4px 10px" }}>
-          PEDIDOS POR PREPARAR ({orders.length}){porTomar > 0 ? <span style={{ color: "var(--magenta,#E6007E)" }}> · {porTomar} nuevo{porTomar === 1 ? "" : "s"} por tomar</span> : null}
+          PEDIDOS POR PREPARAR ({orders.length}){porTomar > 0 ? <span style={{ color: "var(--magenta,#4E9B27)" }}> · {porTomar} nuevo{porTomar === 1 ? "" : "s"} por tomar</span> : null}
         </div>
         {load.loading ? (
           <div className="ord" style={{ color: "var(--muted)" }}>Cargando pedidos…</div>
@@ -223,7 +223,7 @@ export default function Picking() {
                 {asignadoId(o) ? <div style={{ marginTop: 4 }}>{badgeAsignado(o)}</div> : null}
                 {o.status === "paid"
                   ? (puedeTomar(o)
-                    ? <div style={{ fontSize: 12.5, color: "var(--magenta,#E6007E)", fontWeight: 700 }}>Nuevo · disponible para preparar</div>
+                    ? <div style={{ fontSize: 12.5, color: "var(--magenta,#4E9B27)", fontWeight: 700 }}>Nuevo · disponible para preparar</div>
                     : <div style={{ fontSize: 12.5, color: "var(--muted)", fontWeight: 600 }}>Reservado</div>)
                   : <div style={{ fontSize: 12.5, color: "var(--muted)" }}>{done}/{o.items.length} ítems preparados</div>}
               </div>
@@ -250,7 +250,7 @@ export default function Picking() {
             </div>
 
             {sel.status === "paid" ? (
-              <div style={{ margin: "12px 18px 4px", padding: "12px 14px", borderRadius: 12, background: "#fdf2f8", border: "1px solid var(--rosa-soft,#FBCFE8)" }}>
+              <div style={{ margin: "12px 18px 4px", padding: "12px 14px", borderRadius: 12, background: "#f4f9ee", border: "1px solid var(--rosa-soft,#E8F4CE)" }}>
                 <div style={{ fontWeight: 700, marginBottom: 6, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                   Pedido nuevo en cola
                   {badgeAsignado(sel)}

@@ -1,4 +1,4 @@
-// Bodega 12 vende SOLO por caja. La "caja" es el tier de mayor min_qty.
+// Cibox vende SOLO por caja. La "caja" es el tier de mayor min_qty.
 // Ojo: tier.price es POR UNIDAD; el precio total de la caja = price * min_qty.
 
 export const boxTierOf = (product) => {

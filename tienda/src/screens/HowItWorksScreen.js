@@ -65,7 +65,7 @@ export default function HowItWorksScreen({ navigation }) {
               marginBottom: 8,
             }}
           >
-            ¿Cómo funciona Bodega 12?
+            ¿Cómo funciona Cibox?
           </AppText>
           <AppText
             style={{

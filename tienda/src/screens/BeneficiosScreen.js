@@ -42,7 +42,7 @@ const BENEFITS = [
 export default function BeneficiosScreen() {
   return (
     <InfoPageLayout
-      title="Beneficios de comprar en Bodega 12"
+      title="Beneficios de comprar en Cibox"
       subtitle="Somos tu supermercado mayorista: ahorra comprando por caja y retira en bodega."
       icon={ICON}
     >

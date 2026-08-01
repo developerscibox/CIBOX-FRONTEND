@@ -45,7 +45,7 @@ const useAuthStore = create((set) => ({
 
   setAuth: async ({ user, token, refreshToken }) => {
     // Seguridad (XSS): en WEB de producción el refresh token vive SOLO en la
-    // cookie httpOnly (b12_rt) — jamás se persiste en localStorage ni se conserva
+    // cookie httpOnly (cibox_rt) — jamás se persiste en localStorage ni se conserva
     // en memoria (localStorage es robable por cualquier script del origen). En dev
     // web la cookie no viaja cross-origin, así que se mantiene el fallback por body.
     const persistFull = !(Platform.OS === "web" && !__DEV__);

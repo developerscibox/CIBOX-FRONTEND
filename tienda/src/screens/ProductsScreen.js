@@ -48,7 +48,7 @@ const boxSavingsPct = (product) => {
 const PRESETS = {
   best_sellers: {
     title: "Los más vendidos",
-    subtitle: "Los productos favoritos de Bodega 12, ordenados por popularidad.",
+    subtitle: "Los productos favoritos de Cibox, ordenados por popularidad.",
     sort: "popular",
   },
   liquidation: {
@@ -183,7 +183,7 @@ export default function ProductsScreen({ navigation, route }) {
 
     try {
       setAddingProductId(product._id);
-      // Bodega 12 vende por caja: agrega N cajas (cajas elegidas × tamaño de caja).
+      // Cibox vende por caja: agrega N cajas (cajas elegidas × tamaño de caja).
       const n = Math.max(1, Number(cajas) || 1);
       await addItemToCart({ productId: product._id, quantity: boxQtyOf(product) * n });
       await loadCartSummary();
@@ -317,7 +317,7 @@ export default function ProductsScreen({ navigation, route }) {
   const headerTitle = presetDef?.title || "Todos los productos";
   const headerSubtitle =
     presetDef?.subtitle ||
-    "Explora el catálogo completo de Bodega 12 y encuentra lo que necesitas.";
+    "Explora el catálogo completo de Cibox y encuentra lo que necesitas.";
 
   if (loading && !products.length) {
     return (

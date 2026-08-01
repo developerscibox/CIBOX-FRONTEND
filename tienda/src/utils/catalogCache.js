@@ -13,7 +13,7 @@ import { Platform } from "react-native";
  * memoria (vive durante la sesión de la app). El foco del problema es la web.
  */
 
-const PREFIX = "bodega12:catalog:";
+const PREFIX = "cibox:catalog:";
 const hasLS =
   Platform.OS === "web" &&
   typeof window !== "undefined" &&

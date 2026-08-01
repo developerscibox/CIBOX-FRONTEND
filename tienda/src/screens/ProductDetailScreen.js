@@ -384,7 +384,7 @@ export default function ProductDetailScreen({ route, navigation }) {
 
   useEffect(() => {
     if (product?.pricing?.tiers?.length) {
-      // Bodega 12 vende por caja: preselecciona el tier de caja (mayor min_qty).
+      // Cibox vende por caja: preselecciona el tier de caja (mayor min_qty).
       const defaultTier = boxTierOf(product) || product.pricing.tiers[0];
       setSelectedTier(defaultTier);
       setSelectedQuantity(defaultTier.min_qty || 1);
@@ -748,7 +748,7 @@ export default function ProductDetailScreen({ route, navigation }) {
             }}
           >
             <AppText style={{ color: "#fff", fontSize: 12, fontWeight: "700" }}>
-              Beneficio Bodega 12+
+              Beneficio Cibox+
             </AppText>
           </View>
         ) : null}
@@ -765,7 +765,7 @@ export default function ProductDetailScreen({ route, navigation }) {
             }}
           >
             <AppText style={{ color: "#fff", fontSize: 12, fontWeight: "700" }}>
-              Caja Bodega 12
+              Caja Cibox
             </AppText>
           </View>
         ) : null}

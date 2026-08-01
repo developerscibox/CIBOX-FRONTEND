@@ -5,7 +5,8 @@ import MapEmbed, { BODEGA_ADDRESS } from "../components/MapEmbed";
 import { colors, spacing, shadows } from "../constants/theme";
 import AppText from "../components/AppText";
 
-const PHONE = "+56 9 3244 5772";
+import brand from "../constants/brand";
+const PHONE = brand.contact.phone;
 const WHATSAPP_URL = "https://wa.me/56932445772";
 
 function InfoRow({ icon, children, onPress }) {
@@ -24,7 +25,7 @@ export default function StoresScreen() {
   return (
     <InfoPageLayout
       title="Nuestras tiendas"
-      subtitle="Visítanos y retira tu pedido en nuestra bodega de Lo Espejo."
+      subtitle={`Desde aquí preparamos y despachamos todos los pedidos de ${brand.name}.`}
     >
       <View style={{ flexDirection: "row", flexWrap: "wrap", gap: spacing.lg }}>
         {/* Datos de la tienda */}
@@ -41,7 +42,7 @@ export default function StoresScreen() {
           }}
         >
           <AppText style={{ fontSize: 18, fontWeight: "900", color: colors.text, marginBottom: 4 }}>
-            Bodega 12 — Lo Espejo
+            {brand.name} — {brand.address.comuna}
           </AppText>
           <AppText style={{ fontSize: 13, color: colors.muted, marginBottom: 16 }}>
             Centro Logístico Mersan

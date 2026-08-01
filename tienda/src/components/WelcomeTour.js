@@ -5,11 +5,12 @@ import AppText from "./AppText";
 import useOnboardingStore from "../store/onboardingStore";
 import { colors, radius, spacing } from "../constants/theme";
 
+import brand from "../constants/brand";
 // Pasos del tour de bienvenida (texto tal cual, en español).
 const SLIDES = [
   {
     emoji: "👋",
-    title: "Bienvenido a Bodega 12",
+    title: `Bienvenido a ${brand.name}`,
     body: "Somos un supermercado mayorista: precios bajos comprando por caja, con retiro GRATIS en nuestra bodega de Lo Espejo. En 1 minuto te mostramos cómo funciona. Puedes saltarlo cuando quieras.",
   },
   {
@@ -40,7 +41,7 @@ const SLIDES = [
   {
     emoji: "📋",
     title: "Tus pedidos y favoritos",
-    body: 'En la barra inferior: en "Mis pedidos" sigues el estado y la fecha de retiro; en "Favoritos" guardas productos para recomprar en un toque. ¡Listo, ya sabes comprar en Bodega 12!',
+    body: `En la barra inferior: en "Mis pedidos" sigues el estado de tu pedido; en "Favoritos" guardas productos para recomprar en un toque. ¡Listo, ya sabes comprar en ${brand.name}!`,
   },
 ];
 

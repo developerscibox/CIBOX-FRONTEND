@@ -112,7 +112,7 @@ export default function CartScreen({ navigation }) {
     try {
       setUpdatingId(item.product_id);
 
-      // Bodega 12 vende por caja: el + suma una caja completa.
+      // Cibox vende por caja: el + suma una caja completa.
       const step = Number(item.box_qty) || 1;
       const newQuantity = Number(item.quantity || 0) + step;
 
@@ -133,7 +133,7 @@ export default function CartScreen({ navigation }) {
   };
 
   const handleDecrease = async (item) => {
-    // Bodega 12 vende por caja: el − resta una caja; bajo el mínimo, elimina.
+    // Cibox vende por caja: el − resta una caja; bajo el mínimo, elimina.
     const step = Number(item.box_qty) || 1;
     if (Number(item.quantity || 0) <= step) {
       await handleRemove(item.product_id);
@@ -248,7 +248,7 @@ export default function CartScreen({ navigation }) {
               maxWidth: 420,
             }}
           >
-            Agrega productos de tu distribuidora Bodega 12 para comenzar tu compra.
+            Agrega productos de el catálogo de Cibox para comenzar tu compra.
           </AppText>
 
           <AppButton

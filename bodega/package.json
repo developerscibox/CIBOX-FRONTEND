@@ -1,9 +1,9 @@
 {
-  "name": "bodega12-wms",
+  "name": "cibox-panel",
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "Bodega 12 — Panel de bodega / WMS (picking, kardex e inventario). Consume /api/inventory del backend.",
+  "description": "Cibox — Panel de operaciones (preparación de pedidos, kardex e inventario).",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

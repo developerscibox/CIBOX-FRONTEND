@@ -594,10 +594,10 @@ export default function ProductForm({
               marginBottom: 4,
             }}
           >
-            Bodega 12 Plus
+            Cibox Plus
           </AppText>
           <AppText style={{ color: colors.muted }}>
-            Activa si este producto aplica beneficios para clientes Bodega 12+.
+            Activa si este producto aplica beneficios para clientes Cibox+.
           </AppText>
         </View>
 

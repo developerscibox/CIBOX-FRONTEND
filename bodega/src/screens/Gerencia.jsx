@@ -71,8 +71,8 @@ function Bars({ data, label, value, tip, accentMax, height = 200, fmt }) {
     <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", height }} role="img" preserveAspectRatio="none">
       <defs>
         <linearGradient id="barGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#E6007E" />
-          <stop offset="100%" stopColor="#9B007A" />
+          <stop offset="0%" stopColor="#4E9B27" />
+          <stop offset="100%" stopColor="#3B7A1D" />
         </linearGradient>
         <linearGradient id="barGradMax" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor="#22c55e" />

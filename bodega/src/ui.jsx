@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { ORDER_STATUS } from "./theme.js";
+import { brand } from "./brand.js";
 
 export function Logo() {
   return (
     <div className="brand">
-      <img src="/logo-cibox.png" alt="Cibox" className="brand-logo" />
-      <div className="nm">Cibox<small>Operaciones</small></div>
+      <img src={brand.logo} alt={brand.name} className="brand-logo" />
+      <div className="nm">{brand.name}<small>Operaciones</small></div>
     </div>
   );
 }

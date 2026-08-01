@@ -5,6 +5,7 @@ import { ORDER_STATUS, clp, t } from "../theme.js";
 import { StatusBadge } from "../ui.jsx";
 import { useAuth } from "../auth.jsx";
 
+import { brand } from "../brand.js";
 // "Hoy" en zona Santiago (no UTC: toISOString corre el día desde las ~20-21h de Chile).
 const HOY = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Santiago", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
 
@@ -276,7 +277,7 @@ export default function Pedidos() {
         <div className="card" style={{ marginBottom: 0 }}>
           <div className="card-h">
             <h2>Pedidos</h2>
-            <span className="badge" style={{ background: "#fce7f3", color: "var(--magenta-d)" }}>
+            <span className="badge" style={{ background: "#e9f3da", color: "var(--magenta-d)" }}>
               {ord.loading ? "…" : `${total} pedidos`}
             </span>
           </div>
@@ -495,7 +496,7 @@ function OrderDetail({ order, busy, can, onClose, onChange, onPay, onDelete, onA
             </div>
             <div className="ped-sec-t" style={{ marginTop: 14 }}>Retiro</div>
             <div className="ped-data" style={{ fontSize: 13 }}>
-              <div>{order.pickup?.location || "Bodega 12 Lo Espejo"}</div>
+              <div>{order.pickup?.location || brand.address.one_line || "—"}</div>
               <div style={{ color: "var(--muted)" }}>Comprometido: {fmtDate(ymdOf(order.pickup?.committed_date))}</div>
             </div>
           </div>
@@ -513,7 +514,7 @@ function OrderDetail({ order, busy, can, onClose, onChange, onPay, onDelete, onA
                         <span
                           key={b.batch_id || j}
                           title="Lote consumido (trazabilidad)"
-                          style={{ fontSize: 11.5, fontWeight: 600, color: "var(--magenta-d)", background: "#fce7f3", borderRadius: 999, padding: "2px 8px" }}
+                          style={{ fontSize: 11.5, fontWeight: 600, color: "var(--magenta-d)", background: "#e9f3da", borderRadius: 999, padding: "2px 8px" }}
                         >
                           Lote {b.lot_code || "s/código"} · {b.qty} u
                         </span>

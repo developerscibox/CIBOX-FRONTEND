@@ -3,8 +3,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { colors, shadows, spacing } from "../constants/theme";
 import AppText from "./AppText";
 
-const MORADO = "#7A1B73";
-const LOGO = require("../../assets/bodega12-logo.png");
+const MORADO = "#2E6116";
+const LOGO = require("../../assets/logo-cibox.png");
 export const COUPON_CODE = "BODEGA10";
 
 // ─── Franja de confianza (separa secciones + refuerza por qué comprar) ───────────
@@ -71,7 +71,7 @@ export function TrustStrip() {
   );
 }
 
-// ─── Banner de cupón 10% (logo Bodega 12 + código BODEGA10) ──────────────────────
+// ─── Banner de cupón 10% ─────────────────────────────────────────────────────
 export function PromoStrip({ navigation, isWebDesktop }) {
   return (
     <Pressable
@@ -90,14 +90,14 @@ export function PromoStrip({ navigation, isWebDesktop }) {
     >
       <View
         pointerEvents="none"
-        style={{ position: "absolute", right: -40, top: -40, width: 170, height: 170, borderRadius: 85, backgroundColor: "#FF3DA6", opacity: 0.4 }}
+        style={{ position: "absolute", right: -40, top: -40, width: 170, height: 170, borderRadius: 85, backgroundColor: "#C3E062", opacity: 0.4 }}
       />
       <View
         pointerEvents="none"
         style={{ position: "absolute", left: -30, bottom: -55, width: 160, height: 160, borderRadius: 80, backgroundColor: MORADO, opacity: 0.5 }}
       />
 
-      {/* Logo Bodega 12 */}
+      {/* Logo de Cibox */}
       <View
         style={{
           width: isWebDesktop ? 78 : 64,

@@ -3,7 +3,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { create } from "zustand";
 
 // Clave de persistencia del tour de bienvenida (versionada por si cambia el flujo)
-const TOUR_SEEN_KEY = "b12_tour_seen_v1";
+const TOUR_SEEN_KEY = "cibox_tour_seen_v1";
 
 // Storage tolerante a web (localStorage) y nativo (AsyncStorage), igual que authStore.
 const tourStorage = {

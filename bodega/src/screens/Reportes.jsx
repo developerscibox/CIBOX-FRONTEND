@@ -5,6 +5,7 @@ import * as XLSX from "xlsx";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 
+import { brand } from "../brand.js";
 // Centro de reportes del gerente: (1) Resumen ejecutivo del periodo — KPIs, gráfico
 // y exportación Excel/PDF/CSV — y (2) Biblioteca de informes estilo ERP (Ventas /
 // Inventario / Finanzas), cada uno con filtros propios, totales y descarga Excel.
@@ -20,7 +21,7 @@ const sum = (arr, k) => (arr || []).reduce((a, x) => a + (Number(x[k]) || 0), 0)
 // meta del backend ("estimado a costo actual"): string directo u objeto con nota.
 const metaTxt = (m) => (!m ? null : typeof m === "string" ? m : m.nota || m.note || m.label || "Estimado a costo actual");
 const PERIODOS = { hoy: { label: "Hoy", days: 0 }, semana: { label: "7 días", days: 6 }, mes: { label: "30 días", days: 29 }, trimestre: { label: "Trimestre", days: 89 } };
-const MAGENTA = [155, 0, 122]; // = var(--magenta-d) #9B007A (PDF: jsPDF no lee CSS vars)
+const MAGENTA = [155, 0, 122]; // = var(--magenta-d) #3B7A1D (PDF: jsPDF no lee CSS vars)
 
 function Bars({ serie }) {
   const arr = serie || [];
@@ -96,7 +97,7 @@ function TablaInf({ nombre, cols, items, tot, loading, error, meta, filtros, not
   const exportar = () => {
     const wb = XLSX.utils.book_new();
     const aoa = [
-      [`Bodega 12 — ${nombre}`],
+      [`${brand.name} — ${nombre}`],
       ...(notaFull ? [[notaFull]] : []),
       [],
       cols.map((c) => c.label),
@@ -104,7 +105,7 @@ function TablaInf({ nombre, cols, items, tot, loading, error, meta, filtros, not
       ...(tot ? [cols.map((c, i) => (i === 0 ? "TOTALES" : tot[c.k] ?? ""))] : []),
     ];
     XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(aoa), "Informe");
-    XLSX.writeFile(wb, `Bodega12-${nombre.replace(/[^\w]+/g, "-").replace(/^-+|-+$/g, "")}-${hoy()}.xlsx`);
+    XLSX.writeFile(wb, `${brand.name}-${nombre.replace(/[^\w]+/g, "-").replace(/^-+|-+$/g, "")}-${hoy()}.xlsx`);
   };
   return (
     <div className="card" style={{ padding: 0, overflow: "hidden" }}>
@@ -216,13 +217,13 @@ function InfValorizacion() {
   const exportar = () => {
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([
-      ["Bodega 12 — Valorización de inventario"], ["Estimada a costo actual (precio de costo vigente)"], [],
+      [`${brand.name} — Valorización de inventario`], ["Estimada a costo actual (precio de costo vigente)"], [],
       ["Valor a costo", t.valor_costo ?? ""], ["Valor a precio venta", t.valor_venta ?? ""],
       ["SKUs con stock", t.skus ?? ""], ["SKUs sin costo", t.sin_costo ?? ""],
     ]), "Totales");
     if (cat.length) XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([colsCat.map((c) => c.label), ...cat.map((it) => colsCat.map((c) => it[c.k] ?? ""))]), "Por categoría");
     if (sec.length) XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([colsSec.map((c) => c.label), ...sec.map((it) => colsSec.map((c) => it[c.k] ?? ""))]), "Por sector");
-    XLSX.writeFile(wb, `Bodega12-Valorizacion-${hoy()}.xlsx`);
+    XLSX.writeFile(wb, `${brand.name}-Valorizacion-${hoy()}.xlsx`);
   };
   return (
     <div style={{ display: "grid", gap: 12 }}>
@@ -390,7 +391,7 @@ export default function Reportes() {
   const descargarExcel = () => {
     if (!d) return;
     const wb = XLSX.utils.book_new();
-    const head = [["Bodega 12 — Reporte de gestión"], [periodoTxt], [], ["Indicador", "Valor"]];
+    const head = [[`${brand.name} — Reporte de gestión`], [periodoTxt], [], ["Indicador", "Valor"]];
     XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([...head, ...resumenRows().map((r) => [r[0], r[1]])]), "Resumen");
     XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([["Día", "Ventas", "Pedidos"], ...ventas.serie.map((s) => [s.dia, s.total, s.pedidos])]), "Ventas por día");
     XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([
@@ -407,20 +408,20 @@ export default function Reportes() {
       ["(=) Utilidad bruta", finanzas.utilidadBruta], ["Margen bruto %", finanzas.margenBrutoPct], [], ["Compras de mercadería", finanzas.egresos.compras],
       ["Cobrado", finanzas.ingresos.cobrado], ["Por cobrar", aging?.total || 0],
     ]), "Finanzas");
-    XLSX.writeFile(wb, `Reporte-Bodega12-${to}.xlsx`);
+    XLSX.writeFile(wb, `Reporte-${brand.name}-${to}.xlsx`);
   };
 
   const descargarPDF = () => {
     if (!d) return;
     const doc = new jsPDF();
-    doc.setFontSize(16); doc.setTextColor(40); doc.text("Bodega 12 — Reporte de gestión", 14, 18);
+    doc.setFontSize(16); doc.setTextColor(40); doc.text(`${brand.name} — Reporte de gestión`, 14, 18);
     doc.setFontSize(10); doc.setTextColor(120); doc.text(periodoTxt, 14, 25);
     const opt = { theme: "grid", headStyles: { fillColor: MAGENTA }, styles: { fontSize: 9 }, margin: { left: 14, right: 14 } };
     autoTable(doc, { ...opt, startY: 31, head: [["Indicador", "Valor"]], body: resumenRows().map(([l, v, f]) => [l, f === "pct" ? `${v ?? 0}%` : f === "num" ? num(v) : clp(v)]) });
     autoTable(doc, { ...opt, head: [["Más vendidos", "Unid.", "Ingresos"]], body: productos.top.map((p) => [p.name, num(p.qty), clp(p.revenue)]) });
     autoTable(doc, { ...opt, head: [["Rentabilidad por producto", "Margen", "Utilidad"]], body: productos.margen.map((p) => [p.name, `${p.margenPct}%`, clp(p.utilidad)]) });
     autoTable(doc, { ...opt, head: [["Persona", "Preparados", "Prep. media (min)"]], body: (equipo?.preparacion || []).map((b) => [b.label, num(b.preparados), num(b.prep_prom_min)]) });
-    doc.save(`Reporte-Bodega12-${to}.pdf`);
+    doc.save(`Reporte-${brand.name}-${to}.pdf`);
   };
 
   // Detalle de pedidos del periodo en CSV (endpoint /admin/orders/export).
@@ -431,7 +432,7 @@ export default function Reportes() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `Pedidos-Bodega12-${from}-a-${to}.csv`;
+      a.download = `Pedidos-${brand.name}-${from}-a-${to}.csv`;
       document.body.appendChild(a);
       a.click();
       a.remove();

@@ -412,7 +412,7 @@ function ActiveCount({
     { ic: "📦", bg: "#ede9fe", v: `${summary.done}/${summary.total}`, l: "Contados" },
     { ic: "🎯", bg: "#e0f2fe", v: `${pct}%`, l: "Progreso" },
     { ic: "⚖️", bg: "#fef3c7", v: summary.toAdjust, l: "Con diferencia" },
-    { ic: "Σ", bg: "#fce7f3", v: diffStr(summary.netDelta), l: "Δ unidades" },
+    { ic: "Σ", bg: "#e9f3da", v: diffStr(summary.netDelta), l: "Δ unidades" },
   ];
   const empty = (active.lines || []).length === 0;
 

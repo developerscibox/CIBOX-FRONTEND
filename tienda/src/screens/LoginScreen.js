@@ -273,7 +273,7 @@ export default function LoginScreen({ navigation }) {
                     paddingHorizontal: 8,
                   }}
                 >
-                  Accede a tu cuenta Bodega 12 para revisar pedidos, favoritos y tu
+                  Accede a tu cuenta Cibox para revisar pedidos, favoritos y tu
                   perfil.
                 </AppText>
               </View>

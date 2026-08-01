@@ -10,7 +10,7 @@ const SUCCESS_PATH = "/orders/success";
 const FAILED_PATH = "/orders/failed";
 // Esquema nuevo + legado: el backend redirige con MOBILE_DEEP_LINK, que puede
 // seguir siendo myapp:// hasta que se actualice su .env
-const APP_SCHEMES = ["bodega12://", "myapp://"];
+const APP_SCHEMES = ["cibox://", "myapp://"];
 const startsWithScheme = (url, path = "") =>
   APP_SCHEMES.some((scheme) => url.startsWith(scheme + path));
 
@@ -86,7 +86,7 @@ export default function WebpayScreen({ route, navigation }) {
         startsWithScheme(url) ||
         host === BACKEND_HOST ||
         host === "cibox-frontend-j7257.ondigitalocean.app" ||
-        host === "app.bodega12.cl" ||
+        host === "app.cibox.cl" ||
         host === "app.cibox.cl" ||
         host === "localhost";
 

@@ -2,13 +2,14 @@ import { useEffect, useMemo, useState } from "react";
 import { t } from "../theme.js";
 import { useAuth } from "../auth.jsx";
 
+import { brand } from "../brand.js";
 // Pasos del tour del WMS. Cada paso declara el permiso que el rol debe tener
 // para verlo (perm:null = visible para todos). El texto va en español.
 const STEPS = [
   {
     perm: null,
     ic: "👋",
-    title: "Bienvenido a Bodega 12",
+    title: `Bienvenido a ${brand.name}`,
     body: "Este es el panel de bodega (Lo Espejo). Acá gestionas la operación: pedidos del día, picking, recepción, stock y caja. Vendemos solo por caja y el retiro es presencial.",
   },
   {
@@ -86,7 +87,7 @@ const STEPS = [
 ];
 
 const tourKey = (user) =>
-  user ? `b12_wms_tour_${user._id || user.id || user.email || "anon"}` : null;
+  user ? `cibox_wms_tour_${user._id || user.id || user.email || "anon"}` : null;
 
 // ¿El usuario ya vio el tour? (true si no hay almacenamiento, para no molestar).
 export function tourSeen(user) {
@@ -138,7 +139,7 @@ export default function Onboarding({ open, onClose }) {
   const prev = () => setI((n) => Math.max(n - 1, 0));
 
   return (
-    <div className="ob-overlay" role="dialog" aria-modal="true" aria-label="Tutorial de Bodega 12" onClick={close}>
+    <div className="ob-overlay" role="dialog" aria-modal="true" aria-label={`Tutorial de ${brand.name}`} onClick={close}>
       <div className="ob-card" onClick={(e) => e.stopPropagation()}>
         <div className="ob-top">
           <span className="ob-kicker">Tutorial · {i + 1} de {steps.length}</span>

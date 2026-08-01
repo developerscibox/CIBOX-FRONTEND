@@ -145,7 +145,7 @@ export default function Reposicion({ onNav }) {
                   const u = URGENCIA[p.urgency] || URGENCIA.medio;
                   const checked = !!sel[p._id];
                   return (
-                    <tr key={p._id} style={{ borderTop: "1px solid #ece4f0", background: checked ? "#fdf2f8" : undefined }}>
+                    <tr key={p._id} style={{ borderTop: "1px solid #ece4f0", background: checked ? "#f4f9ee" : undefined }}>
                       <td style={{ ...td, textAlign: "center" }}>
                         <input type="checkbox" checked={checked} onChange={() => toggle(p._id)}
                           style={{ width: 17, height: 17, cursor: "pointer" }} />

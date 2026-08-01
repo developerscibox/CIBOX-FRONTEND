@@ -6,7 +6,7 @@ import { Html5Qrcode, Html5QrcodeSupportedFormats } from "html5-qrcode";
 // — rápido y fiable. Si el navegador no lo soporta (ej. iOS Safari), cae a
 // html5-qrcode. Cámara con facingMode FLEXIBLE ({ideal:"environment"}) para que
 // los notebooks (sin cámara trasera) también funcionen. Tecleo manual siempre.
-const REGION_ID = "b12-barcode-reader";
+const REGION_ID = "cibox-barcode-reader";
 const PROD_URL = "bodega-nine.vercel.app";
 
 const H5_FORMATS = [

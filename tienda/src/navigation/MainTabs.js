@@ -57,7 +57,7 @@ export default function MainTabs() {
         options={{
           headerTitle: () => (
             <Image
-              source={require("../../assets/logo-full.png")}
+              source={require("../../assets/logo-cibox.png")}
               style={{ width: 96, height: 60, resizeMode: "contain" }}
             />
           ),

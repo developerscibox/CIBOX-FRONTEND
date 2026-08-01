@@ -10,9 +10,8 @@ import { usePushNotifications } from "../hooks/usePushNotifications";
 
 const linking = {
   prefixes: [
-    "bodega12://",
-    // dominio nuevo de Bodega 12 (confirmar con el cliente)
-    "https://app.bodega12.cl",
+    "cibox://",
+    "https://app.cibox.cl",
     // despliegue actual en DigitalOcean — quitar cuando se migre al dominio nuevo
     "https://cibox-frontend-j7257.ondigitalocean.app",
     "http://192.168.1.3:8081",
@@ -37,8 +36,8 @@ const linking = {
       OrdersTab: "orders",
       ProfileTab: "profile",
       Auth: "auth",
-      // B2BProvider y demás pantallas internas (admin/vendor) NO se exponen por
-      // deep-link: solo son alcanzables con sesión y rol staff (ver AppStack).
+      // Las pantallas internas (admin/vendor) NO se exponen por deep-link:
+      // solo son alcanzables con sesión y rol staff (ver AppStack).
       Contact: "contacto",
       Terms: "terminos-y-condiciones",
       Privacy: "politica-de-privacidad",

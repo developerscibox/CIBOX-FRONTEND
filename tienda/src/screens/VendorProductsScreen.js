@@ -545,7 +545,7 @@ export default function VendorProductsScreen() {
 
               {item?.cibox_plus?.enabled ? (
                 <View style={badgeStyle("#111")}>
-                  <AppText style={badgeTextStyle}>Bodega 12+</AppText>
+                  <AppText style={badgeTextStyle}>Cibox+</AppText>
                 </View>
               ) : null}
 

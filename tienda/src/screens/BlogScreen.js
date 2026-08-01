@@ -15,7 +15,7 @@ const POSTS = [
     excerpt: "Guía rápida para armar tu pedido mayorista y aprovechar mejor cada caja.",
   },
   {
-    tag: "Bodega 12",
+    tag: "Cibox",
     title: "Novedades y nuevos productos en bodega",
     excerpt: "Te contamos qué llegó esta semana al Centro Logístico Mersan.",
   },
@@ -30,7 +30,7 @@ export default function BlogScreen() {
   return (
     <InfoPageLayout
       title="Blog & Noticias"
-      subtitle="Consejos para ahorrar, novedades de la bodega y todo lo nuevo en Bodega 12."
+      subtitle="Consejos para ahorrar, novedades de la bodega y todo lo nuevo en Cibox."
       icon={NEWS_ICON}
     >
       <View style={{ flexDirection: "row", flexWrap: "wrap", gap: spacing.md }}>

@@ -33,7 +33,6 @@ import ForgotPasswordScreen from "../screens/ForgotPasswordScreen";
 import OrderFailedScreen from "../screens/OrderFailedScreen";
 import HowItWorksScreen from "../screens/HowItWorksScreen";
 import AdminOrdersScreen from "../screens/AdminOrdersScreen";
-import B2BProviderScreen from "../screens/B2BProviderScreen";
 import ContactScreen from "../screens/ContactScreen";
 import TermsScreen from "../screens/TermsScreen";
 import PrivacyScreen from "../screens/PrivacyScreen";
@@ -42,6 +41,7 @@ import DespachoScreen from "../screens/DespachoScreen";
 import BlogScreen from "../screens/BlogScreen";
 import StoresScreen from "../screens/StoresScreen";
 
+import brand from "../constants/brand";
 const Stack = createNativeStackNavigator();
 
 function withWebLayout(Component) {
@@ -282,11 +282,6 @@ export default function AppStack() {
                 : { title: "Panel de órdenes" }
             }
           />
-          <Stack.Screen
-            name="B2BProvider"
-            component={B2BProviderScreen}
-            options={{ headerShown: false }}
-          />
         </>
       )}
 
@@ -307,7 +302,7 @@ export default function AppStack() {
         options={
           isWebDesktop
             ? { headerShown: false }
-            : { title: "Cómo funciona Bodega 12" }
+            : { title: `Cómo funciona ${brand.name}` }
         }
       />
       <Stack.Screen

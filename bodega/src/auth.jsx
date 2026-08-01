@@ -84,8 +84,8 @@ export function AuthProvider({ children }) {
   // avisar (el login muestra "tu sesión expiró"). Antes se caía a login sin explicar.
   useEffect(() => {
     const onUnauth = () => { setViewAsState(null); setUser(null); setSessionExpired(true); };
-    window.addEventListener("b12-unauth", onUnauth);
-    return () => window.removeEventListener("b12-unauth", onUnauth);
+    window.addEventListener("cibox-unauth", onUnauth);
+    return () => window.removeEventListener("cibox-unauth", onUnauth);
   }, []);
 
   const can = useCallback(

@@ -165,7 +165,7 @@ export default function Dashboard({ onNav }) {
         <div className="card" style={{ marginBottom: 0 }}>
           <div className="card-h">
             <h2 style={{ textTransform: "capitalize" }}>Retiros · {fmtLong(selDate)}</h2>
-            <span className="badge" style={{ background: "#fce7f3", color: "#9d174d" }}>
+            <span className="badge" style={{ background: "#e9f3da", color: "#6B8F4E" }}>
               {pick.loading ? "…" : summary ? `${summary.total_committed ?? dayOrders.length} pedidos` : "—"}
             </span>
           </div>

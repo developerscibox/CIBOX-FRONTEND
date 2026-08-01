@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "Bodega 12",
-    "slug": "bodega12-app",
+    "name": "Cibox",
+    "slug": "cibox-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -12,12 +12,12 @@
       "resizeMode": "contain",
       "backgroundColor": "#E6007E"
     },
-    "scheme": "bodega12",
+    "scheme": "cibox",
     "ios": {
       "supportsTablet": true
     },
     "android": {
-      "package": "cl.bodega12.app",
+      "package": "cl.cibox.app",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#E6007E"

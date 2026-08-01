@@ -141,11 +141,11 @@ export default function App() {
   // como lo vería un cliente que compra únicamente la página. Es un override
   // local (localStorage), no cambia nada del backend ni de la instalación.
   const [planDemo, setPlanDemoState] = useState(() => {
-    try { return localStorage.getItem("b12_plan_demo") || null; } catch { return null; }
+    try { return localStorage.getItem("cibox_plan_demo") || null; } catch { return null; }
   });
   const setPlanDemo = (v) => {
     setPlanDemoState(v);
-    try { v ? localStorage.setItem("b12_plan_demo", v) : localStorage.removeItem("b12_plan_demo"); } catch { /* sin storage */ }
+    try { v ? localStorage.setItem("cibox_plan_demo", v) : localStorage.removeItem("cibox_plan_demo"); } catch { /* sin storage */ }
   };
   const modsEff = planDemo ? [planDemo] : mods;
 
@@ -204,7 +204,7 @@ export default function App() {
             </div>
           ) : null}
           {viewAs ? (
-            <div className="banner-mock" style={{ background: "#fce7f3", color: "#9B007A", display: "flex", alignItems: "center", gap: 10 }}>
+            <div className="banner-mock" style={{ background: "#e9f3da", color: "#3B7A1D", display: "flex", alignItems: "center", gap: 10 }}>
               <span>Estás viendo el panel <b>como {previewLabel}</b> (previsualización; tus permisos reales no cambian).</span>
               <button
                 onClick={() => setViewAs(null)}

@@ -1,5 +1,5 @@
 // ============================================================
-// dashboardMockData.js — Dashboard Gerencial 360° · Bodega 12
+// dashboardMockData.js — Dashboard Gerencial 360° · Cibox
 // Valores idénticos a la maqueta (20 de mayo 2025).
 // Fase 2: reemplazar por fetch a /api/dashboard/* manteniendo
 // estas mismas estructuras (ver contrato de endpoints en el prompt).

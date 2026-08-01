@@ -2,6 +2,7 @@ import { useState } from "react";
 import { t } from "../theme.js";
 import { useAuth } from "../auth.jsx";
 
+import { brand } from "../brand.js";
 export default function Login() {
   const { login, sessionExpired } = useAuth();
   const [email, setEmail] = useState("");
@@ -27,7 +28,7 @@ export default function Login() {
   return (
     <div style={S.wrap}>
       <div style={S.inner}>
-        <img src="/logo-bodega12.png" alt="Bodega 12" style={S.logo} />
+        <img src={brand.logo} alt={brand.name} style={S.logo} />
 
         <form style={S.card} onSubmit={onSubmit}>
           <div style={S.h}>Inicia sesión</div>
@@ -46,7 +47,7 @@ export default function Login() {
               autoComplete="username"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="tucorreo@bodega12.cl"
+              placeholder="tucorreo@cibox.cl"
             />
           </div>
 
@@ -76,7 +77,7 @@ export default function Login() {
           <div style={S.foot}>Cada acción queda registrada con tu usuario.</div>
         </form>
 
-        <div style={S.copyright}>Bodega 12 · Supermercado mayorista · Lo Espejo</div>
+        <div style={S.copyright}>{brand.name} · {brand.tagline}</div>
       </div>
     </div>
   );

@@ -12,6 +12,7 @@ import { Poppins_400Regular } from "@expo-google-fonts/poppins/400Regular";
 import { Poppins_600SemiBold } from "@expo-google-fonts/poppins/600SemiBold";
 import { Poppins_700Bold } from "@expo-google-fonts/poppins/700Bold";
 import AppText from "./src/components/AppText";
+import { hydrateBrand } from "./src/constants/brand";
 
 export default function App() {
   const { loadAuth, isLoading } = useAuthStore();
@@ -24,6 +25,10 @@ export default function App() {
 
   useEffect(() => {
     loadAuth();
+    // Identidad de Cibox (RUT, razón social, contacto, dirección): la fuente de
+    // verdad es el backend. hydrateBrand nunca lanza; si falla, la tienda sigue
+    // con los valores locales de constants/brand.js.
+    hydrateBrand();
   }, [loadAuth]);
 
   // ⛔ Espera a que carguen fuentes Y auth

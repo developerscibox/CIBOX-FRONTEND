@@ -4,6 +4,12 @@ import ScreenContainer from "../components/ScreenContainer";
 import AppText from "../components/AppText";
 import { colors, radius, shadows, spacing } from "../constants/theme";
 
+import brand from "../constants/brand";
+
+// Identidad: viene de constants/brand.js (que a su vez la trae del backend).
+const EMPRESA = brand.name;
+const EMAIL = brand.contact.email;
+const SITIO = brand.web.site_url;
 const SECTIONS = [
   {
     roman: "I",
@@ -14,7 +20,7 @@ const SECTIONS = [
 BODEGA 12 SpA
 RUT: 78.245.061-1
 La Concepción 81, Oficina 214, Providencia, Región Metropolitana, Chile
-📧 contacto@bodega12.cl
+📧 ${EMAIL}
 📞 +56 9 3244 5772
 
 Para ejercer cualquier derecho sobre sus datos personales, puede contactarnos directamente a través de los medios indicados anteriormente.`,
@@ -36,7 +42,7 @@ Datos de compra y retiro:
 • Preferencias de retiro en bodega.
 
 Datos de pago:
-• Bodega 12 no almacena datos de tarjetas. El pago se realiza de forma presencial al retirar el pedido en bodega, en efectivo o por transferencia, por lo que no se procesan pagos en línea a través de la plataforma.
+• ${EMPRESA} no almacena datos de tarjetas. El pago se realiza de forma presencial al retirar el pedido en bodega, en efectivo o por transferencia, por lo que no se procesan pagos en línea a través de la plataforma.
 
 Datos de uso de la plataforma:
 • Dirección IP.
@@ -72,7 +78,7 @@ Finalidades de seguridad y cumplimiento:
 
 Finalidades con su consentimiento previo:
 • Enviar comunicaciones comerciales, promociones y ofertas personalizadas.
-• Enviar notificaciones push sobre el estado de sus pedidos y novedades de Bodega 12.
+• Enviar notificaciones push sobre el estado de sus pedidos y novedades de ${EMPRESA}.
 • Realizar análisis estadísticos para mejorar la experiencia de uso.
 
 Usted puede revocar su consentimiento para las finalidades opcionales en cualquier momento, sin que ello afecte la legalidad del tratamiento previo.`,
@@ -92,7 +98,7 @@ Usted puede revocar su consentimiento para las finalidades opcionales en cualqui
     roman: "V",
     title: "Compartición de Datos con Terceros",
     icon: "share-social-outline",
-    content: `Bodega 12 no vende, arrienda ni cede sus datos personales a terceros con fines comerciales propios.
+    content: `${EMPRESA} no vende, arrienda ni cede sus datos personales a terceros con fines comerciales propios.
 
 Sus datos podrán ser compartidos únicamente con:
 
@@ -108,7 +114,7 @@ Todos los terceros con quienes compartimos datos están obligados a tratarlos de
     roman: "VI",
     title: "Transferencias Internacionales de Datos",
     icon: "globe-outline",
-    content: `Algunos de nuestros proveedores tecnológicos pueden estar ubicados fuera de Chile (por ejemplo, servicios de infraestructura cloud). En estos casos, Bodega 12 exige contractualmente que dichos proveedores apliquen medidas de protección equivalentes a las exigidas por la legislación chilena.
+    content: `Algunos de nuestros proveedores tecnológicos pueden estar ubicados fuera de Chile (por ejemplo, servicios de infraestructura cloud). En estos casos, ${EMPRESA} exige contractualmente que dichos proveedores apliquen medidas de protección equivalentes a las exigidas por la legislación chilena.
 
 Al utilizar nuestra plataforma, usted acepta que sus datos podrán ser procesados en servidores ubicados fuera del territorio nacional, siempre bajo las garantías antes mencionadas.`,
   },
@@ -118,7 +124,7 @@ Al utilizar nuestra plataforma, usted acepta que sus datos podrán ser procesado
     icon: "time-outline",
     content: `Sus datos personales serán conservados durante los siguientes plazos:
 
-• Datos de cuenta activa: mientras mantenga su cuenta registrada en Bodega 12.
+• Datos de cuenta activa: mientras mantenga su cuenta registrada en ${EMPRESA}.
 • Historial de compras: mínimo 6 años, conforme a las obligaciones tributarias del SII.
 • Datos de comunicaciones y soporte: hasta 2 años desde la última interacción.
 • Datos para marketing (con consentimiento): hasta que revoque su consentimiento.
@@ -147,16 +153,16 @@ Portabilidad:
 • Solicitar una copia de sus datos en formato estructurado y de uso común.
 
 Para ejercer cualquiera de estos derechos, envíe una solicitud a:
-📧 contacto@bodega12.cl
+📧 ${EMAIL}
 Indicando: nombre completo, correo registrado, derecho que desea ejercer y motivo (si corresponde).
 
-Bodega 12 responderá dentro de un plazo razonable y a más tardar en 15 días hábiles.`,
+${EMPRESA} responderá dentro de un plazo razonable y a más tardar en 15 días hábiles.`,
   },
   {
     roman: "IX",
     title: "Seguridad de los Datos",
     icon: "lock-closed-outline",
-    content: `Bodega 12 implementa medidas técnicas y organizativas para proteger sus datos personales frente a accesos no autorizados, pérdida, destrucción o divulgación indebida, incluyendo:
+    content: `${EMPRESA} implementa medidas técnicas y organizativas para proteger sus datos personales frente a accesos no autorizados, pérdida, destrucción o divulgación indebida, incluyendo:
 
 • Cifrado de contraseñas mediante algoritmos seguros (bcrypt).
 • Comunicaciones cifradas mediante protocolo HTTPS/TLS.
@@ -164,13 +170,13 @@ Bodega 12 responderá dentro de un plazo razonable y a más tardar en 15 días h
 • Monitoreo continuo de la plataforma para detectar incidentes de seguridad.
 • Copias de seguridad periódicas de la información.
 
-En caso de una brecha de seguridad que afecte sus datos, Bodega 12 le notificará a la brevedad posible conforme a la normativa aplicable.`,
+En caso de una brecha de seguridad que afecte sus datos, ${EMPRESA} le notificará a la brevedad posible conforme a la normativa aplicable.`,
   },
   {
     roman: "X",
     title: "Cookies y Tecnologías de Seguimiento",
     icon: "information-circle-outline",
-    content: `La versión web de Bodega 12 puede utilizar cookies y tecnologías similares para:
+    content: `La versión web de ${EMPRESA} puede utilizar cookies y tecnologías similares para:
 
 Cookies estrictamente necesarias:
 • Mantener su sesión activa.
@@ -191,7 +197,7 @@ La aplicación móvil no utiliza cookies, pero puede recopilar datos de uso de f
     roman: "XI",
     title: "Menores de Edad",
     icon: "people-outline",
-    content: `Los servicios de Bodega 12 están dirigidos a personas mayores de 18 años. No recopilamos intencionalmente datos personales de menores de edad.
+    content: `Los servicios de ${EMPRESA} están dirigidos a personas mayores de 18 años. No recopilamos intencionalmente datos personales de menores de edad.
 
 Si un menor de 18 años desea utilizar la plataforma, deberá contar con la autorización expresa de sus padres o tutores legales, quienes asumirán la responsabilidad por el uso que el menor haga de la plataforma.
 
@@ -201,7 +207,7 @@ Si tomamos conocimiento de que hemos recopilado datos de un menor sin autorizaci
     roman: "XII",
     title: "Notificaciones Push",
     icon: "notifications-outline",
-    content: `La aplicación móvil de Bodega 12 puede enviar notificaciones push a su dispositivo para informarle sobre:
+    content: `La aplicación móvil de ${EMPRESA} puede enviar notificaciones push a su dispositivo para informarle sobre:
 
 • El estado de sus pedidos (confirmación, preparación, listo para retiro).
 • Promociones y ofertas especiales (solo con su consentimiento).
@@ -213,7 +219,7 @@ Puede activar o desactivar las notificaciones push en cualquier momento desde la
     roman: "XIII",
     title: "Modificaciones a esta Política",
     icon: "create-outline",
-    content: `Bodega 12 podrá modificar esta Política de Privacidad en cualquier momento para adaptarla a cambios legislativos, jurisprudenciales o a modificaciones en nuestros servicios.
+    content: `${EMPRESA} podrá modificar esta Política de Privacidad en cualquier momento para adaptarla a cambios legislativos, jurisprudenciales o a modificaciones en nuestros servicios.
 
 Las modificaciones serán publicadas en la plataforma con la correspondiente fecha de actualización. Si los cambios son significativos, le notificaremos por correo electrónico o mediante un aviso destacado en la app.
 
@@ -238,7 +244,7 @@ Cualquier controversia derivada de la aplicación de esta política será someti
     icon: "mail-outline",
     content: `Para cualquier consulta, solicitud o reclamo relacionado con el tratamiento de sus datos personales, puede contactarnos:
 
-📧 contacto@bodega12.cl
+📧 ${EMAIL}
 📞 +56 9 3244 5772
 📍 La Concepción 81, Oficina 214, Providencia, Santiago.
 
@@ -359,7 +365,7 @@ export default function PrivacyScreen() {
             <AppText style={{ fontSize: 12, color: colors.muted }}>
               La Concepción 81, Oficina 214, Providencia, Región Metropolitana, Chile
             </AppText>
-            <AppText style={{ fontSize: 12, color: colors.muted }}>📧 contacto@bodega12.cl</AppText>
+            <AppText style={{ fontSize: 12, color: colors.muted }}>📧 {EMAIL}</AppText>
             <AppText style={{ fontSize: 12, color: colors.muted }}>📞 +56 9 3244 5772</AppText>
           </View>
 
@@ -417,9 +423,9 @@ export default function PrivacyScreen() {
               Tienes derecho a acceder, rectificar, eliminar u oponerte al uso de tus datos personales en cualquier momento. Escríbenos a{" "}
               <AppText
                 style={{ color: colors.primary, fontWeight: "700" }}
-                onPress={() => Linking.openURL("mailto:contacto@bodega12.cl")}
+                onPress={() => Linking.openURL(`mailto:${EMAIL}`)}
               >
-                contacto@bodega12.cl
+                {EMAIL}
               </AppText>
             </AppText>
           </View>

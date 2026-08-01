@@ -1,25 +1,28 @@
 /**
- * Paleta Bodega 12 — reemplazo directo de theme.js para re-marcar la app.
+ * Tokens visuales de Cibox — el ÚNICO lugar donde vive la paleta de la tienda.
  *
- * Uso: renombrar este archivo a theme.js (o cambiar los imports), nada más.
- * Toda la app consume estos tokens, así que el rebrand es un solo archivo.
+ * Metro hornea estos valores en el bundle, por eso no se leen del backend. Los
+ * colores deben coincidir con `brand.colors` de `backend/src/config/brand.js`,
+ * que es la fuente de verdad de la identidad. Todo lo demás (nombre, RUT, razón
+ * social, giro, contacto, dirección) está en `constants/brand.js` y se hidrata
+ * desde el backend.
  *
- * Identidad: magenta/fucsia Bodega 12 ("Supermercado mayorista · Lo Espejo"),
- * con morado para profundidad y amarillo para badges de descuento.
+ * Identidad: verde Cibox con lima para fondos destacados y amarillo para los
+ * badges de descuento.
  */
 export const colors = {
-  background: "#fff5fa",
+  background: "#f7f8f5",
   surface: "#ffffff",
-  text: "#2a1022",
-  muted: "#8a6e80",
-  border: "#f5dceb",
-  primary: "#E6007E",      // magenta Bodega 12 — botones y CTA
-  primaryLight: "#FBCFE8", // rosado suave — fondos destacados
-  accent: "#B5006A",       // fucsia oscuro — precios, énfasis
+  text: "#111811",
+  muted: "#5f6b5f",
+  border: "#e3e8e0",
+  primary: "#4E9B27",      // verde Cibox — botones y CTA
+  primaryLight: "#C3E062", // lima — fondos destacados
+  accent: "#3B7A1D",       // verde profundo — precios, énfasis
   primaryText: "#ffffff",
-  danger: "#d92d20",
-  success: "#16a34a",
-  discount: "#FBBF24",     // amarillo — badges de oferta/descuento
+  danger: "#b00020",
+  success: "#16794a",
+  discount: "#F7B81C",     // amarillo — badges de oferta/descuento
 };
 
 export const spacing = {
@@ -39,7 +42,7 @@ export const radius = {
 
 export const shadows = {
   card: {
-    shadowColor: "#7a1b4a",
+    shadowColor: "#1d2a17",
     shadowOpacity: 0.08,
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 4 },

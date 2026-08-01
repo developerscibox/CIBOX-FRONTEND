@@ -9,6 +9,7 @@ import { addFavorite, removeFavorite } from "../services/favoriteService";
 import { addItemToPantry } from "../services/pantryService";
 import { showToast } from "../store/toastStore";
 
+import brand from "../constants/brand";
 export default function ProductCard({
   product,
   onPress,
@@ -46,7 +47,7 @@ export default function ProductCard({
     }
   };
 
-  // ── Precio por caja (Bodega 12 vende por caja, no por unidad) ──
+  // ── Precio por caja (Cibox vende por caja, no por unidad) ──
   const tiers = Array.isArray(product?.pricing?.tiers)
     ? product.pricing.tiers
     : [];
@@ -184,7 +185,7 @@ export default function ProductCard({
                   opacity: 0.7,
                 }}
               >
-                {product?.name || product?.category?.name || "Bodega 12"}
+                {product?.name || product?.category?.name || brand.name}
               </AppText>
             </View>
           )}
@@ -235,7 +236,7 @@ export default function ProductCard({
             {ciboxPlusEnabled ? (
               <View style={chipStyle("#6d28d9")}>
                 <AppText style={{ color: "#fff", fontSize: 11, fontWeight: "800" }}>
-                  Bodega 12+
+                  Cibox+
                 </AppText>
               </View>
             ) : null}
@@ -255,7 +256,7 @@ export default function ProductCard({
             {ciboxPlusEnabled && (
               <View style={chipStyle("#6d28d9")}>
                 <AppText style={{ color: "#fff", fontSize: 10, fontWeight: "800" }}>
-                  Bodega 12+
+                  Cibox+
                 </AppText>
               </View>
             )}
@@ -430,7 +431,7 @@ export default function ProductCard({
 
         <Pressable
           onPress={async () => {
-            // Bodega 12 vende SOLO por caja. Si el producto no tiene formato de
+            // Cibox vende SOLO por caja. Si el producto no tiene formato de
             // caja configurado, no se agrega por unidad: dirigimos al detalle.
             if (!hasPackTier) {
               onPress?.();
