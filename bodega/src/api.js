@@ -314,7 +314,6 @@ export const api = {
   },
   // GET /reports/libro-ventas?month=YYYY-MM → { items:[{fecha,folio,cliente,metodo,neto,iva,total}], totales }
   rLibroVentas: (month) => req(`/reports/libro-ventas${month ? `?month=${encodeURIComponent(month)}` : ""}`),
-  // GET /reports/cuadres?limit → { items:[{fecha,cajera,monto_inicial,esperado,contado,diferencia,estado}] }
 
   // ── Gestión de usuarios (adminController) — gate users.manage ─────────────────
   // GET /admin/users?page&limit&search&role&is_active  → { users, pagination }
