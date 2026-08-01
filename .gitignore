@@ -32,11 +32,6 @@ wms-snap.md
 *.zip
 **/*.zip
 
-# Material comercial confidencial KSA+ (fuera del repo de código → Drive/Notion privado)
-docs/KSA-*
-docs/Bodega12-Banners.pptx
-docs/Bodega12-Checklist-Produccion.xlsx
-
 # Config local de Claude Code / herramientas
 .claude/
 

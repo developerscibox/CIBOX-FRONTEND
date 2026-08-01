@@ -82,7 +82,7 @@ export default function Picking() {
 
   const badgeAsignado = (o) =>
     asignadoId(o) ? (
-      <span style={{ fontSize: 11, fontWeight: 700, borderRadius: 999, padding: "2px 8px", whiteSpace: "nowrap", background: asignadoAMi(o) ? "#ecfdf5" : "#f3e8ff", color: asignadoAMi(o) ? "#166534" : "#6b21a8", border: `1px solid ${asignadoAMi(o) ? "#a7f3d0" : "#e9d5ff"}` }}>
+      <span style={{ fontSize: 11, fontWeight: 700, borderRadius: 999, padding: "2px 8px", whiteSpace: "nowrap", background: asignadoAMi(o) ? "#ecfdf5" : "#f3e8ff", color: asignadoAMi(o) ? "#166534" : "#6b21a8", border: `1px solid ${asignadoAMi(o) ? "#a7f3d0" : "#DDEEBF"}` }}>
         {asignadoAMi(o) ? "Asignado a ti" : `Asignado a ${o.assigned_to?.label || "otra persona"}`}
       </span>
     ) : null;

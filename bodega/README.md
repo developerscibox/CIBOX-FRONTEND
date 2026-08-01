@@ -1,43 +1,49 @@
-# Bodega 12 — Panel de bodega (WMS)
+# Cibox — Panel de operaciones
 
-Software interno de bodega para **Bodega 12** (supermercado mayorista, Lo Espejo, Santiago).
-App web (Vite + React) pensada para usarse en **desktop, tablet y celular** del equipo de bodega
-— el celular sirve como lector de código de barras para el picking.
+Panel interno del equipo de Cibox. App web (Vite + React) pensada para usarse en
+**desktop, tablet y celular**; el celular sirve como lector de código de barras
+al preparar los pedidos.
 
-Consume el backend existente de Bodega 12 (los endpoints `/api/inventory` y `/api/orders` que
-ya están construidos), por lo que **no duplica lógica de negocio**: el kardex, los ajustes y las
-transiciones de estado siguen viviendo en el backend.
+Consume el backend de Cibox (`/api/...`), por lo que **no duplica lógica de
+negocio**: el kardex, los ajustes de stock y las transiciones de estado del
+pedido viven en el backend.
 
-## Módulos (v0.1)
+## Qué hay adentro
 
-| Módulo | Qué hace | Endpoint backend |
-|---|---|---|
-| **Resumen** | KPIs del día + stock crítico para reponer | `GET /inventory/low-stock` |
-| **Picking** | Lista de pedidos a preparar, checklist por orden y verificación por escaneo de código de barras; al completar, marca el pedido `ready` | `GET /orders?status=preparing`, `GET /inventory/by-barcode/:code` |
-| **Kardex** | Movimientos de inventario auditados (venta, ajuste, recepción, anulación…) | `GET /inventory/movements` |
-| **Ajuste de stock** | Ingreso/merma con motivo obligatorio; queda en el kardex | `POST /inventory/adjust` |
+| Área | Qué hace |
+|---|---|
+| **Inicio · gestión** | Centro de mando, Dashboard 360°, resumen del día, reportes, cobranza y clientes |
+| **Pedidos** | Seguimiento de todos los pedidos, preparación (checklist + escaneo) y calendario de entregas |
+| **Inventario · Catálogo** | Productos (alta, edición, carga masiva CSV, fotos), precios y márgenes, contenido de la tienda |
+| **Inventario · Movimiento** | Recepción de mercadería, reposición, conteo físico y ajustes (entrada / ajuste / merma) |
+| **Inventario · Control** | Panorama de stock, FEFO, lotes, kardex |
+| **Reportes · admin** | Ventas, documentos tributarios, devoluciones y usuarios |
 
-> Sin `VITE_API_URL` configurada, el panel corre en **modo demostración** con datos de ejemplo
-> (`src/data.js`) para poder mostrarlo sin backend.
+Todo el panel pasa por login. Los roles son **admin**, **manager** (gerencia) y
+**operator** (operaciones); cada uno ve solo lo suyo (`src/ui.jsx` → `ROLE_SCOPE`).
+
+> Sin `VITE_API_URL` configurada, el panel corre en **modo demostración** con
+> datos de ejemplo (`src/data.js`), para poder mostrarlo sin backend.
 
 ## Correr local
 
 ```bash
 npm install
-cp .env.example .env   # y completa VITE_API_URL / VITE_API_TOKEN
+echo "VITE_API_URL=http://localhost:3001/api" > .env
 npm run dev            # http://localhost:5180
 npm run build          # genera dist/ (sitio estático)
 ```
 
 ## Identidad
 
-Reutiliza la paleta Bodega 12 (magenta `#E6007E` / fucsia / morado, Poppins). Definida en
-`src/theme.js` e `src/index.css`.
+Paleta de Cibox: verde `#4E9B27`, lima `#C3E062`, amarillo `#F7B81C`. Los tokens
+visuales están en **`src/brand.js`** (y sus alias en `src/theme.js` /
+`src/index.css`). Los datos de la empresa —RUT, razón social, giro, contacto,
+dirección— **no se escriben aquí**: se piden a `GET /api/config/brand`, cuya
+fuente de verdad es `backend/src/config/brand.js`.
 
-## Roadmap
+## Pendientes
 
-- [ ] Login propio con el `authService` del backend (hoy usa token fijo)
-- [ ] Escaneo con cámara real (html5-qrcode en web / expo-camera si se migra a móvil nativo)
-- [ ] Tiempo real de pedidos nuevos (Socket.IO o polling)
-- [ ] Generación de etiquetas de despacho
-- [ ] Recepción de mercadería desde orden de compra a proveedor
+- [ ] Escaneo con cámara real en más pantallas (hoy en Productos y Recepción)
+- [ ] Generación de etiquetas de despacho desde el panel
+- [ ] Recepción de mercadería a partir de una orden de compra al proveedor

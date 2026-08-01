@@ -20,7 +20,7 @@ const API = import.meta.env.VITE_API_URL || "";
 export const colors = {
   primary: "#4E9B27",
   primaryLight: "#C3E062",
-  primaryDark: "#3B7A1D",
+  primaryDark: "#3E7D1E",
   accent: "#F7B81C",
   primaryText: "#ffffff",
   background: "#f7f8f5",
@@ -31,7 +31,7 @@ export const colors = {
   ok: "#16794a",
   warn: "#d97706",
   danger: "#b00020",
-  gradient: "linear-gradient(120deg,#3B7A1D 0%,#4E9B27 55%,#C3E062 100%)",
+  gradient: "linear-gradient(120deg,#3E7D1E 0%,#4E9B27 50%,#C3E062 100%)",
 };
 
 /**
@@ -66,7 +66,9 @@ export async function hydrateBrand() {
     const j = await r.json();
     const d = j?.data ?? j;
     if (!d?.name) return brand;
-    Object.assign(brand, d, { loaded: true });
+    // `logo` viaja como objeto { panel, tienda }: aquí se necesita la ruta del
+    // panel, no el objeto. Sin esto el <img> quedaba con src="[object Object]".
+    Object.assign(brand, d, { logo: d.logo?.panel || brand.logo, loaded: true });
     return brand;
   } catch {
     return brand;

@@ -1,88 +1,52 @@
-"# bodega12_frontend" 
+# Tienda de Cibox
 
+App Expo / React Native que corre como **web** (lo que se despliega) y también
+como app nativa. Es la cara del supermercado: catálogo, carrito, checkout y
+seguimiento del pedido.
 
-ESTRUCTURA BASICA DE TU APP.JSON
+## Correrla en local
 
-{
-  "expo": {
-    "name": "Bodega 12",
-    "slug": "bodega12-app",
-    "version": "1.0.0",
-    "orientation": "portrait",
-    "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
-    "newArchEnabled": true,
-    "splash": {
-      "image": "./assets/splash-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
-    },
-    "scheme": "bodega12",
-    "ios": {
-      "supportsTablet": true
-    },
-    "android": {
-      "package": "cl.bodega12.app",
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      },
-      "edgeToEdgeEnabled": true
-    },
-    "web": {
-      "favicon": "./assets/logo-cibox.png"
-    },
-    "plugins": [
-      "expo-font"
-    ]
-  }
-}
+```bash
+npm install
+echo "EXPO_PUBLIC_API_URL=http://localhost:3001/api" > .env
+npm run web          # http://localhost:8081
+```
 
-Instalar EAS CLI
+El backend tiene que estar arriba (`cd ../backend && npm run dev`).
 
+## Build de producción
+
+```bash
+npm run build:web    # expo export -p web + _redirects
+```
+
+**Ojo con Metro:** hornea `EXPO_PUBLIC_API_URL` en el bundle y su caché puede
+reutilizar una URL vieja. Los builds van siempre con `--clear` (ya está en
+`vercel.json`). Si la tienda en producción llama a `localhost`, es esto.
+
+## App nativa (APK)
+
+```bash
 npm install -g eas-cli
-
-Iniciar sesión en Expo
-
 eas login
-
-//https://expo.dev/login revisa tu cuenta expo
-
-crear la configuración de EAS en tu proyecto
-
-eas build:configure
-
-select all platform
-> All
-
-en el archivo que se crea eas.json debe tener esta estructura
-
-{
-  "cli": {
-    "version": ">= 18.8.0",
-    "appVersionSource": "remote"
-  },
-  "build": {
-    "development": {
-      "developmentClient": true,
-      "distribution": "internal"
-    },
-    "preview": {
-      "distribution": "internal",
-      "android": {
-        "buildType": "apk"
-      }
-    },
-    "production": {
-      "autoIncrement": true
-    }
-  },
-  "submit": {
-    "production": {}
-  }
-}
-
-revisar donde apuntan las URL de tu backend
-
-//crear la apk
 eas build -p android --profile preview
+```
+
+`eas.json` y `app.json` ya están configurados (scheme `cibox://`, package
+`cl.cibox.app`). Antes de compilar, revisa a dónde apunta `EXPO_PUBLIC_API_URL`.
+
+## Dónde está cada cosa
+
+| Ruta | Qué hay |
+|---|---|
+| `src/api/client.js` | Cliente axios: Bearer, `x-guest-id`, refresh automático ante 401 |
+| `src/constants/brand.js` | Identidad de Cibox — se hidrata desde `GET /api/config/brand` |
+| `src/constants/theme.js` | Paleta y tokens visuales (el único lugar con colores) |
+| `src/navigation/` | Stack web/móvil y deep links |
+| `src/screens/` | Pantallas |
+| `src/store/` | Estado global (zustand) |
+| `assets/` | Logo de Cibox, íconos de la app y del home |
+
+La identidad de la empresa (RUT, razón social, giro, contacto, dirección) **no
+se escribe aquí**: vive en `backend/src/config/brand.js` y se sirve por API.
+Los colores sí están en `theme.js`, porque Metro los necesita en tiempo de build.

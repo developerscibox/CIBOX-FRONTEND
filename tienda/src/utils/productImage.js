@@ -77,10 +77,10 @@ const EMOJI_BY_CATEGORY = {
 // Tinte suave de fondo por categoría (de marca, para variedad visual).
 const TINT_BY_CATEGORY = {
   lacteos: "#EAF2FB",
-  bebidas: "#FCE7F3",
+  bebidas: "#E0F2FE",
   "galletas y confites": "#FEF3C7",
   snacks: "#FFEDD5",
-  abarrotes: "#F3E8FF",
+  abarrotes: "#EEF7E4",
   conservas: "#E0F2FE",
   papeles: "#F1F5F9",
   "aseo y limpieza": "#E0F7F4",
@@ -100,7 +100,7 @@ export const productEmoji = (product) => {
 
 /** Color de fondo suave para la ficha de marca, según categoría. */
 export const productTint = (product) =>
-  TINT_BY_CATEGORY[normalize(product?.category?.name)] || "#FCE7F3";
+  TINT_BY_CATEGORY[normalize(product?.category?.name)] || "#EEF7E4";
 
 /** URL de imagen REAL si existe; si no, null (ProductCard muestra la ficha). */
 export const getProductImage = (product) => {

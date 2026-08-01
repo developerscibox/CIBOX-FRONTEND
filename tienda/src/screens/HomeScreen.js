@@ -31,15 +31,12 @@ import { readCache, writeCache } from "../utils/catalogCache";
 import { useHomeSlots, cmsText } from "../services/contentService";
 
 import brand from "../constants/brand";
-// Gradiente magenta de marca (igual al de los íconos de accesos rápidos).
-const GRAD = ["#F4439A", "#E81E86", "#3B7A1D"];
-// Canasto del hero, extraído de la propuesta de marca y fundido al degradado.
-const HERO_BASKET = require("../../assets/home/hero-basket.png");
+// Degradado de marca de Cibox: verde profundo → verde → lima (los tonos del logo).
+const GRAD = ["#3E7D1E", "#4E9B27", "#C3E062"];
 // Ícono "NEWS" de marca para el newsletter.
 const NEWS_ICON = require("../../assets/home/qa-news.png");
-// Logo de Cibox para el hero. PENDIENTE: falta la versión en blanco
-// (monocromática) para fondos de color — ver PLAN.md §7.
-const LOGO_BLANCO = require("../../assets/logo-cibox.png");
+// Logo de Cibox en blanco: el hero va sobre el degradado verde de marca.
+const LOGO_HERO = require("../../assets/logo-cibox-blanco.png");
 // Fondo temático del banner (provisto por el diseño).
 const BANNER_BG = require("../../assets/home/banner-hero.jpg");
 
@@ -104,23 +101,14 @@ function Hero({ navigation, isWebDesktop, isWide, content }) {
         paddingHorizontal: isWebDesktop ? 44 : 22,
         minHeight: isWebDesktop ? 470 : 240,
         justifyContent: "center",
-        backgroundColor: "#C0006F",
+        backgroundColor: "#3E7D1E",
       }}
     >
       {/* Canasto a la derecha (PNG transparente provisto). Es parte del arte de
           fábrica: si el admin sube su propia imagen de hero, no se superpone. */}
-      {isWide && !remoteImage && (
-        <Image
-          source={HERO_BASKET}
-          resizeMode="contain"
-          pointerEvents="none"
-          style={{ position: "absolute", right: 0, bottom: 28, width: 640, height: 480 }}
-        />
-      )}
-
       <View style={{ maxWidth: 560 }}>
         <Image
-          source={LOGO_BLANCO}
+          source={LOGO_HERO}
           resizeMode="contain"
           style={{ width: isWebDesktop ? 158 : 116, height: isWebDesktop ? 203 : 149, marginBottom: 16, marginLeft: -6 }}
         />
@@ -237,7 +225,7 @@ function PromoBanner({ banner, navigation, isWebDesktop }) {
             borderRadius: 22,
             overflow: "hidden",
             aspectRatio: isWebDesktop ? 4 : 2,
-            backgroundColor: "#C0006F",
+            backgroundColor: "#3E7D1E",
           }}
         >
           {titleOverlay}

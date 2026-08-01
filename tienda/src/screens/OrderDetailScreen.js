@@ -30,12 +30,12 @@ import brand from "../constants/brand";
 const STEP_LOOK = {
   pending:   { icon: "receipt-outline",          color: "#f59e0b" },
   paid:      { icon: "checkmark-circle-outline", color: "#3b82f6" },
-  preparing: { icon: "cube-outline",             color: "#8b5cf6" },
+  preparing: { icon: "cube-outline",             color: "#83BA42" },
   ready:     { icon: "checkbox-outline",         color: "#0ea5e9" },
   shipped:   { icon: "car-outline",              color: "#06b6d4" },
   delivered: { icon: "home-outline",             color: "#16a34a" },
   cancelled: { icon: "close-circle-outline",     color: "#ef4444" },
-  refunded:  { icon: "return-down-back-outline", color: "#a855f7" },
+  refunded:  { icon: "return-down-back-outline", color: "#6BA834" },
 };
 
 const PICKUP_LOCATION = {

@@ -6,7 +6,7 @@
   --border:#e3e8e0; --border-soft:#eef2ec; --ok:#16794a; --warn:#d97706; --danger:#b00020;
   --accent:#F7B81C;
   --shadow:0 1px 2px rgba(16,24,40,.06);
-  --grad:linear-gradient(120deg,#3B7A1D 0%,#4E9B27 55%,#C3E062 100%);
+  --grad:linear-gradient(120deg,#3E7D1E 0%,#4E9B27 50%,#C3E062 100%);
 }
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins','Segoe UI',system-ui,-apple-system,sans-serif;}
 body{background:var(--bg);color:var(--text);}

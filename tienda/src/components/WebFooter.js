@@ -10,7 +10,7 @@ import brand, { links } from "../constants/brand";
 const TEXT = "#FFFFFF";
 const MUTED = "rgba(255,255,255,0.82)";
 const LINE = "rgba(255,255,255,0.22)";
-const GRAD = ["#E81E86", "#C0006F", "#3B7A1D"];
+const GRAD = ["#4E9B27", "#3E7D1E", "#2E6116"];
 
 // ─── Link de columna ─────────────────────────────────────────────────────────
 function FooterLink({ label, onPress }) {

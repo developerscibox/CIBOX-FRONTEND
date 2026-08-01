@@ -173,7 +173,7 @@ export default function ProfileScreen({ navigation }) {
         {/* Mis pedidos — seguimiento en vivo + historial (pestañas dentro) */}
         <ActionCard
           icon="cube-outline"
-          iconColor="#8b5cf6"
+          iconColor="#83BA42"
           title="Mis pedidos"
           description="Sigue en vivo los pedidos en curso (pago → preparación → retiro) y revisa tu historial de compras finalizadas."
           buttonTitle="Ver mis pedidos"
@@ -212,7 +212,7 @@ export default function ProfileScreen({ navigation }) {
           />
           <QuickTile
             icon="heart-outline"
-            iconColor="#ec4899"
+            iconColor="#4E9B27"
             label="Favoritos"
             onPress={() => navigation.navigate("FavoritesTab")}
           />

@@ -6,9 +6,9 @@
 // ============================================================
 
 export const BRAND = {
-  primary: "#E0127A",
+  primary: "#4E9B27",
   primaryDark: "#B00F63",
-  violet: "#8B5CF6",
+  violet: "#83BA42",
 };
 
 // Helpers de formato chileno (para cuando lleguen datos numéricos reales)
@@ -29,12 +29,12 @@ export const HEADER = {
 
 // ---------- Fila de 6 KPIs superiores ----------
 export const KPIS = [
-  { label: "VENTAS DEL DÍA", valor: "$ 18.750.000", delta: "12,5%", arrow: "up", tone: "good", sub: "vs ayer", icono: "dollar", color: "#E0127A", meta: { pct: 94, valor: "$ 20.000.000" }, spark: [12, 14, 11, 15, 13, 16, 13.5, 17, 15, 18, 16, 19] },
-  { label: "MARGEN BRUTO", valor: "28,6%", delta: "2,3%", arrow: "up", tone: "good", sub: "vs ayer", icono: "tag", color: "#E0127A", spark: [26, 27, 25.5, 27.2, 26.4, 28, 27.1, 26.6, 28.2, 27.4, 29, 28.6] },
-  { label: "PEDIDOS INGRESADOS", valor: "256", delta: "15,8%", arrow: "up", tone: "good", sub: "vs ayer", icono: "clipboard", color: "#8B5CF6", spark: [180, 205, 190, 222, 208, 232, 215, 242, 226, 250, 238, 256] },
-  { label: "PEDIDOS EN PREPARACIÓN", valor: "78", delta: null, sub: "En picking ahora", icono: "package", color: "#E0127A", spark: [60, 71, 64, 76, 68, 80, 71, 83, 74, 85, 79, 78] },
-  { label: "PEDIDOS LISTOS", valor: "32", delta: null, sub: "Listos para retiro", icono: "check", color: "#E0127A", spark: [20, 27, 22, 30, 24, 33, 26, 34, 29, 36, 30, 32] },
-  { label: "PEDIDOS ENTREGADOS", valor: "186", delta: "18,3%", arrow: "up", tone: "good", sub: "vs ayer", icono: "truck", color: "#E0127A", spark: [120, 141, 129, 152, 140, 161, 149, 170, 158, 178, 167, 186] },
+  { label: "VENTAS DEL DÍA", valor: "$ 18.750.000", delta: "12,5%", arrow: "up", tone: "good", sub: "vs ayer", icono: "dollar", color: "#4E9B27", meta: { pct: 94, valor: "$ 20.000.000" }, spark: [12, 14, 11, 15, 13, 16, 13.5, 17, 15, 18, 16, 19] },
+  { label: "MARGEN BRUTO", valor: "28,6%", delta: "2,3%", arrow: "up", tone: "good", sub: "vs ayer", icono: "tag", color: "#4E9B27", spark: [26, 27, 25.5, 27.2, 26.4, 28, 27.1, 26.6, 28.2, 27.4, 29, 28.6] },
+  { label: "PEDIDOS INGRESADOS", valor: "256", delta: "15,8%", arrow: "up", tone: "good", sub: "vs ayer", icono: "clipboard", color: "#83BA42", spark: [180, 205, 190, 222, 208, 232, 215, 242, 226, 250, 238, 256] },
+  { label: "PEDIDOS EN PREPARACIÓN", valor: "78", delta: null, sub: "En picking ahora", icono: "package", color: "#4E9B27", spark: [60, 71, 64, 76, 68, 80, 71, 83, 74, 85, 79, 78] },
+  { label: "PEDIDOS LISTOS", valor: "32", delta: null, sub: "Listos para retiro", icono: "check", color: "#4E9B27", spark: [20, 27, 22, 30, 24, 33, 26, 34, 29, 36, 30, 32] },
+  { label: "PEDIDOS ENTREGADOS", valor: "186", delta: "18,3%", arrow: "up", tone: "good", sub: "vs ayer", icono: "truck", color: "#4E9B27", spark: [120, 141, 129, 152, 140, 161, 149, 170, 158, 178, 167, 186] },
 ];
 
 // ---------- Barra de alertas críticas ----------
@@ -71,12 +71,12 @@ export const INVENTARIO = {
   delta: "6,8%",
   deltaSub: "vs mes anterior",
   categorias: [
-    { nombre: "Abarrotes", pct: 38, monto: "$ 472.566.000", color: "#E0127A" },
-    { nombre: "Lácteos", pct: 18, monto: "$ 223.123.000", color: "#F472B6" },
-    { nombre: "Bebidas", pct: 15, monto: "$ 186.987.000", color: "#A855F7" },
-    { nombre: "Congelados", pct: 12, monto: "$ 149.629.000", color: "#C084FC" },
-    { nombre: "Snacks y Galletas", pct: 9, monto: "$ 109.598.000", color: "#F9A8D4" },
-    { nombre: "Aseo", pct: 8, monto: "$ 103.797.000", color: "#E9D5FF" },
+    { nombre: "Abarrotes", pct: 38, monto: "$ 472.566.000", color: "#4E9B27" },
+    { nombre: "Lácteos", pct: 18, monto: "$ 223.123.000", color: "#83BA42" },
+    { nombre: "Bebidas", pct: 15, monto: "$ 186.987.000", color: "#6BA834" },
+    { nombre: "Congelados", pct: 12, monto: "$ 149.629.000", color: "#A8CC7A" },
+    { nombre: "Snacks y Galletas", pct: 9, monto: "$ 109.598.000", color: "#C3E062" },
+    { nombre: "Aseo", pct: 8, monto: "$ 103.797.000", color: "#DDEEBF" },
   ],
   tiles: [
     { label: "Stock crítico", valor: "23", sub: "productos", tone: "pink" },
@@ -109,7 +109,7 @@ export const ABASTECIMIENTO = {
   cumplimiento: [
     { nombre: "Cumplido", pct: 72, color: "#D8127D" },
     { nombre: "Parcial", pct: 18, color: "#F5A9CE" },
-    { nombre: "Atrasado", pct: 10, color: "#8B5CF6" },
+    { nombre: "Atrasado", pct: 10, color: "#83BA42" },
   ],
 };
 
@@ -118,12 +118,12 @@ export const LOGISTICA = {
   leyenda:
     "Ingresados y Entregados: acumulado del día · etapas intermedias: pedidos en esa etapa ahora (incluye ingresos de días previos).",
   pipeline: [
-    { etapa: "Ingresados", n: 256, color: "#E0127A", icono: "send" },
-    { etapa: "Asignados", n: 198, color: "#EC4899", icono: "package" },
-    { etapa: "En Picking", n: 78, color: "#A855F7", icono: "cart" },
-    { etapa: "En Packing", n: 45, color: "#8B5CF6", icono: "packing" },
-    { etapa: "Listos", n: 32, color: "#EC4899", icono: "check" },
-    { etapa: "Entregados", n: 186, color: "#E0127A", icono: "truck" },
+    { etapa: "Ingresados", n: 256, color: "#4E9B27", icono: "send" },
+    { etapa: "Asignados", n: 198, color: "#4E9B27", icono: "package" },
+    { etapa: "En Picking", n: 78, color: "#6BA834", icono: "cart" },
+    { etapa: "En Packing", n: 45, color: "#83BA42", icono: "packing" },
+    { etapa: "Listos", n: 32, color: "#4E9B27", icono: "check" },
+    { etapa: "Entregados", n: 186, color: "#4E9B27", icono: "truck" },
   ],
   metricas: [
     { label: "Tiempo prom. picking", valor: "24 min", delta: "-5 min vs ayer", arrow: "down", tone: "good" },

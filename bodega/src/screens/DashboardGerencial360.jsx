@@ -78,8 +78,8 @@ function calcDelta(cur, prev) {
 // View-model: misma estructura para datos reales y demo.
 // ============================================================
 
-const CAT_COLORS = ["#E0127A", "#F472B6", "#A855F7", "#C084FC", "#F9A8D4", "#E9D5FF"];
-const PIPE_COLORS = ["#E0127A", "#EC4899", "#A855F7", "#8B5CF6", "#EC4899", "#E0127A"];
+const CAT_COLORS = ["#4E9B27", "#83BA42", "#C3E062", "#2E6116", "#A8CC7A", "#DDEEBF"];
+const PIPE_COLORS = ["#3E7D1E", "#4E9B27", "#6BA834", "#83BA42", "#A8CC7A", "#C3E062"];
 
 // Contrato GET /gerencia/dashboard360 → estructuras de la maqueta.
 function buildVM(d) {
@@ -101,12 +101,12 @@ function buildVM(d) {
   // que el Centro de mando: cada dato lleva a su área).
   const conDelta = (delta) => (delta ? { ...delta, sub: "vs ayer" } : { delta: null, sub: "sin comparación" });
   const kpis = [
-    { label: "VENTAS DEL DÍA", valor: money(k.ventasHoy), ...conDelta(dVen), icono: "dollar", color: "#E0127A", spark: k.sparkVentas, nav: "ventas", navTitulo: "Ventas · Negocio" },
-    { label: "MARGEN BRUTO", valor: k.margenBrutoPct == null ? "—" : `${fmtDec(k.margenBrutoPct)}%`, ...conDelta(dMar), icono: "tag", color: "#E0127A", spark: null, nav: "precios", navTitulo: "Precios y márgenes" },
-    { label: "PEDIDOS INGRESADOS", valor: num(k.ingresados), ...conDelta(dIng), icono: "clipboard", color: "#8B5CF6", spark: k.sparkIngresados, nav: "pedidos", navTitulo: "Pedidos" },
-    { label: "PEDIDOS EN PREPARACIÓN", valor: num(k.enPreparacion), delta: null, sub: "En picking ahora", icono: "package", color: "#E0127A", spark: null, nav: "picking", navTitulo: "Picking" },
-    { label: "PEDIDOS LISTOS", valor: num(k.listos), delta: null, sub: "Listos para retiro", icono: "check", color: "#E0127A", spark: null, nav: "retiro", navTitulo: "Retiro / Mostrador" },
-    { label: "PEDIDOS ENTREGADOS", valor: num(k.entregados), ...conDelta(dEnt), icono: "truck", color: "#E0127A", spark: k.sparkEntregados, nav: "pedidos", navTitulo: "Pedidos" },
+    { label: "VENTAS DEL DÍA", valor: money(k.ventasHoy), ...conDelta(dVen), icono: "dollar", color: "#4E9B27", spark: k.sparkVentas, nav: "ventas", navTitulo: "Ventas · Negocio" },
+    { label: "MARGEN BRUTO", valor: k.margenBrutoPct == null ? "—" : `${fmtDec(k.margenBrutoPct)}%`, ...conDelta(dMar), icono: "tag", color: "#4E9B27", spark: null, nav: "precios", navTitulo: "Precios y márgenes" },
+    { label: "PEDIDOS INGRESADOS", valor: num(k.ingresados), ...conDelta(dIng), icono: "clipboard", color: "#83BA42", spark: k.sparkIngresados, nav: "pedidos", navTitulo: "Pedidos" },
+    { label: "PEDIDOS EN PREPARACIÓN", valor: num(k.enPreparacion), delta: null, sub: "En picking ahora", icono: "package", color: "#4E9B27", spark: null, nav: "picking", navTitulo: "Picking" },
+    { label: "PEDIDOS LISTOS", valor: num(k.listos), delta: null, sub: "Listos para retiro", icono: "check", color: "#4E9B27", spark: null, nav: "retiro", navTitulo: "Retiro / Mostrador" },
+    { label: "PEDIDOS ENTREGADOS", valor: num(k.entregados), ...conDelta(dEnt), icono: "truck", color: "#4E9B27", spark: k.sparkEntregados, nav: "pedidos", navTitulo: "Pedidos" },
   ];
 
   // ---- Alertas críticas ----
@@ -305,7 +305,7 @@ function CardAction({ periodo, onVer, verTitulo }) {
           type="button"
           onClick={onVer}
           title={verTitulo ? `Abrir ${verTitulo}` : "Ver la sección de detalle"}
-          className="flex cursor-pointer items-center gap-0.5 rounded-lg border-0 bg-transparent px-2 py-1 text-[11px] font-bold text-[#E0127A] hover:bg-pink-50"
+          className="flex cursor-pointer items-center gap-0.5 rounded-lg border-0 bg-transparent px-2 py-1 text-[11px] font-bold text-[#4E9B27] hover:bg-pink-50"
         >
           Ver detalle <span className="text-[13px] leading-none">›</span>
         </button>
@@ -348,7 +348,7 @@ function HBar({ label, value, max, right, labelWidth = "w-36" }) {
       <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-pink-50">
         <div
           className="h-full rounded-full"
-          style={{ width: `${(value / max) * 100}%`, background: "linear-gradient(90deg,#F472B6,#E0127A)" }}
+          style={{ width: `${(value / max) * 100}%`, background: "linear-gradient(90deg,#C3E062,#4E9B27)" }}
         />
       </div>
       <span className="w-11 shrink-0 text-right font-semibold text-slate-700">{right}</span>
@@ -403,7 +403,7 @@ function KpiRow({ kpis, onNav }) {
             {k.meta && (
               <div className="mt-1">
                 <div className="h-1 w-full overflow-hidden rounded-full bg-pink-100">
-                  <div className="h-full rounded-full bg-[#E0127A]" style={{ width: `${k.meta.pct}%` }} />
+                  <div className="h-full rounded-full bg-[#4E9B27]" style={{ width: `${k.meta.pct}%` }} />
                 </div>
                 <p className="mt-0.5 text-[9px] text-slate-400">{k.meta.pct}% de la meta diaria ({k.meta.valor})</p>
               </div>
@@ -439,7 +439,7 @@ function AlertasBar({ alertas, onNav }) {
             title={clic ? `Abrir ${a.navTitulo}` : undefined}
             className={`flex flex-1 items-center gap-2 border-l border-pink-100 px-3 min-w-[150px] ${clic ? "cursor-pointer rounded-lg transition hover:bg-pink-50/60" : ""}`}
           >
-            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-pink-50 text-[#E0127A]">
+            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-pink-50 text-[#4E9B27]">
               <Icon size={14} />
             </span>
             <div className="leading-tight">
@@ -501,7 +501,7 @@ function VentasCard({ ventas, onNav, className }) {
 // ============================================================
 
 function TileStat({ label, valor, sub, tone, nav, navTitulo, onNav }) {
-  const color = tone === "violet" ? "#8B5CF6" : "#E0127A";
+  const color = tone === "violet" ? "#83BA42" : "#4E9B27";
   const clic = onNav && nav ? () => onNav(nav) : undefined;
   return (
     <div
@@ -675,7 +675,7 @@ function ProductividadCard({ tabs, onNav, className }) {
             onClick={() => setTab(key)}
             className={[
               "cursor-pointer rounded-lg border-0 px-3 py-1 text-[11px] font-semibold transition",
-              tab === key ? "bg-[#E0127A] text-white shadow" : "bg-transparent text-slate-500 hover:text-slate-700",
+              tab === key ? "bg-[#4E9B27] text-white shadow" : "bg-transparent text-slate-500 hover:text-slate-700",
             ].join(" ")}
           >
             {tabs[key].label}
@@ -706,7 +706,7 @@ function ProductividadCard({ tabs, onNav, className }) {
                     <td key={c.header} className="py-2">
                       <div className="flex items-center justify-end gap-1.5">
                         <div className="h-1.5 w-12 overflow-hidden rounded-full bg-pink-100">
-                          <div className="h-full rounded-full bg-[#E0127A]" style={{ width: `${((Number(c.value(f)) || 0) / maxProd) * 100}%` }} />
+                          <div className="h-full rounded-full bg-[#4E9B27]" style={{ width: `${((Number(c.value(f)) || 0) / maxProd) * 100}%` }} />
                         </div>
                         <span className="whitespace-nowrap font-semibold text-slate-700">{c.cell(f)}</span>
                       </div>

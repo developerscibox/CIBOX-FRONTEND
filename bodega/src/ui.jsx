@@ -14,8 +14,8 @@ export function Logo() {
 // Orden por FLUJO de trabajo, en 4 grupos: Inicio·gestión (dashboards) →
 // Pedidos (del pago a la entrega) → Inventario → Reportes·admin.
 // El Sidebar dibuja el nombre del grupo y respeta este orden.
-// `mod` = módulo comercial contratado (docs/historico-bodega12/MODULOS-COMERCIALES.md):
-//   "web" (A · Tienda Web, base) · "bodega" (B · Bodega Pro) · "gerencia" (C · Gerencia).
+// `mod` = módulo comercial habilitado por MODULES_ENABLED (backend/src/config/env.js):
+//   "web" (tienda y catálogo) · "bodega" (operación e inventario) · "gerencia" (reportes).
 export const NAV = [
   // Inicio · gestión — consola del gerente/dueño
   { key: "gerencia", ic: "🎯", label: "Centro de mando", perm: "reports.read", mod: "gerencia", group: "Inicio · gestión" },

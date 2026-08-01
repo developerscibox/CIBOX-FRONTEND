@@ -32,7 +32,7 @@ const getStatusMeta = (status) => {
 // ── Mini-timeline: 4 puntos para retiro ──────────────────────────────────────
 const TRACK_STEPS = [
   { key: "paid",      label: "Pago",          color: "#3b82f6" },
-  { key: "preparing", label: "Preparación",   color: "#8b5cf6" },
+  { key: "preparing", label: "Preparación",   color: "#83BA42" },
   { key: "ready",     label: "Listo retiro",  color: "#0ea5e9" },
   { key: "delivered", label: "Entregado",     color: "#16a34a" },
 ];
