@@ -124,3 +124,14 @@ export const adminUpdateOrderStatus = async (orderId, { status, tracking_number,
   });
   return response.data;
 };
+/**
+ * Seguimiento del pedido. El backend arma la línea de tiempo desde la máquina
+ * de estados (pedidos/estados.js), así que la app NO duplica esa lógica: solo
+ * la pinta. `guestToken` permite seguir un pedido hecho sin cuenta.
+ */
+export const getOrderTracking = async (orderId, guestToken = null) => {
+  const { data } = await api.get(`/tracking/orders/${orderId}`, {
+    params: guestToken ? { token: guestToken } : undefined,
+  });
+  return data?.data ?? data;
+};

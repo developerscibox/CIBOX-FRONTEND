@@ -15,41 +15,35 @@ import AppText from "../components/AppText";
 import AppButton from "../components/AppButton";
 import TransferPaymentCard from "../components/TransferPaymentCard";
 import { colors, radius, spacing } from "../constants/theme";
-import { getOrderById, cancelOrder } from "../services/orderService";
+import { getOrderById, cancelOrder, getOrderTracking } from "../services/orderService";
 import { addItemToCart } from "../services/cartService";
 import useAuthStore from "../store/authStore";
 import useCartStore from "../store/cartStore";
 import { showAppAlert } from "../utils/appAlerts";
 import { showToast } from "../store/toastStore";
 
-// ── Configuración del timeline ────────────────────────────────────────────────
-const STEPS = [
-  { key: "pending",   label: "Pedido recibido",  icon: "receipt-outline",          color: "#f59e0b" },
-  { key: "paid",      label: "Pago confirmado",   icon: "checkmark-circle-outline", color: "#3b82f6" },
-  { key: "preparing", label: "Preparando",        icon: "cube-outline",             color: "#8b5cf6" },
-  { key: "ready",     label: "Listo p/ despacho", icon: "checkbox-outline",         color: "#0ea5e9" },
-  { key: "shipped",   label: "En camino",         icon: "car-outline",              color: "#06b6d4" },
-  { key: "delivered", label: "Entregado",         icon: "home-outline",             color: "#16a34a" },
-];
-
-// Pasos para órdenes de retiro en bodega (sin "En camino").
-const PICKUP_STEPS = [
-  { key: "pending",   label: "Pedido recibido (esperando confirmación de pago)", icon: "receipt-outline",          color: "#f59e0b" },
-  { key: "paid",      label: "Pago confirmado",                                  icon: "checkmark-circle-outline", color: "#3b82f6" },
-  { key: "preparing", label: "Preparando tu pedido",                            icon: "cube-outline",             color: "#8b5cf6" },
-  { key: "ready",     label: "✅ Listo para retiro en bodega",                  icon: "checkbox-outline",         color: "#0ea5e9" },
-  { key: "delivered", label: "Retirado",                                        icon: "home-outline",             color: "#16a34a" },
-];
-const PICKUP_STATUS_ORDER = ["pending", "paid", "preparing", "ready", "delivered"];
+import brand from "../constants/brand";
+// ── Timeline ──────────────────────────────────────────────────────────────────
+// Las ETAPAS y su orden los define el backend (máquina de estados en
+// pedidos/estados.js, servida por GET /tracking/orders/:id). Aquí solo vive lo
+// visual: el ícono y el color de cada estado.
+const STEP_LOOK = {
+  pending:   { icon: "receipt-outline",          color: "#f59e0b" },
+  paid:      { icon: "checkmark-circle-outline", color: "#3b82f6" },
+  preparing: { icon: "cube-outline",             color: "#8b5cf6" },
+  ready:     { icon: "checkbox-outline",         color: "#0ea5e9" },
+  shipped:   { icon: "car-outline",              color: "#06b6d4" },
+  delivered: { icon: "home-outline",             color: "#16a34a" },
+  cancelled: { icon: "close-circle-outline",     color: "#ef4444" },
+  refunded:  { icon: "return-down-back-outline", color: "#a855f7" },
+};
 
 const PICKUP_LOCATION = {
-  address:
-    "Av. Lo Espejo 01565, Patio 6, Bodega 826, Centro Logístico Mersan, Lo Espejo",
+  get address() { return brand.address.one_line; },
   hint: "2da entrada por Américo Vespucio",
   hours: "Lun a Vie 09:00–18:00 · Sáb 09:00–13:00",
 };
 
-const STATUS_ORDER    = ["pending", "paid", "preparing", "ready", "shipped", "delivered"];
 const ACTIVE_STATUSES = ["pending", "paid", "preparing", "ready", "shipped"];
 const FINAL_STATUSES  = ["cancelled", "delivered", "refunded"];
 
@@ -123,6 +117,7 @@ export default function OrderDetailScreen({ route, navigation }) {
   const orderId             = route?.params?.orderId;
 
   const [order, setOrder]           = useState(null);
+  const [tracking, setTracking]     = useState(null);
   const [loading, setLoading]       = useState(true);
   const [addingAll, setAddingAll]   = useState(false);
   const [copied, setCopied]         = useState(false);
@@ -136,6 +131,13 @@ export default function OrderDetailScreen({ route, navigation }) {
       const data = await getOrderById(orderId);
       const item = data?.order || data?.data?.order || data?.data || data;
       setOrder(item);
+      // Seguimiento: la línea de tiempo la arma el backend desde la máquina de
+      // estados. Best-effort: si falla, el resto del detalle igual se muestra.
+      try {
+        setTracking(await getOrderTracking(orderId));
+      } catch {
+        setTracking(null);
+      }
     } catch (err) {
       console.log("ORDER DETAIL ERROR:", err?.response?.data || err.message);
       showAppAlert("Error", "No se pudo cargar la orden");
@@ -236,40 +238,23 @@ export default function OrderDetailScreen({ route, navigation }) {
     }
   };
 
-  // ── Build timeline ────────────────────────────────────────────────────────
-  const getStepTime = (stepKey) => {
-    const history = Array.isArray(order?.status_history) ? order.status_history : [];
-    const entry   = history.find((h) => h.status === stepKey);
-    return entry?.changed_at ? formatDate(entry.changed_at) : null;
-  };
-
+  // ── Timeline ──────────────────────────────────────────────────────────────
+  // Viene del backend (GET /tracking/orders/:id): qué etapas tiene ESTE pedido,
+  // cuáles se cumplieron, cuándo y quién las hizo. La app no reimplementa la
+  // máquina de estados; si mañana cambia una etapa, cambia en un solo lugar.
   const isPickup = order?.delivery_method === "pickup";
 
   const buildSteps = () => {
-    if (!order) return [];
-    const norm = String(order.status || "").toLowerCase();
-    const baseSteps = isPickup ? PICKUP_STEPS : STEPS;
-    const baseOrder = isPickup ? PICKUP_STATUS_ORDER : STATUS_ORDER;
-
-    if (norm === "cancelled") {
-      return [
-        { ...baseSteps[0], done: true, active: false, time: getStepTime("pending") },
-        {
-          key: "cancelled", label: "Cancelada", icon: "close-circle-outline",
-          color: "#ef4444", done: true, active: true,
-          time: getStepTime("cancelled") || formatDate(order.cancelled_at),
-        },
-      ];
-    }
-    let currentIdx = baseOrder.indexOf(norm);
-    // 'shipped' es alcanzable desde 'ready' (VALID_TRANSITIONS) pero no está en
-    // PICKUP_STATUS_ORDER → indexOf -1 dejaba el timeline en blanco. Lo mapeamos a 'ready'.
-    if (currentIdx === -1 && norm === "shipped") currentIdx = baseOrder.indexOf("ready");
-    return baseSteps.map((step, i) => ({
-      ...step,
-      done:   currentIdx >= i,
-      active: currentIdx === i,
-      time:   getStepTime(step.key),
+    const etapas = Array.isArray(tracking?.timeline) ? tracking.timeline : [];
+    return etapas.map((e) => ({
+      key: e.estado,
+      label: e.titulo,
+      detalle: e.detalle,
+      done: e.cumplido,
+      active: e.actual,
+      time: e.fecha ? formatDate(e.fecha) : null,
+      por: e.por || null,
+      ...(STEP_LOOK[e.estado] || { icon: "ellipse-outline", color: colors.muted }),
     }));
   };
 
@@ -460,9 +445,14 @@ export default function OrderDetailScreen({ route, navigation }) {
                           {step.active ? "  ●" : ""}
                         </AppText>
                         {step.time ? (
-                          <AppText style={styles.stepTime}>{step.time}</AppText>
+                          <AppText style={styles.stepTime}>
+                            {step.time}{step.por ? ` · ${step.por}` : ""}
+                          </AppText>
                         ) : step.done ? (
                           <AppText style={styles.stepTime}>En proceso</AppText>
+                        ) : null}
+                        {step.active && step.detalle ? (
+                          <AppText style={styles.stepTime}>{step.detalle}</AppText>
                         ) : null}
                         {step.key === "shipped" && trackingNum && step.done && (
                           <AppText style={[styles.stepTime, { color: colors.primary }]}>
