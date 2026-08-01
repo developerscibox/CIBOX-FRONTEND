@@ -231,6 +231,18 @@ export const api = {
   faltante: (id, payload) => req(`/orders/admin/${id}/faltante`, { method: "POST", body: payload }),
   marcarListo: (id, payload) => req(`/orders/admin/${id}/listo`, { method: "POST", body: payload }),
 
+  // ── Integración externa de seguimiento (Fase 6) ──────────────────────────
+  // El proveedor real aún no está definido: hoy corre el adapter de log del
+  // backend (integraciones/SeguimientoPort.js). El contrato de estas rutas no
+  // cambia cuando se enchufe el proveedor de verdad.
+  // GET → { proveedor, pedido, externo:{ref_externa,estado,eventos[],...}|null }
+  seguimientoExterno: (id) => req(`/integraciones/seguimiento/pedidos/${id}`),
+  // POST → envía (o reenvía) el pedido al proveedor. Idempotente.
+  enviarASeguimiento: (id) => req(`/integraciones/seguimiento/pedidos/${id}`, { method: "POST" }),
+  // POST → consulta activa al proveedor (respaldo del webhook).
+  sincronizarSeguimiento: (id) =>
+    req(`/integraciones/seguimiento/pedidos/${id}/sincronizar`, { method: "POST" }),
+
   // ── Capa de reportes (adminController) — gate reports.read (admin + manager) ──
   // GET /admin/dashboard  → { total_sales, paid_orders, active_users, active_products, total_vendors, pending_vendors }
   salesDashboard: () => req(`/admin/dashboard`),

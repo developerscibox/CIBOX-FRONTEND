@@ -476,6 +476,32 @@ function OrderDetail({ order, busy, can, onClose, onChange, onPay, onDelete, onA
   const action = nextAction(order, can);
   const history = (order.status_history || []).slice().sort((a, b) => new Date(a.changed_at) - new Date(b.changed_at));
 
+  // Seguimiento en el software externo (Fase 6). Hoy responde el adapter de log
+  // del backend; cuando se enchufe el proveedor real, esta vista no cambia.
+  const [ext, setExt] = useState(null);
+  const [extBusy, setExtBusy] = useState(false);
+  const [extMsg, setExtMsg] = useState("");
+  useEffect(() => {
+    let alive = true;
+    setExt(null); setExtMsg("");
+    if (usingMock) return undefined;
+    api.seguimientoExterno(order._id)
+      .then((r) => { if (alive) setExt(r); })
+      .catch(() => { if (alive) setExt(null); });
+    return () => { alive = false; };
+  }, [order._id]);
+
+  async function accionExterna(fn, okMsg) {
+    setExtBusy(true); setExtMsg("");
+    try {
+      await fn(order._id);
+      setExt(await api.seguimientoExterno(order._id));
+      setExtMsg(okMsg);
+    } catch (e) {
+      setExtMsg(e.message || "No se pudo contactar al proveedor.");
+    } finally { setExtBusy(false); }
+  }
+
   return (
     <div className="card ped-detail" style={{ marginBottom: 0 }}>
       <div className="card-h">
@@ -555,6 +581,51 @@ function OrderDetail({ order, busy, can, onClose, onChange, onPay, onDelete, onA
             })
           )}
         </ul>
+
+        {/* ── Seguimiento externo ─────────────────────────────────────── */}
+        {ext ? (
+          <>
+            <div className="ped-sec-t" style={{ marginTop: 18 }}>
+              Seguimiento externo
+              <span style={{ fontWeight: 400, color: "var(--muted)", fontSize: 12 }}> · proveedor: {ext.proveedor}</span>
+            </div>
+            <div className="ped-data" style={{ fontSize: 13 }}>
+              {ext.externo?.ref_externa ? (
+                <>
+                  <div>
+                    Referencia <b className="mono">{ext.externo.ref_externa}</b>
+                    {ext.externo.estado ? <> · estado <b>{ext.externo.estado}</b></> : null}
+                  </div>
+                  {ext.externo.ultimo_evento_at ? (
+                    <div style={{ color: "var(--muted)" }}>Último evento: {fmtDateTime(ext.externo.ultimo_evento_at)}</div>
+                  ) : null}
+                  {(ext.externo.eventos || []).slice(-3).reverse().map((e, i) => (
+                    <div key={i} style={{ color: "var(--muted)", fontSize: 12.5 }}>
+                      {fmtDateTime(e.at)} · {e.estado}{e.detalle ? ` — ${e.detalle}` : ""}
+                    </div>
+                  ))}
+                </>
+              ) : (
+                <div style={{ color: "var(--muted)" }}>
+                  Este pedido todavía no se envió al proveedor de seguimiento.
+                </div>
+              )}
+              <div style={{ display: "flex", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
+                {can("orders.deliver") ? (
+                  <button className="btn btn-ghost" disabled={extBusy} onClick={() => accionExterna(api.enviarASeguimiento, "Pedido enviado al proveedor.")}>
+                    {ext.externo?.ref_externa ? "Reenviar" : "Enviar al proveedor"}
+                  </button>
+                ) : null}
+                {ext.externo?.ref_externa ? (
+                  <button className="btn btn-ghost" disabled={extBusy} onClick={() => accionExterna(api.sincronizarSeguimiento, "Estado sincronizado.")}>
+                    Sincronizar estado
+                  </button>
+                ) : null}
+              </div>
+              {extMsg ? <div style={{ marginTop: 6, color: "var(--muted)" }}>{extMsg}</div> : null}
+            </div>
+          </>
+        ) : null}
 
         {order.payment?.method === "transfer" ? (
           <div className="ped-data" style={{ marginTop: 16, fontSize: 13 }}>
