@@ -1,57 +1,24 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { api, useLoad, usingMock, streamUrl } from "../api.js";
 import { ORDERS_RES } from "../data.js";
-import { clp } from "../theme.js";
 import { StatusBadge } from "../ui.jsx";
 import { useAuth } from "../auth.jsx";
-import { imprimirTicketPicking, imprimirEtiquetasZona, imprimirEtiquetaDespacho, agruparItemsPorSector } from "../print.js";
+import { imprimirEtiquetaDespacho } from "../print.js";
 
-// PICKING (relay etapa 3). Cola en vivo (SSE), claim atómico, avance PERSISTIDO en el
-// backend (sobrevive recargas y lo continúa otro bodeguero), escaneo VINCULANTE (marcar
-// a mano = override visible), flujo de FALTANTE/dañado, guía FEFO y cierre de EMPAQUE
-// (nº de bultos) antes de marcar listo.
+// PREPARACIÓN DE PEDIDOS. Cola en vivo (SSE), claim atómico al tomar, avance
+// PERSISTIDO en el backend (sobrevive recargas y lo continúa otra persona),
+// escaneo VINCULANTE (marcar a mano = override visible), flujo de FALTANTE/dañado,
+// guía FEFO y cierre de EMPAQUE (nº de bultos) antes de marcar listo.
 
 const normItems = (o) =>
   (o.items || []).map((it) => ({
     product_id: String(it.product_id ?? it._id ?? it.name),
     name: it.name,
     qty: it.quantity ?? it.qty ?? 1,
-    cajas: it.cajas ?? null, // las etiquetas de zona hablan en cajas (como el monitor)
+    cajas: it.cajas ?? null,
     barcode: it.barcode || null,
     location: it.location || null,
-    sector: it.sector || it.location?.sector || "",
   }));
-
-// ── Cola segmentada CHICOS / GRANDES ─────────────────────────────────────────
-// Espejo de segmentoDe() del backend (relayOrderService): grande = total >=
-// UMBRAL_GRANDE o más de 10 SKU. Si el umbral cambia en el backend, actualizar aquí.
-const UMBRAL_GRANDE = 300000; // = UMBRAL_GRANDE backend (CLP, configurable allá)
-const segmentoDe = (o) =>
-  Number(o.total || 0) >= UMBRAL_GRANDE || (o.items || []).length > 10 ? "grande" : "chico";
-
-// ── Incentivo por tiempo de preparación ──────────────────────────────────────
-// Espejo de backend/src/incentivos/tiempo.js (tabla del cliente pendiente; la
-// fuente de verdad es el backend — esto solo pinta el badge en vivo).
-const TRAMOS = [
-  { min_total: 0, max_total: 300000, min_sku: 0, meta_min: 20, premio: 1000 },
-  { min_total: 300000, max_total: 1000000, min_sku: 0, meta_min: 30, premio: 1500 },
-  { min_total: 1000000, max_total: Infinity, min_sku: 10, meta_min: 40, premio: 2000 },
-];
-// premio decae 25% del premio_full por cada 10 min completos sobre la meta, hasta 0,
-// redondeado a $100. prep_min null → premio full (aún dentro de la meta / sin dato).
-function premioPorTiempo({ total, n_sku, prep_min }) {
-  // OJO: mismo operador que el backend (incentivos/tiempo.js) → n_sku ESTRICTAMENTE
-  // mayor a min_sku. Con >= el badge difería del premio real en pedidos de exactamente min_sku.
-  const tramo = TRAMOS.find((t) => total >= t.min_total && total < t.max_total && n_sku > t.min_sku);
-  if (!tramo) return null;
-  const premio_full = tramo.premio;
-  let premio = premio_full;
-  if (prep_min != null && prep_min > tramo.meta_min) {
-    const bloques = Math.floor((prep_min - tramo.meta_min) / 10);
-    premio = Math.round(Math.max(0, premio_full * (1 - 0.25 * bloques)) / 100) * 100;
-  }
-  return { meta_min: tramo.meta_min, premio_full, premio };
-}
 
 const ordNum = (o) => o.number || o.code || `#${String(o._id).slice(-6)}`;
 const ordCust = (o) => {
@@ -62,19 +29,15 @@ const ordCust = (o) => {
 const hydrate = (o) => ({ ...o, items: normItems(o), pick_progress: (o.pick_progress || []).map(String), pick_scanned: (o.pick_scanned || []).map(String) });
 
 export default function Picking() {
-  const { user, effectiveRole } = useAuth();
+  const { user } = useAuth();
   const [tick, setTick] = useState(0);
   const load = useLoad(() => api.pendingToPrepare(), ORDERS_RES, [tick]);
   const exp = useLoad(() => (usingMock ? Promise.resolve({ items: [] }) : api.expiringSoon(30)), { items: [] });
   const [orders, setOrders] = useState([]);
-  const [seg, setSeg] = useState("chico");
   const [selId, setSelId] = useState(null);
-  // Reloj para el cronómetro del incentivo (30s de resolución basta para minutos).
-  const [now, setNow] = useState(Date.now());
   const [scan, setScan] = useState("");
   const [msg, setMsg] = useState(null);
   const [busy, setBusy] = useState(false);
-  const [sectoresOrden, setSectoresOrden] = useState({});
   const [faltanteFor, setFaltanteFor] = useState(null);
   const [faltaQty, setFaltaQty] = useState("");
   const [faltaMot, setFaltaMot] = useState("");
@@ -84,33 +47,16 @@ export default function Picking() {
   const inputRef = useRef(null);
 
   // FEFO: product_id → días para vencer (guía visual; sin modelo de lotes no se fuerza).
-  const fefo = useMemo(() => {
-    const m = {}; (exp.data?.items || []).forEach((p) => { m[String(p._id)] = p.days_left; }); return m;
-  }, [exp.data]);
+  const fefo = {};
+  (exp.data?.items || []).forEach((p) => { fefo[String(p._id)] = p.days_left; });
 
   useEffect(() => {
     const list = (load.data?.orders || []).map(hydrate);
     setOrders(list);
-    // Si la selección ya no existe, preferir el primer pedido del segmento activo.
-    setSelId((cur) => {
-      if (cur && list.some((o) => o._id === cur)) return cur;
-      const delSeg = list.find((o) => segmentoDe(o) === seg);
-      return delSeg?._id || list[0]?._id || null;
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    setSelId((cur) => (cur && list.some((o) => o._id === cur) ? cur : list[0]?._id || null));
   }, [load.data]);
 
-  useEffect(() => {
-    if (usingMock) return;
-    api.sectores().then((r) => { const m = {}; (r.sectores || []).forEach((s) => { m[s.nombre] = s.orden; }); setSectoresOrden(m); }).catch(() => {});
-  }, []);
-
-  useEffect(() => {
-    const id = setInterval(() => setNow(Date.now()), 30000);
-    return () => clearInterval(id);
-  }, []);
-
-  // En vivo: SSE + polling de respaldo (el bodeguero ve los pedidos recién cobrados).
+  // En vivo: SSE + polling de respaldo (se ven los pedidos recién pagados).
   useEffect(() => {
     if (usingMock) return undefined;
     const id = setInterval(() => setTick((n) => n + 1), 20000);
@@ -125,34 +71,14 @@ export default function Picking() {
   const pickedCount = sel ? sel.items.filter((it) => isPicked(sel, it.product_id)).length : 0;
   const totalItems = sel ? sel.items.length : 0;
   const allPicked = sel && totalItems > 0 && pickedCount === totalItems;
+  const porTomar = orders.filter((o) => o.status === "paid").length;
 
-  // ── FIFO + asignación (espejo de aceptarPicking del backend) ────────────────
+  // ── Asignación manual (espejo de aceptarPicking del backend) ────────────────
   const myId = String(user?._id || user?.id || "");
-  const isBoss = effectiveRole === "admin" || effectiveRole === "manager"; // override implícito
   const asignadoId = (o) => (o.assigned_to?.user_id ? String(o.assigned_to.user_id) : null);
   const asignadoAMi = (o) => Boolean(myId) && asignadoId(o) === myId;
   const asignadoAOtro = (o) => Boolean(asignadoId(o)) && asignadoId(o) !== myId;
-  // `orders` ya viene FIFO ascendente (pendingToPrepare): el "primero" del segmento
-  // es el paid más antiguo no asignado a otra persona.
-  const primeroDe = (s) => orders.find((o) => o.status === "paid" && segmentoDe(o) === s && !asignadoAOtro(o));
-  const puedeTomar = (o) => {
-    if (isBoss) return true; // admin/manager toman cualquiera
-    if (asignadoAOtro(o)) return false; // solo lo toma el asignado
-    if (asignadoAMi(o)) return true; // asignado a ti: aunque no sea el más antiguo
-    return primeroDe(segmentoDe(o))?._id === o._id;
-  };
-
-  const visibles = orders.filter((o) => segmentoDe(o) === seg);
-  const porTomar = visibles.filter((o) => o.status === "paid").length;
-
-  const cambiarSeg = (s) => {
-    setSeg(s);
-    if (!sel || segmentoDe(sel) !== s) {
-      const first = orders.find((o) => segmentoDe(o) === s);
-      setSelId(first?._id || null);
-      setMsg(null); setEmpaque(false); setFaltanteFor(null);
-    }
-  };
+  const puedeTomar = (o) => !asignadoAOtro(o);
 
   const badgeAsignado = (o) =>
     asignadoId(o) ? (
@@ -161,71 +87,17 @@ export default function Picking() {
       </span>
     ) : null;
 
-  // Badge del incentivo por tiempo (pedido en preparación): meta + premio vigente,
-  // con cronómetro desde que se tomó (status_history preparing/started) si existe.
-  const premioBadge = (o) => {
-    const total = Number(o.total || 0);
-    const n_sku = (o.items || []).length;
-    const base = premioPorTiempo({ total, n_sku, prep_min: null });
-    if (!base) return null;
-    const start = (o.status_history || []).find((h) => h.status === "preparing" || h.status === "started")?.changed_at;
-    const t0 = start ? new Date(start).getTime() : NaN;
-    const min = Number.isFinite(t0) ? Math.max(0, Math.floor((now - t0) / 60000)) : null;
-    const cur = min != null ? premioPorTiempo({ total, n_sku, prep_min: min }) : base;
-    const enMeta = min == null || min <= base.meta_min;
-    return (
-      <div style={{ margin: "10px 18px 0", display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12.5, fontWeight: 700, borderRadius: 999, padding: "4px 12px", background: enMeta ? "#ecfdf5" : "#fff7ed", border: `1px solid ${enMeta ? "#a7f3d0" : "#fed7aa"}`, color: enMeta ? "var(--ok,#16a34a)" : "#c2410c" }}>
-        ⏱ {min != null ? `${min} min · ` : ""}Meta: {base.meta_min} min → {clp(cur.premio)}
-        {min != null && cur.premio < base.premio_full ? <span style={{ fontWeight: 600 }}>&nbsp;(de {clp(base.premio_full)})</span> : null}
-      </div>
-    );
-  };
-  const grupos = useMemo(() => (sel ? agruparItemsPorSector(sel.items.map((it) => ({ ...it, quantity: it.qty })), sectoresOrden) : []), [sel, sectoresOrden]);
-
-  // Relay de área (monitores por zona): estado derivado por sector (contrato zonaEstado).
-  // "lista" si sector ∈ zone_done (lo preparó el dueño del área) O todos sus ítems ya
-  // están en pick_progress; si no, pendiente. zone_done: [{ sector, at, by_label }].
-  const zonasDe = (o) => agruparItemsPorSector((o.items || []).map((it) => ({ ...it, quantity: it.qty })), sectoresOrden);
-  const zonaPorArea = (o, sector) => (o.zone_done || []).some((z) => z.sector === sector);
-  const zonaLista = (o, g) => zonaPorArea(o, g.sector) || (g.items.length > 0 && g.items.every((it) => isPicked(o, it.product_id)));
-
-  const chipsZona = (o) => {
-    const gs = zonasDe(o);
-    if (!gs.length) return null;
-    return (
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginTop: 6 }}>
-        {gs.map((g) => {
-          const lista = zonaLista(o, g);
-          return (
-            <span
-              key={g.sector}
-              title={lista ? "Preparado por el dueño del área" : "Zona pendiente de preparar"}
-              style={{
-                fontSize: 11, fontWeight: 700, borderRadius: 999, padding: "2px 8px", whiteSpace: "nowrap",
-                background: lista ? "#ecfdf5" : "#fefce8",
-                color: lista ? "var(--ok,#16a34a)" : "#a16207",
-                border: `1px solid ${lista ? "#a7f3d0" : "#fde68a"}`,
-              }}
-            >
-              {lista ? `🟢 ${g.sector} ✔` : `🟡 ${g.sector}`}
-            </span>
-          );
-        })}
-      </div>
-    );
-  };
-
   function applyOrder(updated) {
     const h = hydrate(updated);
     setOrders((os) => os.map((o) => {
       if (o._id !== h._id) return o;
       // El backend no siempre enriquece items con barcode/location: preservar lo
-      // ya conocido por product_id (📍 ubicación, código, sector) del estado previo.
+      // ya conocido por product_id (📍 ubicación, código) del estado previo.
       const prev = new Map((o.items || []).map((it) => [it.product_id, it]));
       const items = h.items.map((it) => {
         const p = prev.get(it.product_id);
         if (!p) return it;
-        return { ...it, barcode: it.barcode || p.barcode || null, location: it.location || p.location || null, sector: it.sector || p.sector || "" };
+        return { ...it, barcode: it.barcode || p.barcode || null, location: it.location || p.location || null };
       });
       return { ...o, ...h, items };
     }));
@@ -265,34 +137,17 @@ export default function Picking() {
   async function tomar() {
     if (!sel || sel.status !== "paid") return;
     setBusy(true); setMsg(null);
-    const ticketOrder = { _id: sel._id, customer: sel.customer, items: sel.items.map((it) => ({ name: it.name, quantity: it.qty, cajas: it.cajas, sector: it.sector })) };
     try {
       if (!usingMock) await api.aceptar(sel._id);
       setOrders((os) => os.map((o) => (o._id === sel._id ? { ...o, status: "preparing" } : o)));
-      setMsg({ ok: true, text: `Pedido ${ordNum(sel)} asignado — ticket y etiquetas impresos, listo para preparar` });
-      // Un solo trabajo de impresión: ticket de recorrido + una etiqueta por zona
-      // (folio gigante) para pegar en cada bulto al recogerlo.
-      imprimirTicketPicking(ticketOrder, sectoresOrden, { zonasListas: (sel.zone_done || []).map((z) => z.sector), etiquetas: true });
+      setMsg({ ok: true, text: `Pedido ${ordNum(sel)} a tu cargo — puedes empezar a prepararlo` });
     } catch (err) {
       if (err.status === 409) {
-        // 409 con causas distintas: ya tomado, FIFO ("toma el más antiguo") o
-        // asignado a otra persona → mostrar el mensaje del backend y re-sincronizar.
-        setMsg({ ok: false, text: err.message || "Este pedido ya fue asignado a otro bodeguero" });
+        // 409: ya lo tomó otra persona o está asignado a alguien más.
+        setMsg({ ok: false, text: err.message || "Este pedido ya fue tomado por otra persona" });
         setTick((n) => n + 1);
       } else setMsg({ ok: false, text: err.message });
     } finally { setBusy(false); }
-  }
-
-  function reimprimir() {
-    if (!sel) return;
-    imprimirTicketPicking({ _id: sel._id, customer: sel.customer, items: sel.items.map((it) => ({ name: it.name, quantity: it.qty, sector: it.sector })) }, sectoresOrden, { zonasListas: (sel.zone_done || []).map((z) => z.sector) });
-  }
-
-  // Reimpresión del juego de ETIQUETAS DE ZONA (el original sale con el comprobante
-  // en la caja): una etiqueta por sector, para pegar en cada bulto del recorrido.
-  function reimprimirEtiquetas() {
-    if (!sel) return;
-    imprimirEtiquetasZona({ _id: sel._id, customer: sel.customer, items: sel.items.map((it) => ({ name: it.name, quantity: it.qty, cajas: it.cajas, sector: it.sector })) }, sectoresOrden);
   }
 
   async function confirmarFaltante() {
@@ -348,30 +203,14 @@ export default function Picking() {
     <div className="pick-grid">
       <div>
         <div style={{ fontSize: 12, fontWeight: 700, color: "var(--muted)", letterSpacing: ".5px", margin: "2px 4px 10px" }}>
-          PEDIDOS POR PREPARAR ({visibles.length}){porTomar > 0 ? <span style={{ color: "var(--magenta,#E6007E)" }}> · {porTomar} nuevo{porTomar === 1 ? "" : "s"} por tomar</span> : null}
-        </div>
-        {/* Cola segmentada: pickers nuevos → Chicos; expertos → Grandes (total o nº SKU). */}
-        <div style={{ display: "flex", gap: 6, margin: "0 4px 10px" }}>
-          {[["chico", "Chicos"], ["grande", "Grandes"]].map(([k, label]) => {
-            const n = orders.filter((o) => segmentoDe(o) === k).length;
-            const act = seg === k;
-            return (
-              <button
-                key={k}
-                onClick={() => cambiarSeg(k)}
-                style={{ flex: 1, minHeight: 38, borderRadius: 999, cursor: "pointer", fontWeight: 800, fontSize: 13, border: `1px solid ${act ? "var(--magenta,#E6007E)" : "#d9d2dc"}`, background: act ? "#fdf2f8" : "#fff", color: act ? "var(--magenta,#E6007E)" : "var(--muted)" }}
-              >
-                {label} ({n})
-              </button>
-            );
-          })}
+          PEDIDOS POR PREPARAR ({orders.length}){porTomar > 0 ? <span style={{ color: "var(--magenta,#E6007E)" }}> · {porTomar} nuevo{porTomar === 1 ? "" : "s"} por tomar</span> : null}
         </div>
         {load.loading ? (
           <div className="ord" style={{ color: "var(--muted)" }}>Cargando pedidos…</div>
-        ) : visibles.length === 0 ? (
-          <div className="ord" style={{ color: "var(--muted)" }}>{orders.length === 0 ? "No hay pedidos por preparar. La cola está al día." : `Sin pedidos ${seg === "chico" ? "chicos" : "grandes"} en la cola`}</div>
+        ) : orders.length === 0 ? (
+          <div className="ord" style={{ color: "var(--muted)" }}>No hay pedidos por preparar. La cola está al día.</div>
         ) : (
-          visibles.map((o) => {
+          orders.map((o) => {
             const done = o.items.filter((it) => isPicked(o, it.product_id)).length;
             return (
               <div key={o._id} className={"ord" + (o._id === selId ? " sel" : "")} onClick={() => { setSelId(o._id); setMsg(null); setEmpaque(false); setFaltanteFor(null); }}>
@@ -382,12 +221,11 @@ export default function Picking() {
                 </div>
                 <div className="c">{ordCust(o)}</div>
                 {asignadoId(o) ? <div style={{ marginTop: 4 }}>{badgeAsignado(o)}</div> : null}
-                {chipsZona(o)}
                 {o.status === "paid"
                   ? (puedeTomar(o)
                     ? <div style={{ fontSize: 12.5, color: "var(--magenta,#E6007E)", fontWeight: 700 }}>Nuevo · disponible para preparar</div>
-                    : <div style={{ fontSize: 12.5, color: "var(--muted)", fontWeight: 600 }}>{asignadoAOtro(o) ? "Reservado" : "⏳ Primero el más antiguo"}</div>)
-                  : <div style={{ fontSize: 12.5, color: "var(--muted)" }}>{done}/{o.items.length} ítems pickeados</div>}
+                    : <div style={{ fontSize: 12.5, color: "var(--muted)", fontWeight: 600 }}>Reservado</div>)
+                  : <div style={{ fontSize: 12.5, color: "var(--muted)" }}>{done}/{o.items.length} ítems preparados</div>}
               </div>
             );
           })
@@ -399,18 +237,12 @@ export default function Picking() {
             (que deselecciona el pedido) o con error de red. */}
         {msg ? <div style={{ margin: "14px 18px 0", fontSize: 13.5, fontWeight: 600, color: msg.ok ? "var(--ok)" : "var(--danger)" }}>{msg.text}</div> : null}
         {!sel ? (
-          <div className="empty">Selecciona un pedido de la cola para comenzar el picking.</div>
+          <div className="empty">Selecciona un pedido de la cola para comenzar a prepararlo.</div>
         ) : (
           <>
             <div className="card-h">
-              <h2>Picking · {ordNum(sel)}</h2>
+              <h2>Preparación · {ordNum(sel)}</h2>
               <div className="spacer" />
-              {sel.status === "preparing" ? (
-                <>
-                  <button className="btn btn-ghost" style={{ marginRight: 8 }} onClick={reimprimir}>Ticket</button>
-                  <button className="btn btn-ghost" style={{ marginRight: 8 }} onClick={reimprimirEtiquetas}>Etiquetas</button>
-                </>
-              ) : null}
               <span style={{ fontSize: 13, color: "var(--muted)" }}>{ordCust(sel)}</span>
             </div>
             <div className="prog" style={{ marginTop: 14 }}>
@@ -420,56 +252,39 @@ export default function Picking() {
             {sel.status === "paid" ? (
               <div style={{ margin: "12px 18px 4px", padding: "12px 14px", borderRadius: 12, background: "#fdf2f8", border: "1px solid var(--rosa-soft,#FBCFE8)" }}>
                 <div style={{ fontWeight: 700, marginBottom: 6, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                  Pedido nuevo en cola · {segmentoDe(sel) === "grande" ? "Grande" : "Chico"}
+                  Pedido nuevo en cola
                   {badgeAsignado(sel)}
                 </div>
                 <div style={{ fontSize: 13, color: "var(--muted)", marginBottom: 10 }}>Tómalo para empezar a prepararlo. Quedará a tu cargo y pasará a “En preparación”.</div>
                 <button className="btn btn-primary" style={tap} onClick={tomar} disabled={busy || !puedeTomar(sel)}>Tomar este pedido</button>
                 {!puedeTomar(sel) ? (
                   <div style={{ fontSize: 12.5, fontWeight: 600, color: "#b45309", marginTop: 8 }}>
-                    {asignadoAOtro(sel)
-                      ? `Este pedido está asignado a ${sel.assigned_to?.label || "otra persona"}`
-                      : "⏳ Primero el más antiguo: toma el primer pedido de tu cola"}
+                    Este pedido está asignado a {sel.assigned_to?.label || "otra persona"}
                   </div>
                 ) : null}
               </div>
             ) : (
               <>
-                <div style={{ margin: "10px 18px 0" }}>{chipsZona(sel)}</div>
-                {premioBadge(sel)}
-                {grupos.map((g) => {
-                  const porArea = zonaPorArea(sel, g.sector);
+                {sel.items.map((it) => {
+                  const ok = isPicked(sel, it.product_id);
+                  const scanned = isScanned(sel, it.product_id);
+                  const sinEscanear = ok && !scanned && it.barcode;
                   return (
-                  <div key={g.sector}>
-                    <div style={{ fontSize: 11.5, fontWeight: 800, color: porArea ? "var(--ok,#16a34a)" : "var(--magenta-d,#9B007A)", textTransform: "uppercase", letterSpacing: ".4px", margin: "12px 18px 2px" }}>{porArea ? "✔ " : ""}{g.sector}</div>
-                    {porArea ? (
-                      <div style={{ margin: "4px 18px 2px", padding: "6px 10px", borderRadius: 8, background: "#ecfdf5", border: "1px solid #a7f3d0", fontSize: 12, fontWeight: 600, color: "var(--ok,#16a34a)" }}>
-                        ✔ Cajas preparadas por el área — retíralas en la mesa de entrega
-                      </div>
-                    ) : null}
-                    {g.items.map((it) => {
-                      const ok = isPicked(sel, it.product_id);
-                      const scanned = isScanned(sel, it.product_id);
-                      const sinEscanear = ok && !scanned && it.barcode;
-                      return (
-                        <div key={it.product_id} className={"pick-item" + (ok ? " ok" : "")} onClick={() => setPick(it.product_id, !ok, false)} style={{ cursor: "pointer" }}>
-                          <div className="chk" style={{ minWidth: 28, minHeight: 28 }}>{ok ? "✓" : ""}</div>
-                          <div className="nm">
-                            <b>{it.qty} × {it.name}</b>{fefoBadge(it.product_id)}
-                            <div className="bc">
-                              {it.location?.code ? <>📍 <span className="loc">{it.location.code}</span> &nbsp;</> : null}
-                              {it.barcode ? <>cod. {it.barcode}</> : <span style={{ color: "var(--muted)" }}>sin código</span>}
-                              {scanned ? <span style={{ color: "var(--ok,#16a34a)", fontWeight: 700 }}> · ✓ escaneado</span> : sinEscanear ? <span style={{ color: "#d97706", fontWeight: 700 }}> · ⚠ a mano</span> : null}
-                            </div>
-                          </div>
-                          <div style={{ display: "flex", gap: 6 }} onClick={(e) => e.stopPropagation()}>
-                            <button className="btn btn-ghost" style={{ ...tap, color: "var(--danger,#b00020)" }} onClick={() => { setFaltanteFor(it.product_id); setFaltaQty(""); setFaltaMot(""); }}>Falta</button>
-                            <button className={ok ? "btn btn-ghost" : "btn btn-primary"} style={tap} onClick={() => setPick(it.product_id, !ok, false)}>{ok ? "Deshacer" : "Marcar"}</button>
-                          </div>
+                    <div key={it.product_id} className={"pick-item" + (ok ? " ok" : "")} onClick={() => setPick(it.product_id, !ok, false)} style={{ cursor: "pointer" }}>
+                      <div className="chk" style={{ minWidth: 28, minHeight: 28 }}>{ok ? "✓" : ""}</div>
+                      <div className="nm">
+                        <b>{it.qty} × {it.name}</b>{fefoBadge(it.product_id)}
+                        <div className="bc">
+                          {it.location?.code ? <>📍 <span className="loc">{it.location.code}</span> &nbsp;</> : null}
+                          {it.barcode ? <>cod. {it.barcode}</> : <span style={{ color: "var(--muted)" }}>sin código</span>}
+                          {scanned ? <span style={{ color: "var(--ok,#16a34a)", fontWeight: 700 }}> · ✓ escaneado</span> : sinEscanear ? <span style={{ color: "#d97706", fontWeight: 700 }}> · ⚠ a mano</span> : null}
                         </div>
-                      );
-                    })}
-                  </div>
+                      </div>
+                      <div style={{ display: "flex", gap: 6 }} onClick={(e) => e.stopPropagation()}>
+                        <button className="btn btn-ghost" style={{ ...tap, color: "var(--danger,#b00020)" }} onClick={() => { setFaltanteFor(it.product_id); setFaltaQty(""); setFaltaMot(""); }}>Falta</button>
+                        <button className={ok ? "btn btn-ghost" : "btn btn-primary"} style={tap} onClick={() => setPick(it.product_id, !ok, false)}>{ok ? "Deshacer" : "Marcar"}</button>
+                      </div>
+                    </div>
                   );
                 })}
 
@@ -510,7 +325,7 @@ export default function Picking() {
                 ) : (
                   <div style={{ padding: "0 18px 18px" }}>
                     <button className="btn btn-primary" style={{ width: "100%", minHeight: 48 }} disabled={!allPicked || busy} onClick={() => setEmpaque(true)}>
-                      {allPicked ? "Empacar y marcar como listo" : `Faltan ${totalItems - pickedCount} ítems por pickear`}
+                      {allPicked ? "Empacar y marcar como listo" : `Faltan ${totalItems - pickedCount} ítems por preparar`}
                     </button>
                   </div>
                 )}

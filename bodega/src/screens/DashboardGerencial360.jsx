@@ -46,10 +46,7 @@ function pipeIcon(nombre) {
 // Vista del panel a la que salta cada etapa del pipeline (por nombre).
 function pipeNav(nombre) {
   const s = String(nombre || "").toLowerCase();
-  if (s.includes("cobrar")) return { nav: "caja", titulo: "Caja" };
-  if (s.includes("prepar")) return { nav: "picking", titulo: "Picking" };
-  if (s.includes("listo")) return { nav: "retiro", titulo: "Retiro / Mostrador" };
-  if (s.includes("entreg")) return { nav: "pedidos", titulo: "Pedidos" };
+  if (s.includes("prepar")) return { nav: "picking", titulo: "Preparación" };
   return { nav: "pedidos", titulo: "Pedidos" };
 }
 
@@ -176,34 +173,16 @@ function buildVM(d) {
     ],
   };
 
-  // ---- Productividad (tabs por rol real: sin packers) ----
+  // ---- Productividad de preparación ----
   const minutos = (v) => (v == null ? "—" : `${Math.round(v)} min`);
   const productividad = {
-    pickers: {
-      label: "Pickers",
-      filas: pr.pickers || [],
+    preparacion: {
+      label: "Preparación",
+      filas: pr.preparacion || [],
       columns: [
         { header: "Pedidos", cell: (f) => num(f.pedidos) },
         { header: "Tiempo prom.", cell: (f) => minutos(f.tiempoPromMin) },
         { header: "Productividad", bar: true, value: (f) => Number(f.pedidosHora) || 0, cell: (f) => (f.pedidosHora == null ? "—" : `${fmtDec(f.pedidosHora)} ped/h`) },
-      ],
-    },
-    cajeras: {
-      label: "Cajeras",
-      filas: pr.cajeras || [],
-      columns: [
-        { header: "Cobros", cell: (f) => num(f.cobros) },
-        { header: "Monto", cell: (f) => money(f.monto) },
-        { header: "Tiempo prom.", cell: (f) => minutos(f.tiempoPromMin) },
-      ],
-    },
-    vendedores: {
-      label: "Vendedores",
-      filas: pr.vendedores || [],
-      columns: [
-        { header: "Pedidos", cell: (f) => num(f.pedidos) },
-        { header: "Monto", cell: (f) => money(f.monto) },
-        { header: "Ticket", cell: (f) => money(f.ticket) },
       ],
     },
   };
@@ -255,8 +234,7 @@ function buildMockVM() {
       metricas: LOGISTICA.metricas,
     },
     productividad: {
-      pickers: { label: PRODUCTIVIDAD.pickers.label, filas: PRODUCTIVIDAD.pickers.filas, columns: colsDemo },
-      cajeras: { label: PRODUCTIVIDAD.cajeras.label, filas: PRODUCTIVIDAD.cajeras.filas, columns: colsDemo },
+      preparacion: { label: PRODUCTIVIDAD.pickers.label, filas: PRODUCTIVIDAD.pickers.filas, columns: colsDemo },
     },
     rentabilidad: RENTABILIDAD,
   };

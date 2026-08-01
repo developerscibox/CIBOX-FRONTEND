@@ -228,14 +228,3 @@ tr:hover td{background:#fafafa;}
   .topbar select{max-width:150px;}
 }
 
-/* ── Vendedor de sala: experiencia app-like (menú inferior, sin sidebar) ── */
-.bottomnav{position:fixed;left:0;right:0;bottom:0;z-index:60;display:flex;background:#fff;border-top:1px solid var(--border);box-shadow:0 -4px 16px rgba(0,0,0,.10);}
-.bottomnav .bn-item{flex:1;border:none;background:none;padding:8px 4px max(10px,env(safe-area-inset-bottom)) 4px;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;color:#7a6b73;font-weight:700;font-size:11.5px;font-family:inherit;}
-.bottomnav .bn-item.on{color:var(--magenta);}
-.bottomnav .bn-ic{font-size:23px;line-height:1;}
-/* El vendedor usa el menú inferior: ocultamos el lateral y damos aire abajo.
-   --bn-h = alto del menú inferior; las barras fijas (cobro) se elevan sobre él. */
-.app.vendedor{--bn-h:64px;}
-.app.vendedor .sidebar{display:none;}
-.app.vendedor .content{padding-bottom:80px;}
-/* En pantalla grande igual mostramos el menú inferior (su flujo es de celular). */

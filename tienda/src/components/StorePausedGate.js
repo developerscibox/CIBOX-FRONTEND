@@ -7,7 +7,7 @@ import { colors } from "../constants/theme";
 
 // PAUSA DE LA TIENDA: el panel de gestión puede pausar la tienda online
 // (mantención, inventario, demo). Mientras está pausada, los CLIENTES ven esta
-// pantalla en vez de la app; el personal interno (admin/gerente/vendedor) entra
+// pantalla en vez de la app; el personal interno (admin/gerente/vendor) entra
 // igual. El backend además bloquea el checkout, así que esto es solo la cara
 // amable. Se consulta al abrir y se re-consulta cada 60s (reanuda sola).
 const STAFF_ROLES = ["admin", "manager", "vendor"];

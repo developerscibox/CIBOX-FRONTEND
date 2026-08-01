@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Sidebar, Topbar, NAV_PERMS, NAV_MODS, NAV, BottomNav } from "./ui.jsx";
+import { Sidebar, Topbar, NAV_PERMS, NAV_MODS, NAV } from "./ui.jsx";
 import { api, useLoad, usingMock, streamUrl } from "./api.js";
 import { useAuth, HOME_BY_ROLE, PREVIEW_ROLES } from "./auth.jsx";
 import Login from "./screens/Login.jsx";
@@ -10,7 +10,6 @@ import Clientes from "./screens/Clientes.jsx";
 import Gerencia from "./screens/Gerencia.jsx";
 import DashboardGerencial360 from "./screens/DashboardGerencial360.jsx";
 import Reportes from "./screens/Reportes.jsx";
-import CierreZ from "./screens/CierreZ.jsx";
 import FEFO from "./screens/FEFO.jsx";
 import Pedidos from "./screens/Pedidos.jsx";
 import Calendario from "./screens/Calendario.jsx";
@@ -18,19 +17,11 @@ import Picking from "./screens/Picking.jsx";
 import Inventario from "./screens/Inventario.jsx";
 import Lotes from "./screens/Lotes.jsx";
 import Kardex from "./screens/Kardex.jsx";
-import Sectores from "./screens/Sectores.jsx";
 import Ajustes from "./screens/Ajustes.jsx";
 import Recepcion from "./screens/Recepcion.jsx";
 import Reposicion from "./screens/Reposicion.jsx";
 import Conteo from "./screens/Conteo.jsx";
 import Ventas from "./screens/Ventas.jsx";
-import VentaManual from "./screens/VentaManual.jsx";
-import VentaSala from "./screens/VentaSala.jsx";
-import MisMetricas from "./screens/MisMetricas.jsx";
-import Historial from "./screens/Historial.jsx";
-import Impresion from "./screens/Impresion.jsx";
-import Retiro from "./screens/Retiro.jsx";
-import Caja from "./screens/Caja.jsx";
 import Productos from "./screens/Productos.jsx";
 import Precios from "./screens/Precios.jsx";
 import ConsultaPrecios from "./screens/ConsultaPrecios.jsx";
@@ -38,67 +29,41 @@ import PriceScanOverlay from "./components/PriceScanOverlay.jsx";
 import Contenido from "./screens/Contenido.jsx";
 import Refunds from "./screens/Refunds.jsx";
 import Documentos from "./screens/Documentos.jsx";
-import Modulos from "./screens/Modulos.jsx";
-import Turnos from "./screens/Turnos.jsx";
 import Usuarios from "./screens/Usuarios.jsx";
-import Autorizaciones from "./screens/Autorizaciones.jsx";
-import Actividad from "./screens/Actividad.jsx";
-import Desempeno from "./screens/Desempeno.jsx";
-import Incentivos from "./screens/Incentivos.jsx";
-import Pickers from "./screens/Pickers.jsx";
-import Pantallas from "./screens/Pantallas.jsx";
 import Onboarding, { tourSeen } from "./screens/Onboarding.jsx";
 
 const TITLES = {
   gerencia: { title: "Centro de mando", sub: "Radiografía del negocio · ventas, equipo, productos y operación · datos reales" },
   dashboard360: { title: "Dashboard Gerencial 360°", sub: "Resumen ejecutivo de la operación · maqueta demo" },
-  actividad: { title: "Actividad en vivo", sub: "Quién está conectado, qué prepara cada uno y quién está en tiempo muerto · en tiempo real" },
-  desempeno: { title: "Desempeño por áreas", sub: "Metas del día, cumplimiento y ranking de cada área con sus miembros · en vivo" },
-  incentivos: { title: "Incentivos", sub: "Plan de puntos de los vendedores · ranking del periodo y detalle por persona" },
-  pantallas: { title: "Centro de pantallas", sub: "Todas las pantallas del local (pública, turno, monitores de zona) con acceso directo y QR" },
-  dashboard: { title: "Resumen de bodega", sub: "Estado operativo del día · Bodega 12 Lo Espejo" },
+  dashboard: { title: "Resumen de operaciones", sub: "Estado operativo del día" },
   reportes: { title: "Reportes", sub: "Diario · semanal · mensual · trimestral · con exportación a CSV/Excel/PDF" },
   cobranza: { title: "Cobranza", sub: "Cuentas por cobrar · aging, a quién llamar y cheques por vencer" },
   clientes: { title: "Clientes con crédito", sub: "Línea, facturas y cobranza por cliente" },
-  autorizaciones: { title: "Autorizaciones", sub: "anulaciones y excepciones de precio — aprueba o rechaza en vivo" },
-  cierrez: { title: "Cierre Z de caja", sub: "Total del día por método de pago + arqueo de efectivo" },
   fefo: { title: "FEFO · por vencer", sub: "Despacha primero lo que vence antes" },
   ventas: { title: "Ventas · Negocio", sub: "KPIs de ventas, inventario en cajas y top productos" },
-  pedidos: { title: "Pedidos", sub: "Seguimiento completo · retiro en bodega con fecha comprometida" },
-  calendario: { title: "Calendario de retiros", sub: "Agenda de despachos · vista mensual, semanal, diaria y lista" },
-  "venta-sala": { title: "Tomar pedido en sala", sub: "Atiende el turno · arma el pedido con stock en vivo · se imprime en el computador central" },
-  "mis-metricas": { title: "Mis métricas", sub: "Cuánto vendiste, personas atendidas y tu progreso del mes" },
-  historial: { title: "Mi historial", sub: "Todas tus ventas registradas a tu nombre" },
-  impresion: { title: "Impresión central", sub: "Computador del local: imprime cada boleta del relay automáticamente" },
-  turnos: { title: "Turnos / Fila", sub: "QR para sacar número + fila de atención en vivo (llamar, atender, cerrar)" },
-  caja: { title: "Caja", sub: "Escanea la boleta · cobra (efectivo con vuelto / tarjeta / transferencia) · cuadre de caja" },
-  "venta-manual": { title: "Venta manual", sub: "Registrar venta presencial → pasa a preparación (Picking) y luego retiro" },
-  picking: { title: "Picking de pedidos", sub: "Toma los pedidos pendientes, prepáralos y verifícalos por escaneo" },
-  retiro: { title: "Retiro / Mostrador", sub: "Entrega los pedidos listos y márcalos como retirados · cierra el relay" },
+  pedidos: { title: "Pedidos", sub: "Seguimiento completo de cada pedido y su historial de estados" },
+  calendario: { title: "Calendario de entregas", sub: "Agenda de despachos · vista mensual, semanal, diaria y lista" },
+  picking: { title: "Preparación de pedidos", sub: "Toma los pedidos pagados, prepáralos y verifícalos por escaneo" },
   inventario: { title: "Inventario", sub: "Panorama gráfico del stock en bodega" },
   lotes: { title: "Lotes", sub: "Trazabilidad por lote · costo de compra histórico · valor del inventario a costo y vencimientos" },
   kardex: { title: "Movimientos", sub: "Movimientos de stock auditados" },
-  sectores: { title: "Sectores / Zonas", sub: "Recorrido del picking · cada zona tiene su monitor (/zona?s=Nombre)" },
-  pickers: { title: "Pickers y niveles", sub: "Define la experiencia de cada bodeguero (nuevo/experto) y su PIN del tótem · la regla se aplica sola" },
   ajustes: { title: "Ajuste de stock", sub: "Ingresos y mermas con motivo obligatorio" },
   recepcion: { title: "Recepción de mercadería", sub: "Ingreso masivo de un cargamento por escaneo" },
   reposicion: { title: "Reposición", sub: "Productos bajo su mínimo · arma la lista de compra y envíala a Recepción" },
-  conteo: { title: "Conteo físico", sub: "Cuenta el stock real por sector/categoría · al cerrar, el stock queda igual a lo contado" },
+  conteo: { title: "Conteo físico", sub: "Cuenta el stock real por categoría · al cerrar, el stock queda igual a lo contado" },
   productos: { title: "Productos", sub: "Catálogo: alta y edición de productos por caja" },
   precios: { title: "Precios y márgenes", sub: "Define el margen objetivo, fija precios desde el costo y mira la rentabilidad por producto y categoría" },
   "consulta-precios": { title: "Consulta de precios", sub: "Dispara la pistola sobre un producto y ve su precio y stock al instante" },
   contenido: { title: "Contenido de la tienda", sub: "Home de la tienda web: hero, banners, tarjetas y textos (CMS)" },
   devoluciones: { title: "Devoluciones", sub: "Aprobar o rechazar reembolsos · logística inversa" },
   documentos: { title: "Documentos tributarios", sub: "Boletas / facturas emitidas (SII)" },
-  modulos: { title: "Módulos de atención", sub: "Mostradores/cajas donde se atiende la fila" },
   usuarios: { title: "Usuarios", sub: "Gestión de cuentas y roles del equipo" },
 };
 
 // Vistas que capturan el disparo de la pistola por su cuenta (campo enfocado o
 // pantalla dedicada): en ellas se apaga el escáner global de precios.
 const SCAN_OWN_VIEWS = new Set([
-  "consulta-precios", "venta-sala", "venta-manual", "caja", "productos",
-  "recepcion", "conteo", "ajustes", "picking",
+  "consulta-precios", "productos", "recepcion", "conteo", "ajustes", "picking",
 ]);
 
 // Fallback de vista permitida: el orden del propio menú (las 25 vistas) para que
@@ -156,34 +121,9 @@ export default function App() {
     prevPrepRef.current = porPreparar;
   }, [porPreparar]);
 
-  // Autorizaciones pendientes (anulación/precio): badge para el jefe en el menú.
-  // Solo se consulta si tiene users.manage; reusa el mismo tick del SSE/poll.
-  const auths = useLoad(
-    () => (can("users.manage") ? api.autorizaciones("pendiente") : Promise.resolve({ items: [], pendientes: 0 })),
-    { items: [], pendientes: 0 },
-    [view, tick],
-  );
-  const pendAuth = Number(auths.data?.pendientes) || 0;
-
-  // Cola de atención: clientes que sacaron turno y esperan ser atendidos.
-  // Surge como badge en "Venta manual" para avisar al vendedor.
-  const fila = useLoad(() => api.turnoBoard(), { waiting: [] }, [view, tick]);
-  const enEspera = (fila.data?.waiting || []).length;
-  const prevFilaRef = useRef(0);
-  const [filaBump, setFilaBump] = useState(false);
-  useEffect(() => {
-    if (enEspera > prevFilaRef.current) {
-      setFilaBump(true);
-      const id = setTimeout(() => setFilaBump(false), 4000);
-      prevFilaRef.current = enEspera;
-      return () => clearTimeout(id);
-    }
-    prevFilaRef.current = enEspera;
-  }, [enEspera]);
-
   // Módulos comerciales contratados (GET /config/modules, público). Best-effort:
   // si falla o estamos en demo, quedan los 4 habilitados.
-  const ALL_MODS = ["web", "bodega", "sala", "gerencia"];
+  const ALL_MODS = ["web", "bodega", "gerencia"];
   const [mods, setMods] = useState(ALL_MODS);
   useEffect(() => {
     if (!user || usingMock) return undefined;
@@ -231,11 +171,10 @@ export default function App() {
   if (!user) return <Login />;
 
   const allowed = can(NAV_PERMS[view]);
-  const isVendedor = effectiveRole === "vendedor"; // app-like: menú inferior, sin sidebar
 
   return (
-    <div className={"app" + (isVendedor ? " vendedor" : "")}>
-      <Sidebar active={view} onNav={setView} pills={{ pick: porPreparar, fila: enEspera, auth: pendAuth }} bump={[prepBump && "pick", filaBump && "fila"].filter(Boolean)} can={can} role={effectiveRole} mods={modsEff} />
+    <div className="app">
+      <Sidebar active={view} onNav={setView} pills={{ pick: porPreparar }} bump={[prepBump && "pick"].filter(Boolean)} can={can} role={effectiveRole} mods={modsEff} />
       <main className="main">
         <Topbar
           title={TITLES[view].title}
@@ -277,7 +216,7 @@ export default function App() {
           ) : null}
           {usingMock ? (
             <div className="banner-mock">
-              🟡 Modo demostración — datos de ejemplo. Configura <b>VITE_API_URL</b> para conectarlo al backend Bodega 12 real.
+              🟡 Modo demostración — datos de ejemplo. Configura <b>VITE_API_URL</b> para conectarlo al backend real.
             </div>
           ) : null}
           {!allowed ? (
@@ -289,32 +228,17 @@ export default function App() {
               {view === "dashboard" && <Dashboard onNav={setView} />}
               {view === "gerencia" && <Gerencia onNav={setView} />}
               {view === "dashboard360" && <DashboardGerencial360 onNav={setView} />}
-              {view === "actividad" && <Actividad />}
-              {view === "desempeno" && <Desempeno />}
-              {view === "incentivos" && <Incentivos />}
-              {view === "pantallas" && <Pantallas />}
               {view === "reportes" && <Reportes />}
               {view === "cobranza" && <Cobranza onNav={setView} />}
               {view === "clientes" && <Clientes />}
-              {view === "autorizaciones" && <Autorizaciones />}
-              {view === "cierrez" && <CierreZ />}
               {view === "fefo" && <FEFO />}
               {view === "ventas" && <Ventas />}
               {view === "pedidos" && <Pedidos />}
               {view === "calendario" && <Calendario />}
-              {view === "venta-sala" && <VentaSala />}
-              {view === "mis-metricas" && <MisMetricas />}
-              {view === "historial" && <Historial />}
-              {view === "impresion" && <Impresion />}
-              {view === "caja" && <Caja />}
-              {view === "venta-manual" && <VentaManual />}
               {view === "picking" && <Picking />}
-              {view === "retiro" && <Retiro />}
               {view === "inventario" && <Inventario onNav={setView} />}
               {view === "lotes" && <Lotes />}
               {view === "kardex" && <Kardex />}
-              {view === "sectores" && <Sectores />}
-              {view === "pickers" && <Pickers />}
               {view === "ajustes" && <Ajustes />}
               {view === "recepcion" && <Recepcion />}
               {view === "reposicion" && <Reposicion onNav={setView} />}
@@ -325,14 +249,11 @@ export default function App() {
               {view === "contenido" && <Contenido />}
               {view === "devoluciones" && <Refunds />}
               {view === "documentos" && <Documentos />}
-              {view === "modulos" && <Modulos />}
-              {view === "turnos" && <Turnos />}
               {view === "usuarios" && <Usuarios />}
             </>
           )}
         </div>
       </main>
-      {isVendedor && <BottomNav active={view} onNav={setView} />}
       {/* Escaneo GLOBAL de precios con la pistola: activo salvo en las vistas que ya
           usan el disparo para su propia acción (para no robarles el código). */}
       <PriceScanOverlay enabled={!SCAN_OWN_VIEWS.has(view)} />

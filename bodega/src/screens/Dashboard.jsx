@@ -27,8 +27,7 @@ function fmtLong(ymd) {
 
 export default function Dashboard({ onNav }) {
   const { can } = useAuth();
-  const canInv = can("inventory.read"); // el cajero no ve inventario
-  const canPay = can("orders.pay");     // la cajera cobra → ve su caja
+  const canInv = can("inventory.read");
 
   const [selDate, setSelDate] = useState(HOY);          // día cuyos retiros se muestran
 
@@ -37,10 +36,8 @@ export default function Dashboard({ onNav }) {
   const exp = useLoad(() => (canInv ? api.expiringSoon(7) : Promise.resolve({ items: [] })), { items: [] });
   const pend = useLoad(() => api.pendingToPrepare(), ORDERS_RES);                 // paid (por tomar) + preparing
   const pick = useLoad(() => api.pickupSummary(selDate), PICKUP_SUMMARY_RES, [selDate]);
-  // Caja del cajero (gated orders.pay): rendimiento del día + sesión + cola por cobrar.
-  const miDia = useLoad(() => (canPay ? api.cajaMiDia() : Promise.resolve(null)), null);
-  const cajaSes = useLoad(() => (canPay ? api.cajaActual().catch(() => ({ sesion: null })) : Promise.resolve(null)), null);
-  const porCobrar = useLoad(() => (canPay ? api.orders({ status: "pending", limit: 50 }) : Promise.resolve({ orders: [] })), { orders: [] });
+  // Pedidos esperando confirmación de pago (transferencia por verificar).
+  const porCobrar = useLoad(() => api.orders({ status: "pending", limit: 50 }), { orders: [] });
 
   const lowItems = low.data?.items || [];
   const expItems = exp.data?.items || [];
@@ -55,19 +52,12 @@ export default function Dashboard({ onNav }) {
   const dayOrders = summary?.orders || [];
   const upcoming = summary?.upcoming || [];
 
-  // Quién ve el Resumen: admin (canInv+canPay) y pantalla. El cajero/bodeguero
-  // tienen su propia cola. "cajeroOnly" = rol con cobro pero sin inventario.
-  const cajeroOnly = canPay && !canInv;
-  // KPIs por rol. Cada uno navega a su sección (clicable si el rol puede entrar).
-  const kpis = cajeroOnly ? [
-    { v: miDia.loading ? "…" : clp(miDia.data?.hoy?.total || 0), l: "Cobrado hoy", nav: "caja" },
-    { v: miDia.loading ? "…" : (miDia.data?.hoy?.count ?? 0), l: "Cobros hoy", nav: "caja" },
-    { v: cajaSes.loading ? "…" : (cajaSes.data?.sesion ? clp(cajaSes.data.monto_esperado || 0) : "—"), l: "Debe haber en caja", nav: "caja" },
-    { v: porCobrar.loading ? "…" : cobrarOrders.length, l: "Pedidos por cobrar", nav: "caja" },
-  ] : [
-    { v: pick.loading ? "…" : (summary?.total_committed ?? "—"), l: "Retiros para hoy", nav: "calendario" },
-    { v: pend.loading ? "…" : porTomar, l: "Nuevos por tomar", nav: "picking" },
+  // KPIs del día. Cada uno navega a su sección (clicable si el rol puede entrar).
+  const kpis = [
+    { v: pick.loading ? "…" : (summary?.total_committed ?? "—"), l: "Entregas para hoy", nav: "calendario" },
+    { v: pend.loading ? "…" : porTomar, l: "Nuevos por preparar", nav: "picking" },
     { v: pend.loading ? "…" : enPrep, l: "En preparación", nav: "picking" },
+    { v: porCobrar.loading ? "…" : cobrarOrders.length, l: "Pagos por confirmar", nav: "pedidos" },
     ...(canInv ? [
       { v: low.loading ? "…" : (low.data?.count ?? lowItems.length), l: "Stock crítico", nav: "inventario" },
       { v: exp.loading ? "…" : expItems.length, l: "Por vencer (7 días)", nav: "fefo" },
@@ -77,8 +67,8 @@ export default function Dashboard({ onNav }) {
   // Franja de acciones recomendadas (lo urgente de hoy), según el rol.
   // El estado se comunica con un punto de color (mismo patrón que Gerencia).
   const acciones = [
-    canPay && cobrarOrders.length > 0 && { txt: `${cobrarOrders.length} por cobrar`, color: "var(--warn)", bg: "#fef3c7", nav: "caja" },
-    porTomar > 0 && { txt: `${porTomar} nuevo${porTomar === 1 ? "" : "s"} por tomar`, color: "var(--ok)", bg: "#dcfce7", nav: "picking" },
+    cobrarOrders.length > 0 && { txt: `${cobrarOrders.length} con pago por confirmar`, color: "var(--warn)", bg: "#fef3c7", nav: "pedidos" },
+    porTomar > 0 && { txt: `${porTomar} nuevo${porTomar === 1 ? "" : "s"} por preparar`, color: "var(--ok)", bg: "#dcfce7", nav: "picking" },
     canInv && expItems.length > 0 && { txt: `${expItems.length} por vencer (7 días)`, color: "var(--warn)", bg: "#ffedd5", nav: "fefo" },
     canInv && (low.data?.count ?? lowItems.length) > 0 && { txt: `${low.data?.count ?? lowItems.length} en stock crítico`, color: "var(--danger)", bg: "#fde7ea", nav: "inventario" },
   ].filter(Boolean);
@@ -109,56 +99,28 @@ export default function Dashboard({ onNav }) {
         })}
       </div>
 
-      {canPay && (
-        <div className="dash-row">
-          {/* Estado de mi caja hoy */}
-          <div className="card" style={{ marginBottom: 0 }}>
-            <div className="card-h">
-              <h2>Caja de hoy</h2>
-              {miDia.data ? <span className="badge" style={{ background: "#dcfce7", color: "#166534" }}>{clp(miDia.data.hoy?.total || 0)} · {miDia.data.hoy?.count || 0} cobros</span> : null}
-            </div>
-            {cajaSes.data?.sesion ? (
-              <div style={{ display: "flex", gap: 20, flexWrap: "wrap", padding: "4px 2px 12px" }}>
-                <div><div style={sm}>Fondo inicial</div><b>{clp(cajaSes.data.sesion.monto_inicial)}</b></div>
-                <div><div style={sm}>Ventas efectivo</div><b>{clp(cajaSes.data.ventas_efectivo || 0)}</b></div>
-                <div><div style={sm}>Debe haber</div><b style={{ color: "var(--ok)" }}>{clp(cajaSes.data.monto_esperado || 0)}</b></div>
-              </div>
-            ) : (
-              <div style={{ padding: "6px 2px 12px", color: "var(--muted)", fontSize: 14 }}>Caja cerrada. Ábrela en la sección <b>Caja</b> para empezar a cobrar.</div>
-            )}
-            {miDia.data?.porMetodo && Object.keys(miDia.data.porMetodo).length > 0 && (
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", borderTop: "1px solid var(--border)", paddingTop: 10 }}>
-                {Object.entries(miDia.data.porMetodo).map(([k, v]) => (
-                  <span key={k} className="badge" style={{ background: "var(--bg)", color: "var(--text)" }}>{METODO[k] || k}: {clp(v?.total ?? v)}</span>
-                ))}
-              </div>
-            )}
-          </div>
-          {/* Pedidos por cobrar (cola del cajero) */}
-          <div className="card" style={{ marginBottom: 0 }}>
-            <div className="card-h">
-              <h2>Por cobrar</h2>
-              <span className="badge" style={{ background: "#fef3c7", color: "#92400e" }}>{cobrarOrders.length}</span>
-            </div>
-            <table className="tbl">
-              <thead><tr><th>Cliente</th><th>N°</th><th>Total</th></tr></thead>
-              <tbody>
-                {porCobrar.loading ? (
-                  <tr><td colSpan="3" style={{ color: "var(--muted)", padding: 18 }}>Cargando…</td></tr>
-                ) : cobrarOrders.length === 0 ? (
-                  <tr><td colSpan="3" style={{ color: "var(--muted)", padding: 18 }}>Sin pedidos pendientes de cobro.</td></tr>
-                ) : cobrarOrders.slice(0, 8).map((o) => (
-                  <tr key={o._id}>
-                    <td style={{ fontWeight: 600 }}>{o.customer?.fullName || "Mostrador"}</td>
-                    <td className="mono" style={{ color: "var(--muted)" }}>#{String(o._id).slice(-6)}</td>
-                    <td style={{ fontWeight: 700 }}>{clp(o.total)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+      <div className="card">
+        <div className="card-h">
+          <h2>Pagos por confirmar</h2>
+          <span className="badge" style={{ background: "#fef3c7", color: "#92400e" }}>{cobrarOrders.length}</span>
         </div>
-      )}
+        <table className="tbl">
+          <thead><tr><th>Cliente</th><th>N°</th><th>Total</th></tr></thead>
+          <tbody>
+            {porCobrar.loading ? (
+              <tr><td colSpan="3" style={{ color: "var(--muted)", padding: 18 }}>Cargando…</td></tr>
+            ) : cobrarOrders.length === 0 ? (
+              <tr><td colSpan="3" style={{ color: "var(--muted)", padding: 18 }}>Ningún pedido esperando confirmación de pago.</td></tr>
+            ) : cobrarOrders.slice(0, 8).map((o) => (
+              <tr key={o._id}>
+                <td style={{ fontWeight: 600 }}>{o.customer?.fullName || "Cliente"}</td>
+                <td className="mono" style={{ color: "var(--muted)" }}>#{String(o._id).slice(-6)}</td>
+                <td style={{ fontWeight: 700 }}>{clp(o.total)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
       <div className="card" style={{ padding: "14px 18px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
@@ -166,10 +128,10 @@ export default function Dashboard({ onNav }) {
         </div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
           {[
-            { t: "Pagado", who: "online / caja", c: "#dbeafe", tc: "#1e40af" },
-            { t: "Preparando", who: "operario · Picking", c: "#fef3c7", tc: "#92400e" },
-            { t: "Listo", who: "operario", c: "#dcfce7", tc: "#166534" },
-            { t: "Entregado", who: "cajero · cobra si efectivo", c: "#ede9fe", tc: "#6b21a8" },
+            { t: "Pagado", who: "cliente en la web", c: "#dbeafe", tc: "#1e40af" },
+            { t: "Preparando", who: "operaciones · Preparación", c: "#fef3c7", tc: "#92400e" },
+            { t: "Listo", who: "operaciones", c: "#dcfce7", tc: "#166534" },
+            { t: "Entregado", who: "cliente recibe el pedido", c: "#ede9fe", tc: "#6b21a8" },
           ].map((s, i, arr) => (
             <div key={s.t} style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <div style={{ background: s.c, borderRadius: 10, padding: "6px 11px", minWidth: 96, textAlign: "center" }}>
@@ -334,5 +296,3 @@ export default function Dashboard({ onNav }) {
   );
 }
 
-const sm = { fontSize: 12, color: "var(--muted)", marginBottom: 2 };
-const METODO = { cash_on_pickup: "Efectivo", efectivo: "Efectivo", cash: "Efectivo", transfer: "Transferencia", transferencia: "Transferencia", card: "Tarjeta", tarjeta: "Tarjeta" };

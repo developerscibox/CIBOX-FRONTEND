@@ -7,44 +7,35 @@ import { authApi, getStoredUser } from "./api.js";
 const ROLE_PERMS = {
   admin: ["*"],
   manager: [
-    "orders.read", "orders.take", "orders.pay", "orders.prepare", "orders.deliver", "orders.cancel",
+    "orders.read", "orders.pay", "orders.prepare", "orders.deliver", "orders.cancel",
     "inventory.read", "inventory.adjust", "products.manage", "reports.read", "users.manage",
   ],
-  vendedor: ["orders.read", "orders.take", "inventory.read"],
-  cashier: ["orders.read", "orders.pay", "orders.deliver"],
-  operator: ["orders.read", "orders.prepare", "inventory.read", "inventory.adjust"],
-  pantalla: ["orders.read"],
+  operator: ["orders.read", "orders.prepare", "orders.deliver", "inventory.read", "inventory.adjust"],
 };
 
 const ROLE_LABEL = {
   admin: "Administrador",
-  manager: "Gerente de bodega",
-  vendedor: "Vendedor de sala",
-  cashier: "Cajera",
-  operator: "Bodeguero / Pickeador",
-  pantalla: "Pantalla (kiosko)",
+  manager: "Gerente",
+  operator: "Operaciones",
 };
 
-// Roles con acceso al panel de bodega.
-export const WMS_ROLES = ["admin", "manager", "vendedor", "cashier", "operator", "pantalla"];
+// Roles con acceso al panel de operaciones.
+export const WMS_ROLES = ["admin", "manager", "operator"];
 
 // Home por rol: cada uno aterriza en SU cola al entrar (principio "home = tu cola").
 export const HOME_BY_ROLE = {
-  vendedor: "venta-sala", // vendedor: cola de turnos + toma de pedido (relay)
-  cashier: "caja",          // cajera: escanear boleta + cobrar + sesión de caja
-  operator: "picking",      // bodeguero: directo a preparar
-  pantalla: "dashboard",
+  operator: "picking",  // operaciones: directo a preparar
   manager: "gerencia",
   admin: "gerencia",
 };
 
 // Roles que admin/gerente puede previsualizar con "ver como".
-export const PREVIEW_ROLES = ["vendedor", "cashier", "operator", "pantalla", "manager"].map(
+export const PREVIEW_ROLES = ["operator", "manager"].map(
   (r) => ({ role: r, label: ROLE_LABEL[r] }),
 );
 
 const initials = (name = "") =>
-  name.trim().split(/\s+/).slice(0, 2).map((w) => w[0]?.toUpperCase() || "").join("") || "B12";
+  name.trim().split(/\s+/).slice(0, 2).map((w) => w[0]?.toUpperCase() || "").join("") || "CB";
 
 const AuthCtx = createContext(null);
 
@@ -65,7 +56,7 @@ export function AuthProvider({ children }) {
     const role = String(u.role || "").trim().toLowerCase();
     if (!WMS_ROLES.includes(role)) {
       authApi.logout();
-      throw new Error("Esta cuenta no tiene acceso al panel de bodega.");
+      throw new Error("Esta cuenta no tiene acceso al panel de operaciones.");
     }
     setViewAsState(null);
     setSessionExpired(false);
@@ -118,7 +109,7 @@ export function AuthProvider({ children }) {
     sessionExpired,
     roleLabel: realRole ? ROLE_LABEL[realRole] || realRole : "",
     previewLabel: viewAs ? ROLE_LABEL[viewAs] || viewAs : null,
-    initials: user ? initials(user.name) : "B12",
+    initials: user ? initials(user.name) : "CB",
   };
   return <AuthCtx.Provider value={value}>{children}</AuthCtx.Provider>;
 }

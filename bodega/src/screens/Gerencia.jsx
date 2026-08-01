@@ -24,7 +24,7 @@ const PERIODOS = {
   mes: { label: "30 días", days: 29 },
   trimestre: { label: "Trimestre", days: 89 },
 };
-const TABS = ["Resumen", "Ventas", "Equipo", "Incentivos", "Productos", "Operación", "Finanzas", "Trazabilidad", "Bitácora"];
+const TABS = ["Resumen", "Ventas", "Equipo", "Productos", "Operación", "Finanzas", "Trazabilidad", "Bitácora"];
 const ETAPA_LABEL = { pending: "Tomado (por pagar)", paid: "Cobrado", preparing: "En preparación", ready: "Listo para retiro", shipped: "Despachado", delivered: "Entregado", cancelled: "Anulado", refunded: "Reembolsado" };
 const ACCION = { "usuario.rol": "Cambió rol", "usuario.estado": "Cambió estado de usuario", "producto.crear": "Creó producto", "producto.editar": "Editó producto" };
 const fmtFecha = (x) => new Date(x).toLocaleString("es-CL", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
@@ -205,7 +205,7 @@ export default function Gerencia({ onNav }) {
   if (g.error && !d) return <Card style={{ color: "var(--danger)" }}>No se pudo cargar: {g.error}</Card>;
   if (!d) return <Card style={{ color: "var(--muted)" }}>Sin datos.</Card>;
 
-  const { ventas, operacion, equipo, productos, caja, inventario, finanzas } = d;
+  const { ventas, operacion, equipo, productos, cobros, inventario, finanzas } = d;
   const aging = cob.data?.aging;
   const llamarHoy = cob.data?.llamarHoy || [];
   const chequesPorVencer = cob.data?.chequesPorVencer || [];
@@ -255,9 +255,9 @@ export default function Gerencia({ onNav }) {
           </div>
           <Card className="card-link" onClick={() => setTab("Ventas")} style={{ marginBottom: 14 }}><div style={{ fontWeight: 700, marginBottom: 4, display: "flex", justifyContent: "space-between", alignItems: "center" }}><span>Ventas por día <span style={{ fontWeight: 400, color: "var(--muted)", fontSize: 12 }}>· pasa el cursor para ver el monto</span></span><span style={{ color: "var(--muted)", opacity: 0.55, fontWeight: 700 }} title="Ver Ventas">›</span></div><Bars data={ventas.serie} value={(x) => x.total} label={(x) => x.dia.slice(8)} tip={(x) => `${x.dia}: ${clp(x.total)} · ${x.pedidos} ped.`} /></Card>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))", gap: 14 }}>
-            <TCard titulo={`Top vendedores · ${Math.min(5, equipo.vendedores.length)}`} onClick={() => setTab("Equipo")} irA="Equipo">
-              <Tabla head={["Vendedor", "Pedidos", "$ vendido"]} aligns={["l", "r", "r"]} empty="Sin ventas en el periodo."
-                rows={equipo.vendedores.slice(0, 5).map((v) => [v.label, num(v.pedidos), <b>{clp(v.monto)}</b>])} />
+            <TCard titulo={`Preparación por persona · ${Math.min(5, (equipo?.preparacion || []).length)}`} onClick={() => setTab("Equipo")} irA="Equipo">
+              <Tabla head={["Persona", "Preparados", "Prom."]} aligns={["l", "r", "r"]} empty="Sin preparaciones en el periodo."
+                rows={(equipo?.preparacion || []).slice(0, 5).map((b) => [b.label, num(b.preparados), <b>{`${b.prep_prom_min} min`}</b>])} />
             </TCard>
             <TCard titulo={`Más vendidos · ${Math.min(5, productos.top.length)}`} onClick={() => setTab("Productos")} irA="Productos">
               <Tabla head={["Producto", "Unid.", "$"]} aligns={["l", "r", "r"]}
@@ -268,7 +268,7 @@ export default function Gerencia({ onNav }) {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))", gap: 14, marginTop: 14 }}>
             {/* Pulso de sala en vivo */}
             <Card className="card-link" onClick={() => setTab("Operación")}>
-              <div style={{ fontWeight: 700, marginBottom: 12, display: "flex", justifyContent: "space-between" }}>Pulso de sala <span style={{ color: "var(--muted)", opacity: 0.55, fontWeight: 700 }}>›</span></div>
+              <div style={{ fontWeight: 700, marginBottom: 12, display: "flex", justifyContent: "space-between" }}>Pulso de la operación <span style={{ color: "var(--muted)", opacity: 0.55, fontWeight: 700 }}>›</span></div>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 10, textAlign: "center" }}>
                 <div><div style={{ fontSize: 24, fontWeight: 700, fontVariantNumeric: "tabular-nums" }}>{num(operacion.cola?.paid || 0)}</div><div style={{ fontSize: 11.5, color: "var(--muted)" }}>Por preparar</div></div>
                 <div><div style={{ fontSize: 24, fontWeight: 700, fontVariantNumeric: "tabular-nums" }}>{num(operacion.en_cola_total || 0)}</div><div style={{ fontSize: 11.5, color: "var(--muted)" }}>En cola</div></div>
@@ -277,18 +277,6 @@ export default function Gerencia({ onNav }) {
               <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 12, textAlign: "center" }}>
                 {operacion.cuello ? <>Cuello: <b style={{ color: "var(--warn)" }}>{operacion.cuello.etapa}</b> · {operacion.cuello.minutos} min · throughput {thr}</> : `Throughput ${thr}`}
               </div>
-            </Card>
-            {/* Podio de vendedores — el gancho en vivo */}
-            <Card className="card-link" onClick={() => setTab(d.incentivos ? "Incentivos" : "Equipo")}>
-              <div style={{ fontWeight: 700, marginBottom: 10, display: "flex", justifyContent: "space-between" }}>Podio de vendedores <span style={{ fontWeight: 400, color: "var(--muted)", fontSize: 12 }}>{cfg.label.toLowerCase()}</span></div>
-              {(d.incentivos?.ranking?.length ? d.incentivos.ranking : equipo.vendedores).slice(0, 3).map((v, i) => (
-                <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0", borderTop: i ? "1px solid var(--border-soft)" : "none" }}>
-                  <span style={{ width: 22, height: 22, borderRadius: 11, background: "var(--border-soft)", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 11.5, fontWeight: 700, color: "var(--muted)", flexShrink: 0 }}>{i + 1}</span>
-                  <div style={{ flex: 1, minWidth: 0 }}><b style={{ fontSize: 13.5 }}>{v.label}</b>{v.puntos ? <span style={{ color: "var(--muted)", fontSize: 12 }}> · {num(v.puntos.total)} pts</span> : <span style={{ color: "var(--muted)", fontSize: 12 }}> · {num(v.pedidos)} ped.</span>}</div>
-                  <b style={{ color: "var(--magenta-d)", fontVariantNumeric: "tabular-nums" }}>{clp(v.monto)}</b>
-                </div>
-              ))}
-              {!(d.incentivos?.ranking?.length ? d.incentivos.ranking : equipo.vendedores).length ? <div style={{ color: "var(--muted)", fontSize: 13 }}>Sin ventas atribuidas en el periodo.</div> : null}
             </Card>
           </div>
         </>
@@ -311,48 +299,11 @@ export default function Gerencia({ onNav }) {
       {/* EQUIPO */}
       {tab === "Equipo" && (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(300px,1fr))", gap: 14 }}>
-          <TCard titulo={`Vendedores · ${equipo.vendedores.length}`} onClick={ir("desempeno")} irA="Desempeño por áreas">
-            <Tabla head={["Vendedor", "Pedidos", "$ vendido"]} aligns={["l", "r", "r"]} empty="Sin actividad de vendedores."
-              rows={equipo.vendedores.map((v) => [subCell(v.label, `ticket ${clp(v.ticket)}`), num(v.pedidos), <b>{clp(v.monto)}</b>])} />
-          </TCard>
-          <TCard titulo={`Cajeras · ${equipo.cajeras.length}`} onClick={ir("desempeno")} irA="Desempeño por áreas">
-            <Tabla head={["Cajera", "Cobros", "$ cobrado"]} aligns={["l", "r", "r"]} empty="Sin cobros."
-              rows={equipo.cajeras.map((c) => [c.label, num(c.cobros), <b>{clp(c.monto)}</b>])} />
-          </TCard>
-          <TCard titulo={`Bodegueros · ${equipo.bodegueros.length}`} extra="· velocidad" onClick={ir("desempeno")} irA="Desempeño por áreas">
-            <Tabla head={["Bodeguero", "Preparados", "Prom."]} aligns={["l", "r", "r"]} empty="Sin preparaciones."
-              rows={equipo.bodegueros.map((b) => [b.label, num(b.preparados), <b>{`${b.prep_prom_min} min`}</b>])} />
+          <TCard titulo={`Preparación · ${(equipo?.preparacion || []).length}`} extra="· velocidad">
+            <Tabla head={["Persona", "Preparados", "Prom."]} aligns={["l", "r", "r"]} empty="Sin preparaciones."
+              rows={(equipo?.preparacion || []).map((b) => [b.label, num(b.preparados), <b>{`${b.prep_prom_min} min`}</b>])} />
           </TCard>
         </div>
-      )}
-
-      {/* INCENTIVOS — plan piloto: puntos por unidades + plata */}
-      {tab === "Incentivos" && d.incentivos && (
-        <>
-          <Card className={onNav ? "card-link" : ""} onClick={ir("incentivos")} style={{ marginBottom: 14 }}>
-            <div style={{ fontWeight: 700, marginBottom: 6, display: "flex", justifyContent: "space-between", alignItems: "center" }}><span>Plan piloto de incentivos <span style={{ fontWeight: 400, color: "var(--muted)", fontSize: 12 }}>· referencia, modificable</span></span>{onNav ? <span style={{ color: "var(--muted)", opacity: 0.55, fontWeight: 700 }} title="Ver Incentivos">›</span> : null}</div>
-            <div style={{ fontSize: 13, color: "var(--muted)", lineHeight: 1.7 }}>
-              Cada vendedor gana <b>{d.incentivos.config.puntosPorUnidad} punto por unidad vendida</b> y <b>{d.incentivos.config.puntosPorMilCLP} punto por cada $1.000 vendidos</b>.<br />
-              <b>Puntos = unidades + (venta ÷ 1.000)</b>. Trazable: cada punto sale de pedidos reales del vendedor (pestaña Trazabilidad).
-            </div>
-          </Card>
-          <TCard titulo={`Ranking de puntos del periodo · ${d.incentivos.ranking.length}`} onClick={ir("incentivos")} irA="Incentivos">
-            <Tabla head={["#", "Vendedor", "Pedidos", "Unidades", "$ vendido", "Puntos"]}
-              aligns={["l", "l", "r", "r", "r", "r"]}
-              empty="Sin ventas atribuidas a vendedores en el periodo."
-              rows={d.incentivos.ranking.map((v) => [
-                <span style={{ color: "var(--muted)" }}>{v.ranking}</span>,
-                <span style={{ fontWeight: 600 }}>{v.label}</span>,
-                num(v.pedidos),
-                num(v.unidades),
-                clp(v.monto),
-                <>
-                  <b style={{ color: "var(--magenta-d)" }}>{num(v.puntos.total)}</b>
-                  <div style={{ fontSize: 11, color: "var(--muted)" }}>{num(v.puntos.ptsUnidad)} u · {num(v.puntos.ptsMonto)} $</div>
-                </>,
-              ])} />
-          </TCard>
-        </>
       )}
 
       {/* PRODUCTOS */}
@@ -402,29 +353,20 @@ export default function Gerencia({ onNav }) {
           </div>
           <Card className={onNav ? "card-link" : ""} onClick={ir("pedidos")}><div style={{ fontWeight: 700, marginBottom: 12, display: "flex", justifyContent: "space-between", alignItems: "center" }}><span>Tiempo promedio por etapa (min)</span>{onNav ? <span style={{ color: "var(--muted)", opacity: 0.55, fontWeight: 700 }} title="Ver Pedidos">›</span> : null}</div>
             <HBars rows={[
-              { k: "Espera + cobro", v: operacion.tiempos.espera_cobro, txt: `${operacion.tiempos.espera_cobro} min` },
+              { k: "Espera de pago", v: operacion.tiempos.espera_pago, txt: `${operacion.tiempos.espera_pago} min` },
               { k: "Espera en cola", v: operacion.tiempos.espera_cola, txt: `${operacion.tiempos.espera_cola} min` },
               { k: "Preparación", v: operacion.tiempos.preparacion, txt: `${operacion.tiempos.preparacion} min` },
-              { k: "Espera de retiro", v: operacion.tiempos.espera_retiro, txt: `${operacion.tiempos.espera_retiro} min` },
+              { k: "Espera de entrega", v: operacion.tiempos.espera_entrega, txt: `${operacion.tiempos.espera_entrega} min` },
             ]} />
           </Card>
 
-          <div style={{ fontWeight: 700, margin: "18px 0 8px" }}>Tiempo y personas por sub-área</div>
+          <div style={{ fontWeight: 700, margin: "18px 0 8px" }}>Preparación por persona</div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))", gap: 14 }}>
-            <TCard titulo="Sala de venta" extra="· vendedores" onClick={ir("desempeno")} irA="Desempeño por áreas">
-              <Tabla head={["Vendedor", "Pedidos tomados"]} aligns={["l", "r"]} empty="Sin tomas en el periodo."
-                rows={equipo.vendedores.map((v) => [v.label, <b>{num(v.pedidos)}</b>])} />
-            </TCard>
-            <TCard titulo="Caja" extra="· cajeras" onClick={ir("desempeno")} irA="Desempeño por áreas">
-              <Tabla head={["Cajera", "Cobros", "Tiempo medio"]} aligns={["l", "r", "r"]} empty="Sin cobros."
-                rows={equipo.cajeras.map((c) => [c.label, num(c.cobros), <b>{`${c.t_cobro_prom} min`}</b>])} />
-            </TCard>
-            <TCard titulo="Packing" extra="· bodegueros" onClick={ir("desempeno")} irA="Desempeño por áreas">
-              <Tabla head={["Bodeguero", "Preparados", "Prep. media"]} aligns={["l", "r", "r"]} empty="Sin preparaciones."
-                rows={equipo.bodegueros.map((b) => [b.label, num(b.preparados), <b>{`${b.prep_prom_min} min`}</b>])} />
+            <TCard titulo="Packing" extra="· tiempo real por persona">
+              <Tabla head={["Persona", "Preparados", "Prep. media"]} aligns={["l", "r", "r"]} empty="Sin preparaciones."
+                rows={(equipo?.preparacion || []).map((b) => [b.label, num(b.preparados), <b>{`${b.prep_prom_min} min`}</b>])} />
             </TCard>
           </div>
-          <div style={{ fontSize: 11.5, color: "var(--muted)", marginTop: 8 }}>En caja y packing se mide el tiempo real por persona. La toma del vendedor se registra al crear el pedido (instantánea), por eso en sala se mide el volumen.</div>
         </>
       )}
 
@@ -437,8 +379,8 @@ export default function Gerencia({ onNav }) {
             <Kpi label="Utilidad bruta" value={mm(finanzas.utilidadBruta)} sub={finanzas.margenBrutoPct != null ? `margen ${finanzas.margenBrutoPct}%` : null} onClick={ir("precios")} />
             <Kpi label="Compras" value={`− ${mm(finanzas.egresos.compras)}`} sub="reposición de inventario" onClick={ir("lotes")} />
             {/* Desglose por método (antes "Cobrado (caja)", que era siempre ≡ Ventas) */}
-            <div className={onNav ? "card card-link" : "card"} onClick={ir("cierrez")} style={{ padding: 16 }}>
-              <div style={{ fontSize: 11.5, color: "var(--muted)", textTransform: "uppercase", letterSpacing: ".04em", fontWeight: 600, display: "flex", justifyContent: "space-between", alignItems: "center" }}><span>Ventas por método</span>{onNav ? <span style={{ opacity: 0.55, fontWeight: 700, textTransform: "none" }} title="Ver Cierre Z de caja">›</span> : null}</div>
+            <div className="card" style={{ padding: 16 }}>
+              <div style={{ fontSize: 11.5, color: "var(--muted)", textTransform: "uppercase", letterSpacing: ".04em", fontWeight: 600 }}>Ventas por método</div>
               {[["efectivo", "Efectivo"], ["tarjeta", "Tarjeta"], ["transferencia", "Transferencia"], ["webpay", "Webpay"]].map(([k, lab]) => (
                 <div key={k} style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", fontSize: 12.5, marginTop: 5 }}>
                   <span style={{ color: "var(--muted)" }}>{lab}</span>
@@ -452,10 +394,10 @@ export default function Gerencia({ onNav }) {
             Utilidad bruta = ventas − costo de lo vendido{finanzas.sinCosto > 0 ? ` (margen sobre los productos con costo; ${finanzas.sinCosto} sin costo cargado)` : ""}. Los <b>gastos operativos</b> (sueldos, arriendo, servicios) se llevan aparte.
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(300px,1fr))", gap: 14 }}>
-          <Card className={onNav ? "card-link" : ""} onClick={ir("cierrez")}>
-            <div style={{ fontWeight: 700, marginBottom: 10, display: "flex", justifyContent: "space-between", alignItems: "center" }}><span>Caja del periodo · {clp(caja.total)} <span style={{ fontWeight: 400, color: "var(--muted)", fontSize: 12 }}>({num(caja.count)} cobros)</span></span>{onNav ? <span style={{ color: "var(--muted)", opacity: 0.55, fontWeight: 700 }} title="Ver Cierre Z de caja">›</span> : null}</div>
-            <HBars rows={Object.entries(caja.byMethod).map(([k, v]) => ({ k: k.charAt(0).toUpperCase() + k.slice(1), v, txt: clp(v) }))} />
-            {!Object.keys(caja.byMethod).length ? <div style={{ color: "var(--muted)", fontSize: 13 }}>Sin cobros en el periodo.</div> : null}
+          <Card>
+            <div style={{ fontWeight: 700, marginBottom: 10 }}>Cobros del periodo · {clp(cobros?.total || 0)} <span style={{ fontWeight: 400, color: "var(--muted)", fontSize: 12 }}>({num(cobros?.count || 0)} cobros)</span></div>
+            <HBars rows={Object.entries(cobros?.byMethod || {}).map(([k, v]) => ({ k: k.charAt(0).toUpperCase() + k.slice(1), v, txt: clp(v) }))} />
+            {!Object.keys(cobros?.byMethod || {}).length ? <div style={{ color: "var(--muted)", fontSize: 13 }}>Sin cobros en el periodo.</div> : null}
           </Card>
           <Card className={onNav ? "card-link" : ""} onClick={ir("cobranza")}>
             <div style={{ fontWeight: 700, marginBottom: 10, display: "flex", justifyContent: "space-between", alignItems: "center" }}><span>Cuentas por cobrar {aging ? `· ${clp(aging.total)}` : ""} {vencido > 0 ? <span style={{ fontWeight: 400, color: "var(--danger)", fontSize: 12 }}>· vencido {clp(vencido)}</span> : null}</span>{onNav ? <span style={{ color: "var(--muted)", opacity: 0.55, fontWeight: 700 }} title="Ver Cobranza">›</span> : null}</div>

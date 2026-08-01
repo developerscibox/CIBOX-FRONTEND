@@ -4,48 +4,30 @@ import { ORDER_STATUS } from "./theme.js";
 export function Logo() {
   return (
     <div className="brand">
-      <img src="/logo-bodega12.png" alt="Bodega 12" className="brand-logo" />
-      <div className="nm">Bodega <i>12</i><small>WMS · Lo Espejo</small></div>
+      <img src="/logo-cibox.png" alt="Cibox" className="brand-logo" />
+      <div className="nm">Cibox<small>Operaciones</small></div>
     </div>
   );
 }
 
 // Orden por FLUJO de trabajo, en 4 grupos: Inicio·gestión (dashboards) →
-// Relay de sala (pipeline de 4 roles, en orden) → Inventario → Reportes·admin.
+// Pedidos (del pago a la entrega) → Inventario → Reportes·admin.
 // El Sidebar dibuja el nombre del grupo y respeta este orden.
-// `mod` = módulo comercial contratado (docs/MODULOS-COMERCIALES.md):
-//   "web" (A · Tienda Web, base) · "bodega" (B · Bodega Pro) ·
-//   "sala" (C · Venta en Sala) · "gerencia" (D · Gerencia).
+// `mod` = módulo comercial contratado (docs/historico-bodega12/MODULOS-COMERCIALES.md):
+//   "web" (A · Tienda Web, base) · "bodega" (B · Bodega Pro) · "gerencia" (C · Gerencia).
 export const NAV = [
   // Inicio · gestión — consola del gerente/dueño
   { key: "gerencia", ic: "🎯", label: "Centro de mando", perm: "reports.read", mod: "gerencia", group: "Inicio · gestión" },
   { key: "dashboard360", ic: "🎛️", label: "Dashboard 360°", perm: "reports.read", mod: "gerencia", group: "Inicio · gestión" },
-  { key: "actividad", ic: "🟢", label: "Actividad en vivo", perm: "reports.read", mod: "gerencia", group: "Inicio · gestión" },
-  { key: "desempeno", ic: "🎯", label: "Desempeño por áreas", perm: "reports.read", mod: "gerencia", group: "Inicio · gestión" },
-  { key: "incentivos", ic: "🏅", label: "Incentivos", perm: "reports.read", mod: "gerencia", group: "Inicio · gestión" },
-  { key: "pantallas", ic: "🖥️", label: "Centro de pantallas", perm: "reports.read", mod: "bodega", group: "Inicio · gestión" },
   { key: "dashboard", ic: "📊", label: "Resumen", perm: "orders.read", mod: "bodega", group: "Inicio · gestión" },
   { key: "reportes", ic: "📑", label: "Reportes", perm: "reports.read", mod: "gerencia", group: "Inicio · gestión" },
   { key: "cobranza", ic: "💸", label: "Cobranza", perm: "reports.read", mod: "gerencia", group: "Inicio · gestión" },
   { key: "clientes", ic: "🤝", label: "Clientes · Crédito", perm: "reports.read", mod: "gerencia", group: "Inicio · gestión" },
-  { key: "autorizaciones", ic: "🔐", label: "Autorizaciones", pillKey: "auth", perm: "users.manage", mod: "sala", group: "Inicio · gestión" },
 
-  // Módulo VENTA EN SALA — el vendedor: toma pedidos, ve sus métricas e historial;
-  // y la impresión central de las boletas de la sala.
-  { key: "venta-sala", ic: "🛒", label: "Tomar pedido", pillKey: "fila", perm: "orders.take", mod: "sala", group: "Venta en sala" },
-  { key: "mis-metricas", ic: "📈", label: "Mis métricas", perm: "orders.take", mod: "sala", group: "Venta en sala" },
-  { key: "historial", ic: "📜", label: "Mi historial", perm: "orders.take", mod: "sala", group: "Venta en sala" },
-  { key: "impresion", ic: "🖨️", label: "Impresión central", perm: "orders.pay", mod: "sala", group: "Venta en sala" },
-  { key: "turnos", ic: "🎫", label: "Turnos / Fila", perm: "orders.take", mod: "sala", group: "Venta en sala" },
-
-  // Relay de sala — cajera / bodega (se modularizará después: caja, picking/packing…)
-  { key: "caja", ic: "💵", label: "Caja", perm: "orders.pay", mod: "sala", group: "Relay de sala" },
-  { key: "picking", ic: "🧺", label: "Picking", pillKey: "pick", perm: "orders.prepare", mod: "bodega", group: "Relay de sala" },
-  { key: "retiro", ic: "🤝", label: "Retiro / Mostrador", perm: "orders.deliver", mod: "web", group: "Relay de sala" },
-  { key: "pedidos", ic: "📋", label: "Pedidos", perm: "orders.read", mod: "web", group: "Relay de sala" },
-  { key: "calendario", ic: "🗓️", label: "Calendario retiros", perm: "orders.read", mod: "web", group: "Relay de sala" },
-  { key: "cierrez", ic: "🧮", label: "Cierre Z", perm: "reports.read", mod: "sala", group: "Relay de sala" },
-  { key: "venta-manual", ic: "🧾", label: "Venta manual", pillKey: "fila", perm: "orders.prepare", mod: "sala", group: "Relay de sala" },
+  // Pedidos — del pago a la entrega
+  { key: "pedidos", ic: "📋", label: "Pedidos", perm: "orders.read", mod: "web", group: "Pedidos" },
+  { key: "picking", ic: "🧺", label: "Preparación", pillKey: "pick", perm: "orders.prepare", mod: "bodega", group: "Pedidos" },
+  { key: "calendario", ic: "🗓️", label: "Calendario entregas", perm: "orders.read", mod: "web", group: "Pedidos" },
 
   // Inventario · Catálogo
   { key: "productos", ic: "📦", label: "Productos", perm: "products.manage", mod: "web", group: "Inventario · Catálogo" },
@@ -64,14 +46,11 @@ export const NAV = [
   { key: "fefo", ic: "⏰", label: "FEFO · por vencer", perm: "inventory.read", mod: "bodega", group: "Inventario · Control" },
   { key: "lotes", ic: "🧫", label: "Lotes y costos", perm: "inventory.read", mod: "bodega", group: "Inventario · Control" },
   { key: "kardex", ic: "📒", label: "Movimientos", perm: "inventory.read", mod: "bodega", group: "Inventario · Control" },
-  { key: "sectores", ic: "🗺️", label: "Sectores / Zonas", perm: "products.manage", mod: "bodega", group: "Inventario · Control" },
-  { key: "pickers", ic: "🎖️", label: "Pickers y niveles", perm: "users.manage", mod: "bodega", group: "Inventario · Control" },
 
   // Reportes · admin
   { key: "ventas", ic: "💰", label: "Ventas", perm: "reports.read", mod: "gerencia", group: "Reportes · admin" },
   { key: "documentos", ic: "📄", label: "Documentos SII", perm: "reports.read", mod: "gerencia", group: "Reportes · admin" },
   { key: "devoluciones", ic: "↩️", label: "Devoluciones", perm: "orders.cancel", mod: "gerencia", group: "Reportes · admin" },
-  { key: "modulos", ic: "🪟", label: "Módulos", perm: "users.manage", mod: "gerencia", group: "Reportes · admin" },
   { key: "usuarios", ic: "👥", label: "Usuarios", perm: "users.manage", mod: "web", group: "Reportes · admin" },
 ];
 
@@ -81,57 +60,29 @@ export const NAV_PERMS = Object.fromEntries(NAV.map((n) => [n.key, n.perm]));
 // la vista activa cuando el módulo está apagado).
 export const NAV_MODS = Object.fromEntries(NAV.map((n) => [n.key, n.mod]));
 
-// === Modo "solo pedidos por internet" (beta) ===
-// Se ocultan del MENÚ los módulos que no aplican sin venta presencial: venta
-// manual, módulos de atención (fila), documentos SII (deshabilitado) y los
-// reportes/movimientos/devoluciones (secundarios). Las pantallas siguen
-// existiendo en el código; para restaurar el menú completo, vaciar este set.
+// Vistas ocultas del MENÚ sin borrarlas del código. Para restaurar una, basta
+// sacar su key de este set.
 export const HIDDEN_NAV = new Set([
-  "venta-manual", // el relay (Tomar pedido) lo reemplaza
-  "documentos",   // SII no operativo aún
-  "turnos",       // ocultas a pedido del CEO (2026-07-03): menos ruido en el
-  "cierrez",      // menú mientras se presenta el producto. Para restaurar,
-  "conteo",       // basta sacar la key de este set.
+  "documentos", // SII no operativo aún
+  "conteo",
 ]);
 
-// Alcance por rol del relay: cada rol operativo ve SOLO sus pantallas (el spec
-// pide "cada rol ve únicamente su interfaz"). Los roles ausentes aquí
-// (admin/manager) ven todo el menú permitido. Se afina por fase.
+// Alcance por rol: operaciones ve SOLO sus pantallas. Los roles ausentes aquí
+// (admin) ven todo el menú permitido.
 export const ROLE_SCOPE = {
-  vendedor: new Set(["venta-sala", "mis-metricas", "historial"]),
-  cashier: new Set(["caja", "retiro", "impresion"]),
-  operator: new Set(["picking", "recepcion", "reposicion", "conteo", "fefo", "inventario", "lotes", "ajustes", "kardex", "consulta-precios"]),
-  pantalla: new Set(["dashboard"]),
-  // Gerente/dueño: consola EJECUTIVA exclusiva. Ve el negocio y supervisa, sin las
-  // herramientas de estación (tomar pedido, caja, picking…). El admin
+  operator: new Set([
+    "picking", "pedidos", "recepcion", "reposicion", "conteo", "fefo",
+    "inventario", "lotes", "ajustes", "kardex", "consulta-precios",
+  ]),
+  // Gerente/dueño: consola EJECUTIVA. Ve el negocio y supervisa; el admin
   // (superusuario) no tiene scope → ve todo el panel.
   manager: new Set([
-    "gerencia", "dashboard360", "incentivos", "reportes", "ventas", "cobranza", "clientes", "autorizaciones", "cierrez",
-    "pedidos", "retiro", "impresion", "turnos", "devoluciones",
+    "gerencia", "dashboard360", "reportes", "ventas", "cobranza", "clientes",
+    "pedidos", "calendario", "devoluciones",
     "productos", "precios", "consulta-precios", "contenido", "inventario", "lotes", "kardex", "fefo",
-    "reposicion", "conteo", "ajustes", "recepcion", "sectores", "usuarios",
+    "reposicion", "conteo", "ajustes", "recepcion", "usuarios",
   ]),
 };
-
-// Barra de navegación INFERIOR estilo app (para el vendedor en el celular).
-// Reemplaza el menú lateral con botones grandes, como un e-commerce móvil.
-const VENDEDOR_TABS = [
-  { key: "venta-sala", ic: "🛒", label: "Vender" },
-  { key: "mis-metricas", ic: "📈", label: "Métricas" },
-  { key: "historial", ic: "📜", label: "Historial" },
-];
-export function BottomNav({ active, onNav }) {
-  return (
-    <nav className="bottomnav" aria-label="Navegación del vendedor">
-      {VENDEDOR_TABS.map((t) => (
-        <button key={t.key} className={"bn-item" + (active === t.key ? " on" : "")} onClick={() => onNav(t.key)}>
-          <span className="bn-ic">{t.ic}</span>
-          <span className="bn-lb">{t.label}</span>
-        </button>
-      ))}
-    </nav>
-  );
-}
 
 export function Sidebar({ active, onNav, pills = {}, bump = null, can = () => true, role = null, mods = null }) {
   const scope = ROLE_SCOPE[String(role || "").toLowerCase()];
@@ -151,11 +102,11 @@ export function Sidebar({ active, onNav, pills = {}, bump = null, can = () => tr
 
   // Estado plegado por grupo (persistido). Default: todo expandido.
   const [collapsed, setCollapsed] = useState(() => {
-    try { return JSON.parse(localStorage.getItem("b12_nav_collapsed") || "{}"); } catch { return {}; }
+    try { return JSON.parse(localStorage.getItem("cibox_nav_collapsed") || "{}"); } catch { return {}; }
   });
   const toggle = (name) => setCollapsed((c) => {
     const next = { ...c, [name]: !c[name] };
-    try { localStorage.setItem("b12_nav_collapsed", JSON.stringify(next)); } catch { /* sin storage */ }
+    try { localStorage.setItem("cibox_nav_collapsed", JSON.stringify(next)); } catch { /* sin storage */ }
     return next;
   });
 
@@ -205,7 +156,7 @@ export function Sidebar({ active, onNav, pills = {}, bump = null, can = () => tr
 }
 
 export function Topbar({
-  title, sub, user, roleLabel, initials = "B12", onLogout, onTour,
+  title, sub, user, roleLabel, initials = "CB", onLogout, onTour,
   canSwitchView = false, viewAs = null, onViewAs, previewRoles = [],
   planDemo = null, onPlanDemo,
 }) {
@@ -248,20 +199,6 @@ export function Topbar({
             {planDemo ? "Plan: Tienda Web" : "Demo Tienda Web"}
           </button>
         ) : null}
-        <a
-          href="/pantalla"
-          target="_blank"
-          rel="noreferrer"
-          className="tb-secondary"
-          title="Pantalla pública de retiros (para los clientes)"
-          style={{
-            marginRight: 4, border: "1px solid var(--border)", background: "#fff",
-            borderRadius: 10, padding: "8px 12px", fontSize: 13, fontWeight: 600,
-            color: "var(--magenta)", cursor: "pointer", textDecoration: "none",
-          }}
-        >
-          Pantalla
-        </a>
         {onTour ? (
           <button
             onClick={onTour}
@@ -278,7 +215,7 @@ export function Topbar({
         ) : null}
         <div className="tb-userinfo" style={{ textAlign: "right" }}>
           <div style={{ fontWeight: 700, fontSize: 14 }}>{user?.name || "Usuario"}</div>
-          <div style={{ fontSize: 12, color: "var(--muted)" }}>{roleLabel || "Bodega"}</div>
+          <div style={{ fontSize: 12, color: "var(--muted)" }}>{roleLabel || "Operaciones"}</div>
         </div>
         <div className="av">{initials}</div>
         {onLogout ? (

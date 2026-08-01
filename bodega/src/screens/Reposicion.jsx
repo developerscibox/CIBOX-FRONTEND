@@ -13,13 +13,13 @@ const MOCK = {
   items: [
     { _id: "r1", name: "Coca-Cola 1.5L", sku: "CC15", barcode: "7790001",
       stock: 0, min_stock: 24, target_stock: 96, suggested_qty: 96, box_qty: 6, suggested_boxes: 16,
-      urgency: "critico", vendor: { id: "v1", name: "Embonor" }, location: { sector: "Bebidas" } },
+      urgency: "critico", vendor: { id: "v1", name: "Embonor" } },
     { _id: "r2", name: "Arroz grado 1 · 1kg", sku: "AR1", barcode: "7790002",
       stock: 8, min_stock: 20, target_stock: 0, suggested_qty: 32, box_qty: 10, suggested_boxes: 4,
-      urgency: "alto", vendor: { id: "v2", name: "Tucapel" }, location: { sector: "Abarrotes" } },
+      urgency: "alto", vendor: { id: "v2", name: "Tucapel" } },
     { _id: "r3", name: "Detergente 3kg", sku: "DET3", barcode: "7790003",
       stock: 14, min_stock: 18, target_stock: 36, suggested_qty: 22, box_qty: 4, suggested_boxes: 6,
-      urgency: "medio", vendor: { id: "v3", name: "Unilever" }, location: { sector: "Aseo" } },
+      urgency: "medio", vendor: { id: "v3", name: "Unilever" } },
   ],
 };
 
@@ -152,7 +152,6 @@ export default function Reposicion({ onNav }) {
                       </td>
                       <td style={td}>
                         <b style={{ color: t.text }}>{p.name}</b>
-                        <div style={{ fontSize: 12, color: t.muted }}>{p.location?.sector || "Sin sector"}</div>
                       </td>
                       <td style={{ ...td, textAlign: "center", fontWeight: 700, color: (p.stock ?? 0) <= 0 ? t.danger : t.text }}>
                         {p.stock ?? 0}

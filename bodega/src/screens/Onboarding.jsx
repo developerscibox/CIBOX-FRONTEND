@@ -60,16 +60,10 @@ const STEPS = [
     body: "Panorama gráfico del stock en bodega, en cajas. Para saber qué se está agotando.",
   },
   {
-    perm: "orders.take",
-    ic: "🛒",
-    title: "Tomar pedido en sala",
-    body: "¿Un cliente en la sala? En \"Tomar pedido\" armas su pedido con stock en vivo: la boleta se imprime en el computador central y pasa a Caja para el cobro.",
-  },
-  {
     perm: "reports.read",
     ic: "💰",
-    title: "Cuadre de caja y Ventas",
-    body: "En \"Ventas\" revisas cuánto se cobró en efectivo hoy y el desglose por cajero, más los KPIs del negocio.",
+    title: "Ventas",
+    body: "En \"Ventas\" revisas los KPIs del negocio: ventas del periodo, órdenes por estado y top de productos.",
   },
   {
     perm: "products.manage",

@@ -15,7 +15,7 @@ const MOCK_SERIE = Array.from({ length: 30 }, (_, i) => {
 const MOCK_FICHA = {
   producto: {
     sku: "B12-R01", barcode: "7801000001", nombre: "Aceite vegetal 900ml",
-    categoria: "Abarrotes", imagen: "", sector: "A-01", is_active: true,
+    categoria: "Abarrotes", imagen: "", is_active: true,
     precio_compra: 980, precio_venta: 1449, box_qty: 12,
     margen_bruto: 469, margen_pct: 32.4,
   },
@@ -195,7 +195,7 @@ export default function FichaProducto({ productId, onClose }) {
                   {[p.sku, p.barcode].filter(Boolean).join(" · ") || "sin códigos"}
                 </div>
                 <div style={{ fontSize: 12.5, color: "var(--muted)", marginTop: 2 }}>
-                  {[p.categoria, p.sector ? `Sector ${p.sector}` : null].filter(Boolean).join(" · ") || "—"}
+                  {p.categoria || "—"}
                 </div>
               </div>
               <span className="badge" style={p.is_active ? { background: "#dcfce7", color: "#166534" } : { background: "#fee2e2", color: "#b91c1c" }}>

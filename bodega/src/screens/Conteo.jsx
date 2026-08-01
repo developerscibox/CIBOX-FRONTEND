@@ -3,23 +3,23 @@ import { api, usingMock } from "../api.js";
 import { t } from "../theme.js";
 
 // Conteo físico (cycle count) — Fase C. El operador inicia un conteo por
-// sector/categoría/todo, registra las cantidades reales (guardado progresivo) y
+// categoría/todo, registra las cantidades reales (guardado progresivo) y
 // al cerrar el sistema aplica los ajustes dejando el stock = lo contado
 // (autoritativo). Reusa adjustStock en el backend (atómico, kardex, FEFO).
 
 // ── Datos demo (solo sin backend) ─────────────────────────────────────────────
 const MOCK_PRODUCTS = [
-  { _id: "p1", name: "Coca-Cola 1.5L", sku: "CC15", barcode: "7790001", stock: 48, location: { sector: "Bebidas" }, category: { id: "c2", name: "Bebidas" } },
-  { _id: "p2", name: "Arroz grado 1 · 1kg", sku: "AR1", barcode: "7790002", stock: 30, location: { sector: "Abarrotes" }, category: { id: "c1", name: "Abarrotes" } },
-  { _id: "p3", name: "Fideos 400g", sku: "FD4", barcode: "7790004", stock: 60, location: { sector: "Abarrotes" }, category: { id: "c1", name: "Abarrotes" } },
-  { _id: "p4", name: "Detergente 3kg", sku: "DET3", barcode: "7790003", stock: 14, location: { sector: "Aseo" }, category: { id: "c3", name: "Aseo" } },
+  { _id: "p1", name: "Coca-Cola 1.5L", sku: "CC15", barcode: "7790001", stock: 48, category: { id: "c2", name: "Bebidas" } },
+  { _id: "p2", name: "Arroz grado 1 · 1kg", sku: "AR1", barcode: "7790002", stock: 30, category: { id: "c1", name: "Abarrotes" } },
+  { _id: "p3", name: "Fideos 400g", sku: "FD4", barcode: "7790004", stock: 60, category: { id: "c1", name: "Abarrotes" } },
+  { _id: "p4", name: "Detergente 3kg", sku: "DET3", barcode: "7790003", stock: 14, category: { id: "c3", name: "Aseo" } },
 ];
 const MOCK_CATS = { items: [{ _id: "c1", name: "Abarrotes" }, { _id: "c2", name: "Bebidas" }, { _id: "c3", name: "Aseo" }] };
 const MOCK_HISTORY = [
-  { _id: "h1", scope: { type: "sector", label: "Bebidas" }, status: "closed", closed_at: "2026-06-25T12:00:00Z", applied: { lines_adjusted: 3, units_delta: -7 } },
+  { _id: "h1", scope: { type: "category", label: "Bebidas" }, status: "closed", closed_at: "2026-06-25T12:00:00Z", applied: { lines_adjusted: 3, units_delta: -7 } },
 ];
 
-const SCOPE_LABEL = { sector: "Sector", category: "Categoría", all: "Todo el inventario" };
+const SCOPE_LABEL = { category: "Categoría", all: "Todo el inventario" };
 
 const fmtDate = (d) => {
   if (!d) return "—";
@@ -34,7 +34,6 @@ const diffStr = (d) => (d > 0 ? `+${d}` : String(d));
 export default function Conteo() {
   // ── Datos de catálogo (para iniciar el conteo) ──────────────────────────────
   const [cats, setCats] = useState([]);
-  const [sectors, setSectors] = useState([]);
   const [catalogReady, setCatalogReady] = useState(false);
 
   // ── Conteo activo y lista de sesiones ───────────────────────────────────────
@@ -45,8 +44,8 @@ export default function Conteo() {
   const [error, setError] = useState(null);
 
   // ── Iniciar conteo ──────────────────────────────────────────────────────────
-  const [scopeType, setScopeType] = useState("sector");
-  const [scopeValue, setScopeValue] = useState(""); // value del sector/categoría elegido
+  const [scopeType, setScopeType] = useState("category");
+  const [scopeValue, setScopeValue] = useState(""); // value de la categoría elegida
   const [starting, setStarting] = useState(false);
 
   // ── Contar ──────────────────────────────────────────────────────────────────
@@ -59,20 +58,19 @@ export default function Conteo() {
   const baselineRef = useRef({});                  // counted_qty servidor por línea (para no re-PATCH iguales)
   const savingRef = useRef(new Set());             // PATCH en vuelo (el cierre los espera)
 
-  // Carga inicial: catálogo (sectores + categorías) y sesiones de conteo.
+  // Carga inicial: catálogo (categorías) y sesiones de conteo.
   useEffect(() => {
     let alive = true;
     (async () => {
       if (usingMock) {
         setCats(MOCK_CATS.items);
-        setSectors([...new Set(MOCK_PRODUCTS.map((p) => p.location?.sector).filter(Boolean))]);
         setCatalogReady(true);
         setHistory(MOCK_HISTORY);
         setLoading(false);
         return;
       }
       try {
-        // Catálogo para derivar sectores: páginas de 500 (máx. del backend),
+        // Catálogo del conteo: páginas de 500 (máx. del backend),
         // hasta 3 páginas si hay más (has_next).
         const fetchAllProducts = async () => {
           const acc = [];
@@ -92,10 +90,8 @@ export default function Conteo() {
         ]);
         if (!alive) return;
         setCats(catsRes?.items || catsRes?.categories || []);
-        const secs = [...new Set(prodItems.map((p) => p.location?.sector).filter(Boolean))].sort();
-        setSectors(secs);
         setCatalogReady(true);
-        if (prodErr) setError(`No se pudieron cargar los sectores del catálogo: ${prodErr.message}`);
+        if (prodErr) setError(`No se pudo cargar el catálogo: ${prodErr.message}`);
         const sessions = countsRes?.items || [];
         const opens = sessions.filter((s) => s.status === "open");
         setOpenSessions(opens);
@@ -129,14 +125,13 @@ export default function Conteo() {
 
   // Opciones del selector según el tipo de scope.
   const scopeOptions = useMemo(() => {
-    if (scopeType === "sector") return sectors.map((s) => ({ value: s, label: s }));
     if (scopeType === "category") return cats.map((c) => ({ value: c._id, label: c.name }));
     return [];
-  }, [scopeType, sectors, cats]);
+  }, [scopeType, cats]);
 
   // ── Iniciar ────────────────────────────────────────────────────────────────
   async function start() {
-    if (scopeType !== "all" && !scopeValue) { setError("Elige un sector o categoría."); return; }
+    if (scopeType !== "all" && !scopeValue) { setError("Elige una categoría."); return; }
     setStarting(true);
     setError(null);
     const opt = scopeOptions.find((o) => o.value === scopeValue);
@@ -147,8 +142,6 @@ export default function Conteo() {
       if (usingMock) {
         const pool = scopeType === "all"
           ? MOCK_PRODUCTS
-          : scopeType === "sector"
-            ? MOCK_PRODUCTS.filter((p) => p.location?.sector === scopeValue)
             : MOCK_PRODUCTS.filter((p) => p.category?.id === scopeValue);
         setActive({
           _id: "demo", scope, status: "open",
@@ -371,7 +364,6 @@ function StartCard({ scopeType, setScopeType, scopeValue, setScopeValue, scopeOp
         <div className="field">
           <label>Alcance</label>
           <select value={scopeType} onChange={(e) => setScopeType(e.target.value)}>
-            <option value="sector">Por sector</option>
             <option value="category">Por categoría</option>
             <option value="all">Todo el inventario</option>
           </select>
@@ -387,7 +379,7 @@ function StartCard({ scopeType, setScopeType, scopeValue, setScopeValue, scopeOp
             </select>
             {noOptions ? (
               <div className="hint" style={{ color: t.warn }}>
-                No hay {scopeType === "sector" ? "sectores" : "categorías"} disponibles en el catálogo.
+                No hay categorías disponibles en el catálogo.
               </div>
             ) : null}
           </div>

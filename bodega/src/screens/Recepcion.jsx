@@ -41,7 +41,7 @@ export default function Recepcion() {
           lot_code: "",
           expiry_date: "",
           // Ubicación sembrada desde Reposición (location del producto: objeto
-          // { code, sector } o string), editable por fila igual que al escanear.
+          // ({ code } o string), editable por fila igual que al escanear.
           location: typeof d.location === "string" ? d.location : (d.location?.code || ""),
         };
       });

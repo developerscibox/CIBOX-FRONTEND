@@ -47,19 +47,19 @@ const MOCK = {
     {
       _id: "b1", product_name: "Leche entera 1L", lot_code: "R260624-1",
       qty_received: 240, qty_remaining: 180, unit_cost: 690, expiry_date: dayOffset(12),
-      location: { sector: "Lácteos", code: "A-03-2" }, supplier: "Distribuidora Sur", doc_ref: "Factura 12345",
+      location: { code: "A-03-2" }, supplier: "Distribuidora Sur", doc_ref: "Factura 12345",
       status: "open", received_at: dayOffset(-2), received_by: { label: "Recepción · operario" },
     },
     {
       _id: "b2", product_name: "Yogurt natural 1L", lot_code: "R260620-3",
       qty_received: 120, qty_remaining: 24, unit_cost: 820, expiry_date: dayOffset(4),
-      location: { sector: "Lácteos", code: "A-03-5" }, supplier: "Distribuidora Sur", doc_ref: "Factura 12290",
+      location: { code: "A-03-5" }, supplier: "Distribuidora Sur", doc_ref: "Factura 12290",
       status: "open", received_at: dayOffset(-6), received_by: { label: "Recepción · operario" },
     },
     {
       _id: "b3", product_name: "Arroz grado 1 · 1kg", lot_code: "R260601-2",
       qty_received: 300, qty_remaining: 0, unit_cost: 1050, expiry_date: dayOffset(300),
-      location: { sector: "Abarrotes", code: "C-11-1" }, supplier: "Comercial Andes", doc_ref: "Guía 8842",
+      location: { code: "C-11-1" }, supplier: "Comercial Andes", doc_ref: "Guía 8842",
       status: "depleted", received_at: dayOffset(-25), received_by: { label: "Recepción · operario" },
     },
   ],
@@ -194,7 +194,6 @@ export default function Lotes() {
                     </td>
                     <td style={{ fontSize: 13 }}>
                       {b.location?.code ? <b className="mono">{b.location.code}</b> : <span style={{ color: t.muted }}>sin ubicación</span>}
-                      {b.location?.sector ? <div style={{ color: t.muted, fontSize: 12 }}>{b.location.sector}</div> : null}
                     </td>
                     <td style={{ fontSize: 13 }}>
                       <div>{fmtDate(b.received_at) || <span style={{ color: t.muted }}>sin registro</span>}</div>

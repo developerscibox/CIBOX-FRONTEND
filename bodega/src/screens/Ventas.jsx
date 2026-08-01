@@ -20,7 +20,6 @@ const RANGES = [
   { key: "90", days: 90, label: "90 días" },
 ];
 
-const CASH_SUMMARY_FALLBACK = { date: "", total_cobrado: 0, count: 0, by_cashier: [] };
 
 function ymd(d) {
   // Fecha en hora LOCAL (Chile), no UTC: evita saltar de día al cerrar de noche.
@@ -119,9 +118,6 @@ export default function Ventas() {
   const top = useLoad(() => api.topProducts({ from, to, limit: 8 }), TOP_PRODUCTS_RES, [rangeKey]);
   // Órdenes para el resumen por estado (la lista completa la cubre la sección Pedidos).
   const ord = useLoad(() => api.orders({ limit: 100 }), ORDERS_ADMIN_RES);
-  // Cuadre de caja en efectivo del día (no depende del rango).
-  const cash = useLoad(() => api.cashSummary(ymd(new Date())), CASH_SUMMARY_FALLBACK);
-  const cashD = cash.data || CASH_SUMMARY_FALLBACK;
   // Catálogo con costos para estimar rentabilidad (cost_price solo lo ve admin/gerente).
   const prods = useLoad(() => api.products({ limit: 100, include_inactive: true }), { items: [] });
 
@@ -256,52 +252,6 @@ export default function Ventas() {
               </div>
             )}
           </div>
-        </div>
-      </div>
-
-      {/* Cuadre de caja efectivo (hoy) */}
-      <div className="card">
-        <div className="card-h">
-          <h2>Cuadre de caja efectivo (hoy)</h2>
-          <div className="spacer" />
-          <span style={{ fontSize: 13, color: t.muted }}>{ymd(new Date())}</span>
-        </div>
-        <div style={{ padding: "6px 2px" }}>
-          {cash.loading ? (
-            <div style={{ color: t.muted, fontSize: 13, padding: "10px 0" }}>Cargando caja…</div>
-          ) : cash.error ? (
-            <div style={{ color: t.danger, fontSize: 13, padding: "10px 0" }}>Error: {cash.error}</div>
-          ) : (
-            <>
-              <div style={{ display: "flex", gap: 24, flexWrap: "wrap", marginBottom: 14 }}>
-                <div>
-                  <div style={{ fontSize: 24, fontWeight: 800, color: t.text }}>{clp(cashD.total_cobrado)}</div>
-                  <div style={{ fontSize: 12.5, color: t.muted }}>Total cobrado en efectivo</div>
-                </div>
-                <div>
-                  <div style={{ fontSize: 24, fontWeight: 800, color: t.text }}>{(cashD.count ?? 0).toLocaleString("es-CL")}</div>
-                  <div style={{ fontSize: 12.5, color: t.muted }}>Órdenes en efectivo</div>
-                </div>
-              </div>
-
-              <div style={{ fontSize: 12.5, color: t.muted, fontWeight: 600, marginBottom: 8 }}>Desglose por cajero</div>
-              {(cashD.by_cashier || []).length === 0 ? (
-                <div style={{ color: t.muted, fontSize: 13, padding: "6px 0" }}>Sin cobros en efectivo hoy.</div>
-              ) : (
-                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                  {cashD.by_cashier.map((c, i) => (
-                    <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
-                      <span style={{ fontWeight: 600, color: t.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.label}</span>
-                      <span style={{ display: "flex", gap: 12, flex: "0 0 auto" }}>
-                        <span style={{ color: t.muted, fontSize: 13 }}>{(c.count ?? 0).toLocaleString("es-CL")} órd.</span>
-                        <b style={{ color: t.text }}>{clp(c.total)}</b>
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </>
-          )}
         </div>
       </div>
 

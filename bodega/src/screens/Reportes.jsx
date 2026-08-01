@@ -153,14 +153,14 @@ const dynTot = (arr, cols) => (arr?.length ? Object.fromEntries(cols.filter((c) 
 // ── VENTAS ─────────────────────────────────────────────────────────────────────
 
 function InfRanking() {
-  const [by, setBy] = useState("vendedor");
+  const [by, setBy] = useState("producto");
   const [from, setFrom] = useState(dAgo(29));
   const [to, setTo] = useState(hoy());
   const r = useLoad(() => api.rRanking({ by, from, to, limit: 50 }), null, [by, from, to]);
   const items = (r.data?.items || []).map((it, i) => ({ pos: i + 1, ...it }));
   const cols = [
     { k: "pos", label: "#", right: true },
-    { k: "nombre", label: { vendedor: "Vendedor", producto: "Producto", cliente: "Cliente" }[by], bold: true },
+    { k: "nombre", label: { producto: "Producto", cliente: "Cliente" }[by], bold: true },
     { k: "total", label: "Vendido $", fmt: "clp", right: true, bold: true },
     { k: "unidades", label: "Unidades", fmt: "num", right: true },
     { k: "pedidos", label: "Pedidos", fmt: "num", right: true },
@@ -172,7 +172,7 @@ function InfRanking() {
       nombre={`Ranking por ${by}`} cols={cols} items={items} tot={tot}
       loading={r.loading} error={r.error} nota="Top 50 del periodo, ordenado por venta"
       filtros={<>
-        <Seg options={[{ value: "vendedor", label: "Vendedor" }, { value: "producto", label: "Producto" }, { value: "cliente", label: "Cliente" }]} value={by} onChange={setBy} />
+        <Seg options={[{ value: "producto", label: "Producto" }, { value: "cliente", label: "Cliente" }]} value={by} onChange={setBy} />
         <Rango from={from} to={to} setFrom={setFrom} setTo={setTo} />
       </>}
     />
@@ -321,27 +321,6 @@ function InfMargen() {
   );
 }
 
-function InfCuadres() {
-  const r = useLoad(() => api.rCuadres(30), null, []);
-  const items = r.data?.items || [];
-  const cols = [
-    { k: "fecha", label: "Fecha", fmt: "datetime" },
-    { k: "cajera", label: "Cajera", bold: true },
-    { k: "monto_inicial", label: "Monto inicial", fmt: "clp", right: true },
-    { k: "esperado", label: "Esperado", fmt: "clp", right: true },
-    { k: "contado", label: "Contado", fmt: "clp", right: true },
-    { k: "diferencia", label: "Diferencia", fmt: "clp", right: true, bold: true, tint: (v) => (Number(v) < 0 ? "var(--danger)" : Number(v) > 0 ? "var(--warn)" : "var(--ok)") },
-    { k: "estado", label: "Estado" },
-  ];
-  const tot = items.length ? { diferencia: sum(items, "diferencia") } : null;
-  return (
-    <TablaInf
-      nombre="Cuadres de caja" cols={cols} items={items} tot={tot}
-      loading={r.loading} error={r.error} nota="Últimas 30 sesiones de caja con arqueo · diferencia = contado − esperado"
-    />
-  );
-}
-
 function InfConteos() {
   const r = useLoad(() => api.counts({ status: "closed", limit: 50 }), null, []);
   const items = (r.data?.items || []).map((c) => ({
@@ -376,7 +355,6 @@ const INFORMES = [
   { id: "rotacion", grupo: "Inventario", chip: "Rotación y quiebres", Comp: InfRotacion },
   { id: "kardex", grupo: "Inventario", chip: "Kardex valorizado", Comp: InfKardex },
   { id: "margen", grupo: "Finanzas", chip: "Márgenes", Comp: InfMargen },
-  { id: "cuadres", grupo: "Finanzas", chip: "Cuadres de caja", Comp: InfCuadres },
   { id: "conteos", grupo: "Finanzas", chip: "Diferencias de conteo", Comp: InfConteos },
 ];
 const GRUPOS = ["Ventas", "Inventario", "Finanzas"];
@@ -395,7 +373,7 @@ export default function Reportes() {
 
   if (usingMock) return <div className="card" style={{ padding: 18, color: "var(--muted)" }}>Los reportes usan datos reales. Conecta el backend para verlos.</div>;
 
-  const { ventas, productos, equipo, finanzas, caja, operacion } = d || {};
+  const { ventas, productos, equipo, finanzas, cobros, operacion } = d || {};
   const aging = cob.data?.aging;
   const llamarHoy = cob.data?.llamarHoy || [];
   const vencido = aging ? (aging.total || 0) - (aging.buckets?.vigente || 0) : 0;
@@ -406,7 +384,7 @@ export default function Reportes() {
     ["Ventas", finanzas.ingresos.ventas, "clp"], ["Pedidos", ventas.pedidos, "num"], ["Ticket promedio", ventas.ticket, "clp"],
     ["Costo de lo vendido", finanzas.egresos.cogs, "clp"], ["Compras de mercadería", finanzas.egresos.compras, "clp"],
     ["Utilidad bruta", finanzas.utilidadBruta, "clp"], ["Margen bruto %", finanzas.margenBrutoPct, "pct"],
-    ["Cobrado (caja)", finanzas.ingresos.cobrado, "clp"], ["Por cobrar", aging?.total || 0, "clp"],
+    ["Cobrado", finanzas.ingresos.cobrado, "clp"], ["Por cobrar", aging?.total || 0, "clp"],
   ];
 
   const descargarExcel = () => {
@@ -421,14 +399,13 @@ export default function Reportes() {
       [], ["Rentabilidad", "Margen %", "Utilidad"], ...productos.margen.map((p) => [p.name, p.margenPct, p.utilidad]),
     ]), "Productos");
     XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([
-      ["Vendedor", "Pedidos", "$ vendido"], ...equipo.vendedores.map((v) => [v.label, v.pedidos, v.monto]),
-      [], ["Cajera", "Cobros", "$ cobrado", "Tiempo medio (min)"], ...equipo.cajeras.map((c) => [c.label, c.cobros, c.monto, c.t_cobro_prom]),
-      [], ["Bodeguero", "Preparados", "Prep. media (min)"], ...equipo.bodegueros.map((b) => [b.label, b.preparados, b.prep_prom_min]),
+      ["Persona", "Pedidos preparados", "Prep. media (min)"],
+      ...(equipo?.preparacion || []).map((b) => [b.label, b.preparados, b.prep_prom_min]),
     ]), "Equipo");
     XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([
       ["Estado de resultados"], [], ["Ventas", finanzas.ingresos.ventas], ["(-) Costo de lo vendido", finanzas.egresos.cogs],
       ["(=) Utilidad bruta", finanzas.utilidadBruta], ["Margen bruto %", finanzas.margenBrutoPct], [], ["Compras de mercadería", finanzas.egresos.compras],
-      ["Cobrado (caja)", finanzas.ingresos.cobrado], ["Por cobrar", aging?.total || 0],
+      ["Cobrado", finanzas.ingresos.cobrado], ["Por cobrar", aging?.total || 0],
     ]), "Finanzas");
     XLSX.writeFile(wb, `Reporte-Bodega12-${to}.xlsx`);
   };
@@ -442,7 +419,7 @@ export default function Reportes() {
     autoTable(doc, { ...opt, startY: 31, head: [["Indicador", "Valor"]], body: resumenRows().map(([l, v, f]) => [l, f === "pct" ? `${v ?? 0}%` : f === "num" ? num(v) : clp(v)]) });
     autoTable(doc, { ...opt, head: [["Más vendidos", "Unid.", "Ingresos"]], body: productos.top.map((p) => [p.name, num(p.qty), clp(p.revenue)]) });
     autoTable(doc, { ...opt, head: [["Rentabilidad por producto", "Margen", "Utilidad"]], body: productos.margen.map((p) => [p.name, `${p.margenPct}%`, clp(p.utilidad)]) });
-    autoTable(doc, { ...opt, head: [["Vendedor", "Pedidos", "$ vendido"]], body: equipo.vendedores.map((v) => [v.label, num(v.pedidos), clp(v.monto)]) });
+    autoTable(doc, { ...opt, head: [["Persona", "Preparados", "Prep. media (min)"]], body: (equipo?.preparacion || []).map((b) => [b.label, num(b.preparados), num(b.prep_prom_min)]) });
     doc.save(`Reporte-Bodega12-${to}.pdf`);
   };
 
@@ -495,7 +472,7 @@ export default function Reportes() {
           <Kpi label="Utilidad bruta" value={mm(finanzas.utilidadBruta)} sub={finanzas.margenBrutoPct != null ? `margen ${finanzas.margenBrutoPct}%` : null} />
           <Kpi label="Costo de lo vendido" value={mm(finanzas.egresos.cogs)} sub="COGS del periodo" />
           <Kpi label="Compras" value={mm(finanzas.egresos.compras)} sub="reposición inventario" />
-          <Kpi label="Cobrado (caja)" value={mm(finanzas.ingresos.cobrado)} sub={`${num(caja?.count || 0)} cobros`} />
+          <Kpi label="Cobrado" value={mm(finanzas.ingresos.cobrado)} sub={`${num(cobros?.count || 0)} cobros`} />
           <Kpi label="Por cobrar" value={aging ? mm(aging.total) : "…"} sub={aging ? (vencido > 0 ? `vencido ${mm(vencido)}` : null) : "cargando cobranza"} />
           <Kpi label="Entregados" value={num(operacion?.entregados || 0)} sub={operacion?.cuello ? `cuello ${operacion.cuello.etapa}` : null} />
         </div>
@@ -518,9 +495,9 @@ export default function Reportes() {
             <Tabla head={["Producto", "Margen %", "Utilidad"]} aligns={["l", "r", "r"]} empty="Sin datos."
               rows={productos.margen.slice(0, 8).map((p) => [p.name, <span style={{ color: "var(--muted)" }}>{p.margenPct}%</span>, <span style={{ fontWeight: 600 }}>{clp(p.utilidad)}</span>])} />
           </CardTabla>
-          <CardTabla titulo="Top vendedores">
-            <Tabla head={["Vendedor", "Pedidos", "$ vendido"]} aligns={["l", "r", "r"]} empty="Sin datos."
-              rows={equipo.vendedores.slice(0, 8).map((v) => [v.label, <span style={{ color: "var(--muted)" }}>{num(v.pedidos)} ped.</span>, <span style={{ fontWeight: 600 }}>{clp(v.monto)}</span>])} />
+          <CardTabla titulo="Preparación por persona">
+            <Tabla head={["Persona", "Preparados", "Prep. media"]} aligns={["l", "r", "r"]} empty="Sin datos."
+              rows={(equipo?.preparacion || []).slice(0, 8).map((b) => [b.label, <span style={{ color: "var(--muted)" }}>{num(b.preparados)} ped.</span>, <span style={{ fontWeight: 600 }}>{num(b.prep_prom_min)} min</span>])} />
           </CardTabla>
           <CardTabla titulo="A quién cobrar hoy">
             <Tabla head={["Cliente", "Atraso", "Monto"]} aligns={["l", "r", "r"]} empty="Sin cobranzas urgentes."
