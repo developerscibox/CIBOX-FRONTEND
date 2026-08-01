@@ -457,11 +457,9 @@ export default function ProductCard({
           <AppText style={{ color: "#fff", fontSize: mini ? 12 : 14, fontWeight: "700" }}>
             {adding
               ? "Agregando..."
-              : hasPackTier
-                ? cajas > 1
-                  ? `Agregar ${cajas} cajas`
-                  : "Agregar caja"
-                : "Ver caja disponible"}
+              : cajas > 1
+                ? `Agregar ${cajas}`
+                : "Agregar"}
           </AppText>
         </Pressable>
 

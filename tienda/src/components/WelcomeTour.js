@@ -11,7 +11,7 @@ const SLIDES = [
   {
     emoji: "👋",
     title: `Bienvenido a ${brand.name}`,
-    body: "Somos un supermercado mayorista: precios bajos comprando por caja, con retiro GRATIS en nuestra bodega de Lo Espejo. En 1 minuto te mostramos cómo funciona. Puedes saltarlo cuando quieras.",
+    body: `Somos un supermercado 100% online: eliges tus productos, nosotros preparamos el pedido y te lo despachamos. En 1 minuto te mostramos cómo funciona. Puedes saltarlo cuando quieras.`,
   },
   {
     emoji: "📦",

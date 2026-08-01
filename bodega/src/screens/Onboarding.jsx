@@ -10,7 +10,7 @@ const STEPS = [
     perm: null,
     ic: "👋",
     title: `Bienvenido a ${brand.name}`,
-    body: "Este es el panel de bodega (Lo Espejo). Acá gestionas la operación: pedidos del día, picking, recepción, stock y caja. Vendemos solo por caja y el retiro es presencial.",
+    body: `Este es el panel de operaciones de ${brand.name}. Acá gestionas el día a día: los pedidos que entran por la web, su preparación, la recepción de mercadería y el stock.`,
   },
   {
     perm: null,

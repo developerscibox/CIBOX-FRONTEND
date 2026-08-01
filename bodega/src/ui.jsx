@@ -150,7 +150,7 @@ export function Sidebar({ active, onNav, pills = {}, bump = null, can = () => tr
       </nav>
       <div className="sb-foot">
         <span className="dot" style={{ background: "#22c55e" }} />
-        Lo Espejo · Santiago
+        {[brand.address.comuna, brand.address.ciudad].filter(Boolean).join(" · ")}
       </div>
     </aside>
   );
@@ -159,7 +159,6 @@ export function Sidebar({ active, onNav, pills = {}, bump = null, can = () => tr
 export function Topbar({
   title, sub, user, roleLabel, initials = "CB", onLogout, onTour,
   canSwitchView = false, viewAs = null, onViewAs, previewRoles = [],
-  planDemo = null, onPlanDemo,
 }) {
   return (
     <div className="topbar">
@@ -185,20 +184,6 @@ export function Topbar({
               <option key={r.role} value={r.role}>Ver como: {r.label}</option>
             ))}
           </select>
-        ) : null}
-        {onPlanDemo ? (
-          <button
-            onClick={() => onPlanDemo(planDemo ? null : "web")}
-            title="Demo comercial: muestra SOLO lo que incluye el plan Tienda Web (módulo A). No cambia nada real."
-            className="tb-secondary"
-            style={{
-              marginRight: 8, border: "1px solid " + (planDemo ? "#3730a3" : "var(--border)"),
-              background: planDemo ? "#3730a3" : "#fff", color: planDemo ? "#fff" : "#3730a3",
-              borderRadius: 10, padding: "8px 12px", fontSize: 13, fontWeight: 600, cursor: "pointer",
-            }}
-          >
-            {planDemo ? "Plan: Tienda Web" : "Demo Tienda Web"}
-          </button>
         ) : null}
         {onTour ? (
           <button

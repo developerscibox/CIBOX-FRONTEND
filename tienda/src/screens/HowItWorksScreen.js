@@ -9,7 +9,7 @@ const STEPS = [
     icon: "search-outline",
     title: "1. Explora el catálogo mayorista",
     description:
-      "Navega por nuestro catálogo de productos al por mayor. Filtra por categoría o busca lo que necesitas para tu negocio.",
+      "Navega por el catálogo completo. Filtra por categoría o busca directamente lo que necesitas.",
   },
   {
     icon: "cube-outline",

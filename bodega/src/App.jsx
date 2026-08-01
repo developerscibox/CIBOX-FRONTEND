@@ -137,17 +137,7 @@ export default function App() {
       .catch(() => { /* sin respuesta → default: todos */ });
     return () => { alive = false; };
   }, [user]);
-  // DEMO COMERCIAL: "ver plan Tienda Web" — muestra SOLO el módulo web tal
-  // como lo vería un cliente que compra únicamente la página. Es un override
-  // local (localStorage), no cambia nada del backend ni de la instalación.
-  const [planDemo, setPlanDemoState] = useState(() => {
-    try { return localStorage.getItem("cibox_plan_demo") || null; } catch { return null; }
-  });
-  const setPlanDemo = (v) => {
-    setPlanDemoState(v);
-    try { v ? localStorage.setItem("cibox_plan_demo", v) : localStorage.removeItem("cibox_plan_demo"); } catch { /* sin storage */ }
-  };
-  const modsEff = planDemo ? [planDemo] : mods;
+  const modsEff = mods;
 
   const modOn = (k) => !NAV_MODS[k] || modsEff.includes(NAV_MODS[k]);
 
@@ -160,7 +150,7 @@ export default function App() {
       setView(ok(home) ? home : VIEW_ORDER.find(ok) || "dashboard");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, view, can, mods, planDemo]);
+  }, [user, view, can, mods]);
 
   // Primer login del usuario: mostrar el tutorial automáticamente una sola vez.
   useEffect(() => {
@@ -188,21 +178,8 @@ export default function App() {
           viewAs={viewAs}
           onViewAs={setViewAs}
           previewRoles={PREVIEW_ROLES}
-          planDemo={planDemo}
-          onPlanDemo={canSwitchView ? setPlanDemo : undefined}
         />
         <div className="content">
-          {planDemo ? (
-            <div className="banner-mock" style={{ background: "#eef2ff", color: "#3730a3", display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-              <span>Demo comercial — plan <b>Tienda Web</b>: esto es exactamente lo que recibe un cliente que compra solo la página web (menú y pantallas del módulo A).</span>
-              <button
-                onClick={() => setPlanDemo(null)}
-                style={{ border: "1px solid #3730a3", background: "#fff", color: "#3730a3", borderRadius: 8, padding: "4px 10px", fontWeight: 700, cursor: "pointer" }}
-              >
-                Volver al panel completo
-              </button>
-            </div>
-          ) : null}
           {viewAs ? (
             <div className="banner-mock" style={{ background: "#e9f3da", color: "#3B7A1D", display: "flex", alignItems: "center", gap: 10 }}>
               <span>Estás viendo el panel <b>como {previewLabel}</b> (previsualización; tus permisos reales no cambian).</span>

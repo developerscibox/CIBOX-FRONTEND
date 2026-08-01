@@ -30,6 +30,7 @@ import MobileCategoryMenu from "../components/MobileCategoryMenu";
 import { readCache, writeCache } from "../utils/catalogCache";
 import { useHomeSlots, cmsText } from "../services/contentService";
 
+import brand from "../constants/brand";
 // Gradiente magenta de marca (igual al de los íconos de accesos rápidos).
 const GRAD = ["#F4439A", "#E81E86", "#3B7A1D"];
 // Canasto del hero, extraído de la propuesta de marca y fundido al degradado.
@@ -83,10 +84,10 @@ const boxSavingsPct = (product) => {
 // `content` = slots.hero del CMS. Cada campo cae al texto/asset de fábrica si
 // no está configurado (una tienda recién instalada se ve idéntica a hoy).
 function Hero({ navigation, isWebDesktop, isWide, content }) {
-  const title = cmsText(content?.title, "Tu supermercado\nmayorista online");
+  const title = cmsText(content?.title, `${brand.name}\n${brand.tagline}`);
   const subtitle = cmsText(
     content?.subtitle,
-    "Precios bajos todos los días para tu negocio o para tu hogar. ¡Ahorra más, todos los días!",
+    "Haz tu compra del supermercado desde donde estés. Nosotros la preparamos y te la llevamos.",
   );
   const cta = cmsText(content?.cta, "Ver ofertas");
   const remoteImage = cmsText(content?.image_url, "");

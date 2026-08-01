@@ -20,9 +20,9 @@ import VendorDashboardScreen from "./VendorDashboardScreen";
 import { showAppAlert } from "../utils/appAlerts";
 
 const BENEFITS = [
-  "Precios por caja al por mayor",
-  "Retiro gratis en bodega (Lo Espejo)",
-  "Ahorra comprando por caja vs. unidad",
+  "Compra online, a la hora que quieras",
+  "Seguimiento de tu pedido paso a paso",
+  "Packs con descuento por cantidad",
 ];
 
 export default function ProfileScreen({ navigation }) {

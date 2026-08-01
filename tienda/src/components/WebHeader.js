@@ -270,10 +270,10 @@ export default function WebHeader() {
           {width >= 1040 ? (
             <View style={{ justifyContent: "center", borderLeftWidth: 1, borderLeftColor: colors.border, paddingLeft: 12 }}>
               <AppText style={{ fontSize: 15, fontWeight: "900", color: colors.primary, lineHeight: 18 }}>
-                Compra por caja, paga menos
+                Tu supermercado online
               </AppText>
               <AppText style={{ fontSize: 12, fontWeight: "600", color: colors.muted, lineHeight: 15, marginTop: 2 }}>
-                Retiro gratis en bodega · Lo Espejo
+                Compra desde donde estés · nosotros te lo llevamos
               </AppText>
             </View>
           ) : null}

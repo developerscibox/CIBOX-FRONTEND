@@ -4,18 +4,19 @@ import InfoPageLayout, { InfoCard, SectionHeading } from "../components/InfoPage
 import { colors, spacing } from "../constants/theme";
 import AppText from "../components/AppText";
 
+import brand from "../constants/brand";
 const ICON = require("../../assets/home/qa-beneficios.png");
 
 const BENEFITS = [
   {
-    icon: "cube-outline",
-    title: "Compra por caja, paga menos",
-    desc: "Precios mayoristas por caja o display. Mientras más llevas, más ahorras frente al supermercado tradicional.",
+    icon: "cart-outline",
+    title: "Todo el supermercado, online",
+    desc: "Haz la compra completa desde el celular o el computador, a la hora que quieras. Sin filas ni estacionamiento.",
   },
   {
-    icon: "storefront-outline",
-    title: "Retiro gratis en bodega",
-    desc: "Retira tu pedido sin costo en nuestra bodega de Lo Espejo (Centro Logístico Mersan).",
+    icon: "cube-outline",
+    title: "Packs con descuento",
+    desc: "Varios productos tienen precio especial al llevar el pack completo. Puedes comprar una sola unidad si prefieres.",
   },
   {
     icon: "pricetags-outline",
@@ -30,7 +31,7 @@ const BENEFITS = [
   {
     icon: "albums-outline",
     title: "Gran variedad y stock",
-    desc: "Miles de productos para tu negocio, almacén o tu hogar, con disponibilidad real en bodega.",
+    desc: "Miles de productos para tu hogar, con stock real: si aparece en la web, lo tenemos.",
   },
   {
     icon: "people-outline",
@@ -43,7 +44,7 @@ export default function BeneficiosScreen() {
   return (
     <InfoPageLayout
       title="Beneficios de comprar en Cibox"
-      subtitle="Somos tu supermercado mayorista: ahorra comprando por caja y retira en bodega."
+      subtitle="Todo el supermercado en tu casa: compra online y nosotros te lo llevamos."
       icon={ICON}
     >
       <View style={{ flexDirection: "row", flexWrap: "wrap", gap: spacing.md }}>

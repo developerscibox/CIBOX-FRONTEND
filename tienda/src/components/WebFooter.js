@@ -78,7 +78,7 @@ export default function WebFooter() {
   const slots = useHomeSlots();
   const footerNote = cmsText(
     slots?.textos?.footer_note,
-    "Tu supermercado mayorista de confianza. Precios bajos, calidad garantizada y el mejor servicio.",
+    "Tu supermercado online. Compra desde donde estés: nosotros preparamos tu pedido y te lo llevamos.",
   );
 
   return (
