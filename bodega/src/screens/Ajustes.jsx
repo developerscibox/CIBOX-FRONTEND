@@ -62,7 +62,10 @@ export default function Ajustes() {
       setDone(null);
       return;
     }
-    const delta = tipo === "merma" ? -Math.abs(qtyNum) : Math.abs(qtyNum);
+    // "ajuste" corrige el inventario (conteo, error de carga) y puede ir en
+    // cualquier dirección; "merma" es pérdida real y siempre resta.
+    const delta = tipo === "ingreso" ? Math.abs(qtyNum) : -Math.abs(qtyNum);
+    const movType = tipo === "ingreso" ? "recepcion" : tipo === "merma" ? "merma" : "ajuste";
     setBusy(true);
     setError(null);
     setDone(null);
@@ -71,7 +74,7 @@ export default function Ajustes() {
       // ajusta stock y deja el movimiento en el kardex en la misma transacción.
       const res = usingMock
         ? { name: selected?.name, stock: (selected?.stock ?? 0) + delta }
-        : await api.adjust({ product_id: productId, delta, reason: reason.trim() });
+        : await api.adjust({ product_id: productId, delta, reason: reason.trim(), type: movType });
       setDone({ name: res.name || selected?.name, delta, stock: res.stock, reason: reason.trim() });
       setReason("");
       setQty(1);
@@ -142,8 +145,9 @@ export default function Ajustes() {
         <div className="field">
           <label>Tipo de ajuste</label>
           <select value={tipo} onChange={(e) => setTipo(e.target.value)}>
-            <option value="ingreso">+ Ingreso · recepción, conteo a favor</option>
-            <option value="merma">− Merma · rotura, vencimiento, conteo en contra</option>
+            <option value="ingreso">+ Entrada · recepción, conteo a favor</option>
+            <option value="ajuste">− Ajuste · corrección de inventario, error de carga</option>
+            <option value="merma">− Merma · rotura, vencimiento, robo</option>
           </select>
         </div>
 

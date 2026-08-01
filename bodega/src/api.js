@@ -168,8 +168,9 @@ export const api = {
     return req(`/inventory/movements${qs ? `?${qs}` : ""}`);
   },
   // POST /inventory/adjust  { product_id, delta, reason }  → { product_id, name, stock }
-  adjust: ({ product_id, delta, reason }) =>
-    req(`/inventory/adjust`, { method: "POST", body: { product_id, delta, reason } }),
+  // type: "recepcion" (entrada) | "ajuste" (corrección) | "merma" (pérdida real).
+  adjust: ({ product_id, delta, reason, type }) =>
+    req(`/inventory/adjust`, { method: "POST", body: { product_id, delta, reason, ...(type ? { type } : {}) } }),
   // GET /inventory/by-barcode/:code  → product { _id, name, barcode, stock, location, box_qty, ... }
   // box_qty = unidades por caja (para traducir cajas→unidades en la recepción).
   byBarcode: (code) => req(`/inventory/by-barcode/${encodeURIComponent(code)}`),

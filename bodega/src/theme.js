@@ -40,6 +40,7 @@ export const MOVEMENT = {
   expiracion: { label: "Expiración", color: "#16a34a", sign: "+" },
   reembolso:  { label: "Reembolso",  color: "#16a34a", sign: "+" },
   ajuste:     { label: "Ajuste",     color: "#3B7A1D", sign: "±" },
+  merma:      { label: "Merma",      color: "#b91c1c", sign: "-" },
   recepcion:  { label: "Recepción",  color: "#16a34a", sign: "+" },
 };
 
