@@ -384,10 +384,12 @@ export default function ProductDetailScreen({ route, navigation }) {
 
   useEffect(() => {
     if (product?.pricing?.tiers?.length) {
-      // Cibox vende por caja: preselecciona el tier de caja (mayor min_qty).
-      const defaultTier = boxTierOf(product) || product.pricing.tiers[0];
+      // Supermercado: parte en 1 unidad. El tramo del pack (si existe) lo
+      // aplica el backend solo cuando la cantidad llega a pack_size.
+      const unidad = product.pricing.tiers.find((t) => Number(t.min_qty) === 1);
+      const defaultTier = unidad || product.pricing.tiers[0];
       setSelectedTier(defaultTier);
-      setSelectedQuantity(defaultTier.min_qty || 1);
+      setSelectedQuantity(1);
     }
 
     if (Array.isArray(product?.images) && product.images.length > 0) {

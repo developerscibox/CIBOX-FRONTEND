@@ -14,7 +14,7 @@ import { showAppAlert } from "../utils/appAlerts";
 import useAuthStore from "../store/authStore";
 import AppText from "../components/AppText";
 import { colors, radius, spacing, shadows } from "../constants/theme";
-import { boxTierOf, boxQtyOf } from "../utils/boxPricing";
+import { boxTierOf, packSizeOf, unitPriceOf } from "../utils/boxPricing";
 import { getProductImage, productEmoji, productTint } from "../utils/productImage";
 
 const formatPrice = (value) => "$" + Number(value || 0).toLocaleString("es-CL");
@@ -142,9 +142,10 @@ export default function FavoritesScreen({ navigation }) {
           const productId = product?._id || item?.product_id;
           const productName = product?.name || "Producto";
           const boxTier = boxTierOf(product);
-          const boxQty = boxQtyOf(product);
-          const boxTotal =
-            boxTier?.price != null ? boxTier.price * boxQty : null;
+          const boxQty = packSizeOf(product);
+          // Precio que ve el cliente: el unitario. El pack, si existe, es un
+          // beneficio por cantidad (no un mínimo de compra).
+          const boxTotal = unitPriceOf(product) || null;
           const photo = getProductImage(product);
 
           return (

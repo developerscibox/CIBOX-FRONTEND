@@ -10,12 +10,19 @@ import { brand } from "../brand.js";
 // del backend → (3) importación real con reporte por fila. Máx 500 filas.
 
 const MAX_FILAS = 500;
-const CAMPOS = ["sku", "barcode", "name", "category_name", "price", "box_qty", "box_price", "cost_price", "stock_inicial", "min_stock", "target_stock", "brand", "description"];
-const NUMERICOS = new Set(["price", "box_qty", "box_price", "cost_price", "stock_inicial", "min_stock", "target_stock"]);
+// Espejo de SALE_UNITS del backend (validators/productValidators.js).
+const SALE_UNITS = ["unidad", "kg", "g", "l", "ml", "pack", "caja", "bandeja", "docena"];
+const CAMPOS = [
+  "sku", "barcode", "name", "brand", "category_name", "subcategory_name",
+  "sale_unit", "content_value", "content_unit",
+  "price", "iva_afecto", "pack_size", "pack_price",
+  "cost_price", "stock_inicial", "min_stock", "target_stock", "description",
+];
+const NUMERICOS = new Set(["price", "pack_size", "pack_price", "content_value", "cost_price", "stock_inicial", "min_stock", "target_stock"]);
 
 const EJEMPLOS = [
-  { sku: "B12-001", barcode: "7801000000017", name: "Aceite vegetal 900ml", category_name: "Abarrotes", price: 1449, box_qty: 12, box_price: 15480, cost_price: 980, stock_inicial: 120, min_stock: 24, target_stock: 48, brand: "Los Silos", description: "Aceite vegetal maravilla 900ml" },
-  { sku: "", barcode: "7801000000024", name: "Spaghetti N5 400g", category_name: "Abarrotes", price: 890, box_qty: 20, box_price: 15800, cost_price: 610, stock_inicial: 200, min_stock: 40, target_stock: 80, brand: "Lucchetti", description: "" },
+  { sku: "CIB-001", barcode: "7801000000017", name: "Aceite vegetal 900ml", brand: "Los Silos", category_name: "Abarrotes", subcategory_name: "Aceites", sale_unit: "unidad", content_value: 900, content_unit: "ml", price: 1449, iva_afecto: "si", pack_size: 12, pack_price: 15480, cost_price: 980, stock_inicial: 120, min_stock: 24, target_stock: 48, description: "Aceite vegetal maravilla 900ml" },
+  { sku: "", barcode: "7801000000024", name: "Spaghetti N°5 400g", brand: "Lucchetti", category_name: "Abarrotes", subcategory_name: "Pastas", sale_unit: "unidad", content_value: 400, content_unit: "g", price: 890, iva_afecto: "si", pack_size: "", pack_price: "", cost_price: 610, stock_inicial: 200, min_stock: 40, target_stock: 80, description: "" },
 ];
 
 // Normaliza una cabecera: minúsculas, sin tildes, espacios/guiones → "_".
@@ -53,6 +60,12 @@ function validarLocal(row) {
     if (f in row && !Number.isFinite(row[f])) return `Valor no numérico en la columna "${f}".`;
   }
   if ("price" in row && !(row.price > 0)) return "price debe ser mayor que 0.";
+  if ("sale_unit" in row && !SALE_UNITS.includes(String(row.sale_unit).toLowerCase())) {
+    return `sale_unit debe ser uno de: ${SALE_UNITS.join(", ")}.`;
+  }
+  if ("pack_size" in row && row.pack_size > 1 && "pack_price" in row && row.pack_price > 0 && "price" in row) {
+    if (row.pack_price >= row.price * row.pack_size) return "El pack debe costar menos que las unidades sueltas.";
+  }
   if (!row.sku && !row.barcode && !(row.price > 0)) return "Fila sin sku ni barcode (se crearía): requiere price mayor que 0.";
   return "";
 }

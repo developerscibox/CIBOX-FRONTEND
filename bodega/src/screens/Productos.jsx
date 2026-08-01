@@ -81,14 +81,24 @@ function Sec({ children }) {
   );
 }
 
+// Unidades de venta admitidas (espejo de SALE_UNITS del backend).
+const SALE_UNITS = ["unidad", "kg", "g", "l", "ml", "pack", "caja", "bandeja", "docena"];
+
 const EMPTY_FORM = {
   id: null,
+  sku: "",
   name: "",
+  brand: "",
   category_id: "",
-  imageUrl: "", // foto del producto (la que ve el cliente en la tienda)
+  subcategory_id: "",
+  saleUnit: "unidad",
+  contentValue: "",
+  contentUnit: "",
+  imageUrls: [], // fotos del producto (la primera es la portada)
   unitPrice: "",
-  boxUnitPrice: "",
+  packPrice: "",
   unitsPerBox: "",
+  ivaAfecto: true,
   stock: "0",
   minStock: "0",
   targetStock: "0",
@@ -100,6 +110,8 @@ const EMPTY_FORM = {
 
 export default function Productos() {
   const [search, setSearch] = useState("");
+  const [fCategoria, setFCategoria] = useState("");
+  const [fSubcategoria, setFSubcategoria] = useState("");
   const [showInactive, setShowInactive] = useState(true);
   const [nonce, setNonce] = useState(0);
 
@@ -117,13 +129,15 @@ export default function Productos() {
     page: 1,
     limit: 100, // máximo permitido por el backend (listProductsSchema)
     search: search.trim(),
+    category: fCategoria || undefined,
+    subcategory: fSubcategoria || undefined,
     include_inactive: showInactive ? "true" : undefined,
   };
 
   const res = useLoad(
     () => api.products(params),
     MOCK_PRODUCTS,
-    [search, showInactive, nonce],
+    [search, fCategoria, fSubcategoria, showInactive, nonce],
   );
   const cats = useLoad(() => api.categories({ limit: 100 }), MOCK_CATEGORIES, []);
 
@@ -135,6 +149,15 @@ export default function Productos() {
     for (const c of categories) m[c._id] = c;
     return m;
   }, [categories]);
+
+  // Categorías raíz (sin padre) y subcategorías por padre: el catálogo de
+  // supermercado es de dos niveles (categoría → subcategoría).
+  const categoriesRaiz = useMemo(
+    () => categories.filter((c) => !c.parent_id),
+    [categories],
+  );
+  const subcategoriasDe = (parentId) =>
+    parentId ? categories.filter((c) => String(c.parent_id || "") === String(parentId)) : [];
 
   const refresh = () => setNonce((n) => n + 1);
 
@@ -153,12 +176,19 @@ export default function Productos() {
     const b = boxTier(p);
     setForm({
       id: p._id,
+      sku: p.sku || "",
       name: p.name || "",
+      brand: p.brand || "",
       category_id: p.category?.id || "",
-      imageUrl: p.thumbnail || p.images?.[0] || "",
-      unitPrice: String(u?.price ?? ""),
-      boxUnitPrice: b ? String(b.price) : "",
-      unitsPerBox: b ? String(b.min_qty) : "",
+      subcategory_id: p.subcategory?.id || "",
+      saleUnit: p.sale_unit || "unidad",
+      contentValue: p.unit_content?.value ? String(p.unit_content.value) : "",
+      contentUnit: p.unit_content?.unit || "",
+      imageUrls: p.images?.length ? [...p.images] : (p.thumbnail ? [p.thumbnail] : []),
+      unitPrice: String(p.price ?? u?.price ?? ""),
+      packPrice: p.pack_price ? String(p.pack_price) : (b ? String(Number(b.price) * Number(b.min_qty)) : ""),
+      unitsPerBox: p.pack_size ? String(p.pack_size) : (b ? String(b.min_qty) : ""),
+      ivaAfecto: p.tax?.afecto !== false,
       stock: String(p.stock ?? 0),
       _origStock: Number(p.stock ?? 0),
       minStock: String(p.min_stock ?? 0),
@@ -180,30 +210,51 @@ export default function Productos() {
     setForm((f) => ({ ...f, ...patch }));
   }
 
-  // Sube la foto del producto (Cloudinary vía /uploads/image) y deja la URL en
-  // el formulario; se persiste recién al Guardar (images + thumbnail).
-  async function subirFoto(file) {
-    if (!file) return;
-    if (!/^image\//.test(file.type)) { setSaveErr("El archivo debe ser una imagen (JPG/PNG/WebP)."); return; }
+  // Sube FOTOS del producto (Cloudinary vía /uploads/image) y las agrega a la
+  // galería del formulario; se persisten recién al Guardar (images + thumbnail).
+  // La primera de la lista es la portada.
+  const MAX_FOTOS = 8;
+
+  async function subirFotos(files) {
+    const lista = Array.from(files || []);
+    if (!lista.length) return;
+    if (lista.some((f) => !/^image\//.test(f.type))) {
+      setSaveErr("Todos los archivos deben ser imágenes (JPG/PNG/WebP).");
+      return;
+    }
     setSaveErr("");
-    if (usingMock) { setF({ imageUrl: URL.createObjectURL(file) }); return; }
+    const cupo = MAX_FOTOS - (form?.imageUrls?.length || 0);
+    if (cupo <= 0) { setSaveErr(`Máximo ${MAX_FOTOS} fotos por producto.`); return; }
+    const aSubir = lista.slice(0, cupo);
+
+    if (usingMock) {
+      setF({ imageUrls: [...(form.imageUrls || []), ...aSubir.map((f) => URL.createObjectURL(f))] });
+      return;
+    }
     setUpFoto(true);
     try {
-      const up = await api.uploadImage(file);
-      const raw = up?.url || up?.data?.url;
-      if (!raw) throw new Error("La subida no devolvió URL");
       // El driver disk (dev) devuelve una ruta relativa (/uploads/…): se
       // absolutiza contra el origen del backend para que el preview, el
       // validador (.url) y la tienda reciban siempre una URL completa.
       const base = (import.meta.env.VITE_API_URL || "http://localhost:3001/api").replace(/\/api\/?$/, "");
-      const url = /^https?:\/\//i.test(raw) ? raw : new URL(raw, base).href;
-      setF({ imageUrl: url });
+      const urls = [];
+      for (const file of aSubir) {
+        const up = await api.uploadImage(file);
+        const raw = up?.url || up?.data?.url;
+        if (!raw) throw new Error("La subida no devolvió URL");
+        urls.push(/^https?:\/\//i.test(raw) ? raw : new URL(raw, base).href);
+      }
+      setF({ imageUrls: [...(form.imageUrls || []), ...urls] });
+      if (lista.length > cupo) setSaveErr(`Se subieron ${cupo}: el máximo es ${MAX_FOTOS} fotos.`);
     } catch (e2) {
-      setSaveErr(`No se pudo subir la foto: ${e2.message}`);
+      setSaveErr(`No se pudieron subir las fotos: ${e2.message}`);
     } finally {
       setUpFoto(false);
     }
   }
+
+  const quitarFoto = (url) => setF({ imageUrls: (form.imageUrls || []).filter((u) => u !== url) });
+  const hacerPortada = (url) => setF({ imageUrls: [url, ...(form.imageUrls || []).filter((u) => u !== url)] });
 
   // Escaneo del código (cámara): lo fija y avisa si ya pertenece a otro producto.
   async function onScanBarcode(code) {
@@ -234,26 +285,14 @@ export default function Productos() {
     if (!Number.isInteger(stock) || stock < 0) return "El stock inicial debe ser un entero ≥ 0.";
     const upb = Number(f.unitsPerBox);
     if (f.unitsPerBox !== "" && upb > 1) {
-      const boxUnit = Number(f.boxUnitPrice);
-      if (!Number.isInteger(upb) || upb < 2) return "Las unidades por caja deben ser un entero ≥ 2.";
-      if (!Number.isFinite(boxUnit) || boxUnit <= 0) return "Ingresa el precio unitario por caja.";
-      if (boxUnit >= unit) return "El precio por caja por unidad debe ser MENOR que el precio unitario.";
+      const packTotal = Number(f.packPrice);
+      if (!Number.isInteger(upb) || upb < 2) return "Las unidades por pack deben ser un entero ≥ 2.";
+      if (f.packPrice !== "") {
+        if (!Number.isFinite(packTotal) || packTotal <= 0) return "Ingresa un precio de pack válido.";
+        if (packTotal >= unit * upb) return `El pack debe costar menos que ${upb} unidades sueltas.`;
+      }
     }
     return "";
-  }
-
-  function buildTiers(f) {
-    const unit = Number(f.unitPrice);
-    const tiers = [{ min_qty: 1, price: unit, label: "Unidad" }];
-    const upb = Number(f.unitsPerBox);
-    if (f.unitsPerBox !== "" && upb > 1) {
-      tiers.push({
-        min_qty: upb,
-        price: Number(f.boxUnitPrice),
-        label: `Caja ${upb} un`,
-      });
-    }
-    return tiers;
   }
 
   async function save(e) {
@@ -269,22 +308,35 @@ export default function Productos() {
 
     const cat = catById[form.category_id];
     const category = { id: form.category_id, name: cat?.name || "" };
+    const sub = catById[form.subcategory_id];
+    const upb = Number(form.unitsPerBox);
+    // Solo viajan las fotos persistibles (las blob: del modo demo no son URLs).
+    const fotos = (form.imageUrls || []).filter((u) => u && !u.startsWith("blob:"));
     const payload = {
       name: form.name.trim(),
       description: form.description.trim() || `${form.name.trim()} — ${brand.name}.`,
       category,
-      pricing: { tiers: buildTiers(form) },
+      ...(form.subcategory_id ? { subcategory: { id: form.subcategory_id, name: sub?.name || "" } } : {}),
+      // El precio de venta es UNO. Los tramos por cantidad los deriva el backend.
+      price: Number(form.unitPrice),
+      sale_unit: form.saleUnit || "unidad",
+      unit_content: {
+        value: Number(form.contentValue) || 0,
+        unit: form.contentUnit.trim(),
+      },
+      pack_size: form.unitsPerBox !== "" && upb > 1 ? upb : 0,
+      pack_price: form.packPrice !== "" ? Number(form.packPrice) : 0,
+      tax: { afecto: form.ivaAfecto !== false },
+      ...(form.sku.trim() ? { sku: form.sku.trim() } : {}),
+      ...(form.brand.trim() ? { brand: form.brand.trim() } : {}),
       ...(form.id ? {} : { stock: Number(form.stock) }),
       min_stock: Number(form.minStock) || 0,
       target_stock: Number(form.targetStock) || 0,
       ...(form.barcode.trim() ? { barcode: form.barcode.trim() } : {}),
       ...(String(form.costPrice).trim() !== "" ? { cost_price: Number(form.costPrice) } : {}),
       expiry_date: form.expiryDate ? form.expiryDate : null,
-      // Foto de la tienda: con URL → portada + galería; sin URL → se quita.
-      // (Las blob: del modo demo no viajan: no son URLs persistibles.)
-      ...(form.imageUrl && !form.imageUrl.startsWith("blob:")
-        ? { thumbnail: form.imageUrl, images: [form.imageUrl] }
-        : form.id ? { thumbnail: "", images: [] } : {}),
+      // Fotos: la primera es la portada (thumbnail). Sin fotos, se quitan.
+      ...(fotos.length ? { thumbnail: fotos[0], images: fotos } : form.id ? { thumbnail: "", images: [] } : {}),
     };
 
     try {
@@ -323,10 +375,10 @@ export default function Productos() {
     }
   }
 
-  // Precio por caja en vivo dentro del formulario.
-  const formBoxTotal = form && Number(form.unitsPerBox) > 1 && Number(form.boxUnitPrice) > 0
-    ? Number(form.boxUnitPrice) * Number(form.unitsPerBox)
-    : null;
+  // Ahorro del pack en vivo dentro del formulario.
+  const packUnidades = form ? Number(form.unitsPerBox) : 0;
+  const packSuelto = form && packUnidades > 1 ? Number(form.unitPrice) * packUnidades : null;
+  const packTotal = form && form.packPrice !== "" ? Number(form.packPrice) : null;
 
   return (
     <div>
@@ -335,10 +387,32 @@ export default function Productos() {
           <label>Buscar</label>
           <input
             type="text"
-            placeholder="Nombre, marca o categoría…"
+            placeholder="Nombre, SKU, código, marca o categoría…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
+        </div>
+        <div className="field">
+          <label>Categoría</label>
+          <select
+            value={fCategoria}
+            onChange={(e) => { setFCategoria(e.target.value); setFSubcategoria(""); }}
+            disabled={cats.loading}
+          >
+            <option value="">Todas</option>
+            {categoriesRaiz.map((c) => <option key={c._id} value={c._id}>{c.name}</option>)}
+          </select>
+        </div>
+        <div className="field">
+          <label>Subcategoría</label>
+          <select
+            value={fSubcategoria}
+            onChange={(e) => setFSubcategoria(e.target.value)}
+            disabled={!fCategoria || cats.loading}
+          >
+            <option value="">{fCategoria ? "Todas" : "—"}</option>
+            {subcategoriasDe(fCategoria).map((c) => <option key={c._id} value={c._id}>{c.name}</option>)}
+          </select>
         </div>
         <div className="field">
           <label>Inactivos</label>
@@ -371,31 +445,42 @@ export default function Productos() {
             </button>
           </div>
           <form className="form" style={{ padding: 20, maxWidth: "none" }} onSubmit={save}>
-            {/* ── Foto de la tienda ─────────────────────────────────────── */}
+            {/* ── Fotos de la tienda ────────────────────────────────────── */}
             <div className="field">
-              <label>Foto del producto</label>
-              <div style={{ display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap" }}>
-                {form.imageUrl ? (
-                  <img src={form.imageUrl} alt="Foto del producto" style={{ width: 96, height: 96, objectFit: "cover", borderRadius: 10, border: "1px solid var(--border)" }} />
-                ) : (
-                  <div style={{ width: 96, height: 96, borderRadius: 10, border: "1px dashed var(--border)", background: "#fafafa", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: ".04em", color: "var(--muted)" }}>Sin foto</div>
-                )}
-                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                  <label className="btn btn-ghost" style={{ cursor: "pointer", textAlign: "center" }}>
-                    {upFoto ? "Subiendo…" : form.imageUrl ? "Cambiar foto" : "Subir foto"}
+              <label>Fotos del producto</label>
+              <div style={{ display: "flex", gap: 10, alignItems: "flex-start", flexWrap: "wrap" }}>
+                {(form.imageUrls || []).map((url, i) => (
+                  <div key={url} style={{ position: "relative" }}>
+                    <img
+                      src={url}
+                      alt={i === 0 ? "Portada" : `Foto ${i + 1}`}
+                      style={{ width: 96, height: 96, objectFit: "cover", borderRadius: 10, border: i === 0 ? "2px solid var(--magenta)" : "1px solid var(--border)" }}
+                    />
+                    {i === 0 ? (
+                      <span style={{ position: "absolute", top: 4, left: 4, background: "var(--magenta)", color: "#fff", fontSize: 9.5, fontWeight: 800, padding: "2px 6px", borderRadius: 999, textTransform: "uppercase", letterSpacing: ".04em" }}>Portada</span>
+                    ) : (
+                      <button type="button" title="Usar como portada" onClick={() => hacerPortada(url)}
+                        style={{ position: "absolute", top: 4, left: 4, background: "rgba(255,255,255,.92)", border: "1px solid var(--border)", borderRadius: 999, fontSize: 10, fontWeight: 700, padding: "2px 6px", cursor: "pointer" }}>
+                        Portada
+                      </button>
+                    )}
+                    <button type="button" title="Quitar" onClick={() => quitarFoto(url)}
+                      style={{ position: "absolute", top: 4, right: 4, width: 22, height: 22, borderRadius: 11, border: "none", background: "rgba(0,0,0,.55)", color: "#fff", fontWeight: 800, cursor: "pointer", lineHeight: 1 }}>
+                      ×
+                    </button>
+                  </div>
+                ))}
+                {(form.imageUrls || []).length < MAX_FOTOS ? (
+                  <label className="btn btn-ghost" style={{ cursor: "pointer", width: 96, height: 96, display: "flex", alignItems: "center", justifyContent: "center", textAlign: "center", borderStyle: "dashed", fontSize: 12 }}>
+                    {upFoto ? "Subiendo…" : "+ Agregar"}
                     <input
-                      type="file" accept="image/*" style={{ display: "none" }} disabled={upFoto}
-                      onChange={(e) => { subirFoto(e.target.files?.[0]); e.target.value = ""; }}
+                      type="file" accept="image/*" multiple style={{ display: "none" }} disabled={upFoto}
+                      onChange={(e) => { subirFotos(e.target.files); e.target.value = ""; }}
                     />
                   </label>
-                  {form.imageUrl ? (
-                    <button type="button" className="btn btn-ghost" style={{ color: "var(--danger)" }} onClick={() => setF({ imageUrl: "" })}>
-                      Quitar foto
-                    </button>
-                  ) : null}
-                </div>
+                ) : null}
               </div>
-              <div className="hint">Esta foto es la que ven tus clientes en la página web. Ideal cuadrada, mínimo 600×600 px.</div>
+              <div className="hint">La primera foto es la portada que ven tus clientes. Hasta {MAX_FOTOS} fotos, ideal cuadradas, mínimo 600×600 px.</div>
             </div>
 
             <Sec>Identificación</Sec>
@@ -418,38 +503,89 @@ export default function Productos() {
                 : <div className="hint">Es el identificador principal del producto. Va siempre primero.</div>}
             </div>
 
+            <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
+              <div className="field" style={{ flex: "1 1 200px" }}>
+                <label>SKU</label>
+                <input type="text" value={form.sku} onChange={(e) => setF({ sku: e.target.value })} placeholder="Se genera solo si lo dejas vacío" />
+                <div className="hint">Código interno del catálogo. Único.</div>
+              </div>
+              <div className="field" style={{ flex: "1 1 200px" }}>
+                <label>Marca</label>
+                <input type="text" value={form.brand} onChange={(e) => setF({ brand: e.target.value })} placeholder="Ej: Chef" />
+              </div>
+            </div>
+
             <div className="field">
               <label>Nombre <span style={{ color: "var(--danger)" }}>*</span></label>
               <input type="text" value={form.name} onChange={(e) => setF({ name: e.target.value })} placeholder="Ej: Aceite vegetal 900ml" />
             </div>
 
-            <div className="field">
-              <label>Categoría <span style={{ color: "var(--danger)" }}>*</span></label>
-              <select value={form.category_id} onChange={(e) => setF({ category_id: e.target.value })} disabled={cats.loading}>
-                <option value="">{cats.loading ? "Cargando…" : "Seleccionar categoría…"}</option>
-                {categories.map((c) => (
-                  <option key={c._id} value={c._id}>{c.name}</option>
-                ))}
-              </select>
+            <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
+              <div className="field" style={{ flex: "1 1 220px" }}>
+                <label>Categoría <span style={{ color: "var(--danger)" }}>*</span></label>
+                <select value={form.category_id} onChange={(e) => setF({ category_id: e.target.value })} disabled={cats.loading}>
+                  <option value="">{cats.loading ? "Cargando…" : "Seleccionar categoría…"}</option>
+                  {categoriesRaiz.map((c) => (
+                    <option key={c._id} value={c._id}>{c.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="field" style={{ flex: "1 1 220px" }}>
+                <label>Subcategoría</label>
+                <select value={form.subcategory_id} onChange={(e) => setF({ subcategory_id: e.target.value })} disabled={cats.loading || !form.category_id}>
+                  <option value="">{form.category_id ? "Sin subcategoría" : "Elige primero la categoría"}</option>
+                  {subcategoriasDe(form.category_id).map((c) => (
+                    <option key={c._id} value={c._id}>{c.name}</option>
+                  ))}
+                </select>
+              </div>
             </div>
 
-            <Sec>Precios</Sec>
+            <Sec>Formato de venta</Sec>
             <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
               <div className="field" style={{ flex: "1 1 160px" }}>
-                <label>Precio unitario · CLP <span style={{ color: "var(--danger)" }}>*</span></label>
+                <label>Unidad de venta <span style={{ color: "var(--danger)" }}>*</span></label>
+                <select value={form.saleUnit} onChange={(e) => setF({ saleUnit: e.target.value })}>
+                  {SALE_UNITS.map((u) => <option key={u} value={u}>{u}</option>)}
+                </select>
+              </div>
+              <div className="field" style={{ flex: "1 1 120px" }}>
+                <label>Contenido</label>
+                <input type="number" min="0" step="any" value={form.contentValue} onChange={(e) => setF({ contentValue: e.target.value })} placeholder="Ej: 900" />
+              </div>
+              <div className="field" style={{ flex: "1 1 100px" }}>
+                <label>Medida</label>
+                <input type="text" value={form.contentUnit} onChange={(e) => setF({ contentUnit: e.target.value })} placeholder="ml, g, un" />
+                <div className="hint">Informativo: va en la ficha del producto.</div>
+              </div>
+            </div>
+
+            <Sec>Precio</Sec>
+            <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
+              <div className="field" style={{ flex: "1 1 180px" }}>
+                <label>Precio de venta · CLP <span style={{ color: "var(--danger)" }}>*</span></label>
                 <input type="number" min="1" value={form.unitPrice} onChange={(e) => setF({ unitPrice: e.target.value })} placeholder="Ej: 1449" />
+                <div className="hint">Lo que paga el cliente, con IVA incluido.</div>
               </div>
               <div className="field" style={{ flex: "1 1 140px" }}>
-                <label>Unidades por caja</label>
-                <input type="number" min="0" value={form.unitsPerBox} onChange={(e) => setF({ unitsPerBox: e.target.value })} placeholder="Ej: 12" />
+                <label>IVA</label>
+                <select value={form.ivaAfecto ? "afecto" : "exento"} onChange={(e) => setF({ ivaAfecto: e.target.value === "afecto" })}>
+                  <option value="afecto">Afecto (19%)</option>
+                  <option value="exento">Exento</option>
+                </select>
               </div>
-              {Number(form.unitsPerBox) > 1 ? (
+              <div className="field" style={{ flex: "1 1 140px" }}>
+                <label>Unidades por pack</label>
+                <input type="number" min="0" value={form.unitsPerBox} onChange={(e) => setF({ unitsPerBox: e.target.value })} placeholder="0 = solo unitario" />
+              </div>
+              {packUnidades > 1 ? (
                 <div className="field" style={{ flex: "1 1 200px" }}>
-                  <label>Precio unitario por caja · CLP <span style={{ color: "var(--danger)" }}>*</span></label>
-                  <input type="number" min="1" value={form.boxUnitPrice} onChange={(e) => setF({ boxUnitPrice: e.target.value })} placeholder="Menor que el unitario" />
+                  <label>Precio del pack completo · CLP</label>
+                  <input type="number" min="1" value={form.packPrice} onChange={(e) => setF({ packPrice: e.target.value })} placeholder={packSuelto ? `Menos de ${packSuelto}` : "Total del pack"} />
                   <div className="hint">
-                    Por unidad al llevar la caja (mayorista).
-                    {formBoxTotal ? <> Caja: <b>{clp(formBoxTotal)}</b> ({form.unitsPerBox} un).</> : null}
+                    {packSuelto ? <>Suelto: <b>{clp(packSuelto)}</b>.</> : null}
+                    {packTotal > 0 && packSuelto > packTotal ? <> Ahorro: <b>{clp(packSuelto - packTotal)}</b>.</> : null}
+                    {" "}Déjalo vacío si el pack no tiene descuento.
                   </div>
                 </div>
               ) : null}
@@ -525,7 +661,7 @@ export default function Productos() {
         <table>
           <thead>
             <tr>
-              <th>Código</th><th>Producto</th><th>Categoría</th><th>Precio por caja</th><th>Margen</th><th>Disponible</th><th>Activo</th><th>Acción</th>
+              <th>SKU</th><th>Producto</th><th>Categoría</th><th>Precio</th><th>Margen</th><th>Disponible</th><th>Activo</th><th>Acción</th>
             </tr>
           </thead>
           <tbody>
@@ -547,16 +683,23 @@ export default function Productos() {
                 return (
                   <tr key={p._id} style={p.is_active ? undefined : { opacity: 0.6 }}>
                     <td style={{ fontFamily: "ui-monospace,monospace", fontSize: 12.5, color: t.muted, whiteSpace: "nowrap" }}>
-                      {p.barcode || <span style={{ fontFamily: "inherit", fontStyle: "italic" }}>Sin código</span>}
+                      {p.sku || <span style={{ fontFamily: "inherit", fontStyle: "italic" }}>—</span>}
+                      {p.barcode ? <div style={{ fontSize: 11.5, opacity: 0.8 }}>{p.barcode}</div> : null}
                     </td>
                     <td style={{ fontWeight: 600 }}>
                       {p.name}
                       {p.brand ? <div style={{ fontSize: 12, color: t.muted, fontWeight: 400 }}>{p.brand}</div> : null}
                     </td>
-                    <td style={{ fontSize: 13, color: "var(--muted)" }}>{p.category?.name || <span style={{ fontStyle: "italic" }}>Sin categoría</span>}</td>
+                    <td style={{ fontSize: 13, color: "var(--muted)" }}>
+                      {p.category?.name || <span style={{ fontStyle: "italic" }}>Sin categoría</span>}
+                      {p.subcategory?.name ? <div style={{ fontSize: 12, opacity: 0.85 }}>{p.subcategory.name}</div> : null}
+                    </td>
                     <td style={{ fontWeight: 600 }}>
-                      {bp != null ? clp(bp) : <span style={{ color: t.muted, fontWeight: 400 }}>solo unidad</span>}
-                      {b ? <div style={{ fontSize: 12, color: t.muted, fontWeight: 400 }}>{b.min_qty} un · {clp(b.price)} c/u</div> : null}
+                      {clp(p.price ?? unitTier(p)?.price ?? 0)}
+                      <div style={{ fontSize: 12, color: t.muted, fontWeight: 400 }}>
+                        por {p.sale_unit || "unidad"}
+                        {p.pack_size > 1 ? <> · pack {p.pack_size}: {clp(p.pack_price || (p.price || 0) * p.pack_size)}</> : null}
+                      </div>
                     </td>
                     <td>
                       {margin == null ? (
