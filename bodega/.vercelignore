@@ -1,0 +1,6 @@
+# El .env local apunta al backend de desarrollo (localhost:3001). NO debe
+# subirse a Vercel: en producción la URL del API la provee la variable de
+# entorno del proyecto en Vercel (VITE_API_URL). Si este archivo se subiera,
+# Vite hornearía localhost en el bundle y el panel no cargaría datos.
+.env
+.env.*

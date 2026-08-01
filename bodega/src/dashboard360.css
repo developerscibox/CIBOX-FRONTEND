@@ -1,0 +1,4 @@
+/* Utilidades Tailwind del Dashboard Gerencial 360° (ver tailwind.config.js:
+   content apunta SOLO a ese componente y preflight está apagado, así este
+   archivo no afecta al resto del panel). Lo importa el propio dashboard. */
+@tailwind utilities;

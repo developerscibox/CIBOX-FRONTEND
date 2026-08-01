@@ -1,0 +1,88 @@
+<svg viewBox="0 0 900 372" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="t d" font-family="Segoe UI, ui-sans-serif, system-ui, sans-serif">
+  <title id="t">Trazabilidad del pedido y datos para gerencia — Bodega 12</title>
+  <desc id="d">Las 5 etapas del relay registran quién y cuándo; eso alimenta las métricas del Centro de mando.</desc>
+
+  <rect x="0" y="0" width="900" height="372" fill="#ffffff"/>
+  <text x="20" y="26" font-size="15" font-weight="700" fill="#1c2430">Cómo se traza el negocio: del pedido al Centro de mando</text>
+
+  <!-- Etapas del relay -->
+  <g font-size="12.5">
+    <g>
+      <rect x="20" y="48" width="150" height="58" rx="10" fill="#23262e"/>
+      <text x="95" y="74" text-anchor="middle" font-weight="700" fill="#ffffff">1 · Toma</text>
+      <text x="95" y="92" text-anchor="middle" font-size="11" fill="#b9bec7">vendedor + hora</text>
+    </g>
+    <g>
+      <rect x="195" y="48" width="150" height="58" rx="10" fill="#23262e"/>
+      <text x="270" y="74" text-anchor="middle" font-weight="700" fill="#ffffff">2 · Cobro</text>
+      <text x="270" y="92" text-anchor="middle" font-size="11" fill="#b9bec7">cajera + hora</text>
+    </g>
+    <g>
+      <rect x="370" y="48" width="150" height="58" rx="10" fill="#23262e"/>
+      <text x="445" y="74" text-anchor="middle" font-weight="700" fill="#ffffff">3 · Picking</text>
+      <text x="445" y="92" text-anchor="middle" font-size="11" fill="#b9bec7">bodeguero + hora</text>
+    </g>
+    <g>
+      <rect x="545" y="48" width="150" height="58" rx="10" fill="#23262e"/>
+      <text x="620" y="74" text-anchor="middle" font-weight="700" fill="#ffffff">4 · Listo</text>
+      <text x="620" y="92" text-anchor="middle" font-size="11" fill="#b9bec7">timestamp</text>
+    </g>
+    <g>
+      <rect x="720" y="48" width="150" height="58" rx="10" fill="#23262e"/>
+      <text x="795" y="74" text-anchor="middle" font-weight="700" fill="#ffffff">5 · Entrega</text>
+      <text x="795" y="92" text-anchor="middle" font-size="11" fill="#b9bec7">cliente retira</text>
+    </g>
+    <g fill="#9aa0aa">
+      <text x="182" y="84" text-anchor="middle" font-size="16">›</text>
+      <text x="357" y="84" text-anchor="middle" font-size="16">›</text>
+      <text x="532" y="84" text-anchor="middle" font-size="16">›</text>
+      <text x="707" y="84" text-anchor="middle" font-size="16">›</text>
+    </g>
+  </g>
+
+  <!-- Barra de captura -->
+  <rect x="20" y="138" width="850" height="40" rx="10" fill="#ffffff" stroke="#9B007A" stroke-width="1.5"/>
+  <text x="445" y="163" text-anchor="middle" font-size="12.5" font-weight="700" fill="#9B007A">Cada transición registra: quién (usuario · rol) + cuándo + sector + pago/vuelto</text>
+
+  <!-- conectores -->
+  <g stroke="#d9d2dc" stroke-width="1">
+    <line x1="95" y1="178" x2="95" y2="214"/>
+    <line x1="270" y1="178" x2="270" y2="214"/>
+    <line x1="445" y1="178" x2="445" y2="214"/>
+    <line x1="620" y1="178" x2="620" y2="214"/>
+    <line x1="795" y1="178" x2="795" y2="214"/>
+  </g>
+
+  <!-- Métricas -->
+  <g font-size="11.5">
+    <g>
+      <rect x="20" y="216" width="150" height="56" rx="10" fill="#f3eef6"/>
+      <text x="95" y="240" text-anchor="middle" font-weight="700" fill="#1c2430">Ventas</text>
+      <text x="95" y="257" text-anchor="middle" font-size="10.5" fill="#6b7280">tendencia · hora · ticket</text>
+    </g>
+    <g>
+      <rect x="195" y="216" width="150" height="56" rx="10" fill="#f3eef6"/>
+      <text x="270" y="240" text-anchor="middle" font-weight="700" fill="#1c2430">Equipo</text>
+      <text x="270" y="257" text-anchor="middle" font-size="10.5" fill="#6b7280">ranking por persona</text>
+    </g>
+    <g>
+      <rect x="370" y="216" width="150" height="56" rx="10" fill="#f3eef6"/>
+      <text x="445" y="240" text-anchor="middle" font-weight="700" fill="#1c2430">Tiempos</text>
+      <text x="445" y="257" text-anchor="middle" font-size="10.5" fill="#6b7280">por etapa · cuello</text>
+    </g>
+    <g>
+      <rect x="545" y="216" width="150" height="56" rx="10" fill="#f3eef6"/>
+      <text x="620" y="240" text-anchor="middle" font-weight="700" fill="#1c2430">Productos</text>
+      <text x="620" y="257" text-anchor="middle" font-size="10.5" fill="#6b7280">margen · rotación</text>
+    </g>
+    <g>
+      <rect x="720" y="216" width="150" height="56" rx="10" fill="#f3eef6"/>
+      <text x="795" y="240" text-anchor="middle" font-weight="700" fill="#1c2430">Caja · cobranza</text>
+      <text x="795" y="257" text-anchor="middle" font-size="10.5" fill="#6b7280">cuadre · aging</text>
+    </g>
+  </g>
+
+  <text x="20" y="306" font-size="12" font-weight="700" fill="#1c2430">Lo respaldan, además:</text>
+  <text x="20" y="326" font-size="11.5" fill="#6b7280">Kardex (cada entrada/salida con motivo y quién) · Producto (costo, stock 3 estados, vencimiento, sector) ·</text>
+  <text x="20" y="344" font-size="11.5" fill="#6b7280">Turnos (fila y conversión) · Sesión de caja (diferencias) · Cobranza (deudas/cheques) · Incentivos (ventas por vendedor)</text>
+</svg>

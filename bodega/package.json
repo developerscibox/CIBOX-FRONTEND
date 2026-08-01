@@ -1,0 +1,33 @@
+{
+  "name": "bodega12-wms",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Bodega 12 — Panel de bodega / WMS (picking, kardex e inventario). Consume /api/inventory del backend.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview --host"
+  },
+  "dependencies": {
+    "@fontsource/poppins": "^5.1.0",
+    "@vercel/analytics": "^2.0.1",
+    "@vladmandic/face-api": "^1.7.15",
+    "html5-qrcode": "^2.3.8",
+    "jspdf": "^4.2.1",
+    "jspdf-autotable": "^5.0.8",
+    "lucide-react": "^1.23.0",
+    "qrcode": "^1.5.4",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "recharts": "^3.9.2",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.4",
+    "autoprefixer": "^10.5.2",
+    "postcss": "^8.5.16",
+    "tailwindcss": "^3.4.19",
+    "vite": "^5.4.11"
+  }
+}

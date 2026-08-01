@@ -1,0 +1,45 @@
+# Dependencias
+node_modules/
+**/node_modules/
+
+# Builds
+dist/
+**/dist/
+.expo/
+**/.expo/
+web-build/
+**/web-build/
+
+# Entorno y secretos (NUNCA versionar)
+.env
+.env.*
+**/.env
+**/.env.*
+!**/.env.example
+deploy/secrets-produccion.env
+
+# Subidas y logs
+backend/uploads/
+*.log
+**/*.log
+
+# Artefactos de pruebas / herramientas
+.playwright-mcp/
+/*.png
+wms-snap.md
+
+# Respaldos / comprimidos
+*.zip
+**/*.zip
+
+# Material comercial confidencial KSA+ (fuera del repo de código → Drive/Notion privado)
+docs/KSA-*
+docs/Bodega12-Banners.pptx
+docs/Bodega12-Checklist-Produccion.xlsx
+
+# Config local de Claude Code / herramientas
+.claude/
+
+# Sistema
+.DS_Store
+Thumbs.db

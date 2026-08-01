@@ -1,0 +1,382 @@
+================================================================================
+DOCUMENTACIÓN DE FLUJOS LÓGICOS — BODEGA 12 (estado actual del código)
+Generado: 2026-06-18 · Basado estrictamente en el código real del repositorio
+================================================================================
+
+>> CORRECCIÓN DE STACK ANTES DE EMPEZAR
+El enunciado dice "Next.js + Supabase + TypeScript". EL CÓDIGO REAL NO ES ESO.
+El backend es Express + Mongoose/MongoDB (JavaScript, ESM). NO existe Supabase,
+SQL, migraciones, funciones RPC, triggers de BD ni RLS en el repo (grep
+'supabase|migration|.sql|CREATE TABLE|rls|policy' -> 5 falsos positivos, todos en
+vercel.json / SVG). Los frontends (tienda/, bodega/) son apps Vite desplegadas en
+Vercel. Toda la lógica de dominio vive en backend/src/. Donde se pidieron
+"triggers/RPC/RLS", se documenta su equivalente Mongoose (hooks pre/post,
+findOneAndUpdate con guards, jobs de barrido) y se marca como tal.
+
+
+================================================================================
+DIAGRAMA MERMAID — entrada -> inventario -> salida -> registro
+================================================================================
+
+flowchart TB
+    subgraph INBOUND["ENTRADA (inbound)"]
+        RCV["POST /inventory/receive<br/>receiveStock()<br/>inventoryService.js:163"]
+        ADJ["POST /inventory/adjust<br/>adjustStock() delta>0<br/>inventoryService.js:102"]
+        EDIT["PUT producto (admin/vendor)<br/>overwrite Product.stock<br/>productController.js:526<br/>SIN kardex / SIN atomicidad"]
+    end
+
+    subgraph INV["INVENTARIO (Product)"]
+        STOCK["Product.stock (físico)"]
+        RES["Product.reserved (lógico)"]
+        AVAIL["available = stock − reserved<br/>(virtual, no persistido)"]
+    end
+
+    subgraph KARDEX["REGISTRO (append-only)"]
+        SM["StockMovement<br/>type: venta|recepcion|ajuste|<br/>anulacion|expiracion|reembolso<br/>updatedAt:false"]
+        TAX["TaxDocument (boleta SII)<br/>siiService.js — STUB"]
+    end
+
+    subgraph OUTBOUND["SALIDA (outbound / BOPIS)"]
+        CART["Agregar al carrito<br/>reserveStockAtomic(+delta)<br/>cartController.js:236 -> stockService.js:106"]
+        TTL["TTL 20min: job sweep + lazy<br/>releaseExpiredReservations.js:24<br/>libera reserved"]
+        CHK["CHECKOUT POST /orders/from-cart<br/>decrementStockAtomic(−qty)<br/>orderService.js:255 -> estado PENDING"]
+        PAY["Pago Webpay commit<br/>finalizePaidOrder()<br/>orderService.js:761 -> PAID<br/>(NO toca stock)"]
+        PREP["preparing (picking nominal)"]
+        READY["ready (listo retiro)"]
+        DELIV["delivered / pickup.picked_up_at<br/>(NO toca stock)"]
+    end
+
+    RCV -->|"$inc +qty atómico + tx"| STOCK
+    ADJ -->|"$inc ±qty + tx"| STOCK
+    EDIT -.->|"overwrite no auditado"| STOCK
+    RCV --> SM
+    ADJ --> SM
+
+    CART -->|"$inc reserved +"| RES
+    RES --> AVAIL
+    STOCK --> AVAIL
+    TTL -->|"$inc reserved −"| RES
+
+    AVAIL -.->|"guard $expr stock−reserved≥qty"| CHK
+    CHK -->|"$inc stock −qty (guard $gte)"| STOCK
+    CHK -->|"confirmReservation libera reserved"| RES
+    CHK -->|"venta −1"| SM
+    CHK --> PAY
+    PAY --> PREP --> READY --> DELIV
+    PAY -->|"best-effort"| TAX
+
+    CHK -.->|"pending sin pago -> TTL"| EXP["expirePendingOrders.js:45<br/>cancelOrder()"]
+    EXP -->|"restoreStock $inc +qty<br/>(idempotente: stock_restored)"| STOCK
+    EXP -->|"expiracion +1"| SM
+    DELIV -.->|"cancel/refund"| RESTORE["restoreStock + revierte cupón"]
+    RESTORE -->|"$inc +qty"| STOCK
+    RESTORE -->|"anulacion/reembolso"| SM
+
+
+================================================================================
+1. MÁQUINA DE ESTADOS DEL PEDIDO
+================================================================================
+
+FSM explícita: VALID_TRANSITIONS en backend/src/utils/constants.js:20-33 es la
+fuente de verdad; se valida en transitionOrderStatus, markAsPaid, cancelOrder,
+refundOrder y en el webhook de courier.
+
+Dos máquinas paralelas: order.status (pedido) y order.payment.status (pago, con
+sub-estados processing/processing_commit exclusivos del lock Webpay).
+
+ESTADOS order.status:
+  pending    creada, stock ya descontado, sin pago (default)
+  paid       pago confirmado
+  preparing  picking (nominal)
+  ready      listo para retiro/despacho
+  shipped    en ruta (semi-huérfano en BOPIS)
+  delivered  entregado/retirado
+  cancelled  terminal ([])
+  refunded   terminal ([])
+
+TABLA DE TRANSICIONES (origen | evento | destino | efecto stock | archivo)
+
+  — | Checkout carrito (cliente) | pending | − físico + kardex venta | orderService.js:255, :635
+  — | Checkout custom box | pending | − físico + kardex venta | orderService.js:342
+  — | Venta manual presencial (admin) | delivered/paid | − físico + kardex venta | manualOrderService.js:117, :248
+  pending | Commit Webpay aprobado + monto OK | paid | sin cambio | paymentService.js:282 -> orderService.js:800
+  pending | Admin marca pagada (transfer/efectivo) | paid | sin cambio | orderService.js:894
+  pending | TTL expira sin pago (job webpay) | cancelled | + repone + kardex expiracion | expirePendingOrders.js:45 -> orderService.js:1044
+  pending | Cancela cliente/admin | cancelled | + repone | orderService.js:1044
+  paid | Admin/operario avanza | preparing | sin cambio | orderService.js:1178
+  paid | Cancela | cancelled | + repone + revierte cupón | orderService.js:1044
+  paid | Reembolsa | refunded | + repone + kardex reembolso | orderService.js:1123
+  preparing | Operario | ready | sin cambio | orderService.js:1178
+  ready | Cajero (retiro) | delivered | sin cambio; pickup.picked_up_at | orderService.js:1180
+  ready | Despacho | shipped | sin cambio | orderService.js:1179
+  shipped | Entrega / webhook BlueExpress delivered | delivered | sin cambio | orderService.js:1180, trackingService.js:164
+  preparing/ready | Webhook BlueExpress in_transit | shipped | sin cambio | trackingService.js:170
+  delivered | Reembolsa | refunded | + repone | orderService.js:1123 / refundService.js:198
+
+Doble gate por rol (además de legalidad from->to): canRoleSetStatus en
+orderController.js:43-52 — operario solo preparing/ready; cajero solo
+delivered/shipped; cancelled exige permiso orders.cancel; paid/refunded solo
+admin/manager.
+
+Excepción que evade la FSM: refundService.js:198 asigna REFUNDED SIN validar
+VALID_TRANSITIONS ni compartir el guard stock_restored de orderService (ver Gap #2).
+
+
+================================================================================
+2. MUTACIÓN DE STOCK (lo más importante)
+================================================================================
+
+Modelo de dos campos (Product.js): stock (físico, :104) y reserved (lógico, :109);
+available = max(0, stock − reserved) es virtual no persistido (:168). No hay índice
+sobre stock/reserved.
+
+PUNTOS EXACTOS DONDE SE MUTA EL INVENTARIO
+
+Stock FÍSICO (stock):
+  stockService.js:14  decrementStockAtomic  $inc stock:-qty, guard stock:{$gte:qty}+is_active  | atómico | kardex lo escribe el caller
+  stockService.js:63  restoreStock          $inc stock:+qty (suma)                              | atómico | kardex lo escribe el caller
+  inventoryService.js:118  adjustStock       $inc stock:±qty, guard $gte si negativo            | atómico + withTransaction | kardex SÍ
+  inventoryService.js:197  receiveStock      $inc stock:+qty por ítem                           | atómico + withTransaction | kardex recepcion
+  refundService.js:167  approveRefund        $inc stock:+qty                                    | atómico + withTransaction | kardex reembolso
+  productController.js:526  updateProduct     findByIdAndUpdate OVERWRITE de stock             | NO ATÓMICO | SIN KARDEX  <-- GAP
+
+Contador RESERVED (lógico) — stockService.js:
+  reserveStockAtomic (:111, guard $expr: stock−reserved>=delta)
+  releaseReserved (:162, con fallback $set reserved:0 en :175)
+  confirmReservation (:200)
+  Consumidores: cartController.js:103/152/179 y job TTL releaseExpiredReservations.js:48
+
+RESERVA vs DESCUENTO FÍSICO
+  RESERVA (reversible, solo reserved): al AGREGAR AL CARRITO, no en checkout.
+    cartController.js:97 -> reserveStockAtomic. Se libera por remove/clear,
+    lazy-release o job TTL.
+  DESCUENTO FÍSICO (definitivo, stock): al CREAR LA ORDEN (estado pending, ANTES
+    del pago). orderService.js:255. El pago (finalizePaidOrder, markAsPaid) NO toca
+    stock -> evita doble descuento.
+  REPOSICIÓN FÍSICA (idempotente vía flag order.stock_restored): cancel
+    orderService.js:1017, refund :1096, expiración (vía cancel), approveRefund.
+
+ATOMICIDAD Y CARRERAS
+  - Mutación individual: findOneAndUpdate con guard $gte/$expr -> SIN sobreventa a
+    nivel de documento. Si no matchea, lanza ConflictError 409.
+  - RIESGO CRÍTICO multi-doc: utils/transactions.js:28-42 detecta Mongo standalone
+    (sin replica set) y hace FALLBACK SIN TRANSACCIÓN (session=null, sin rollback).
+    En dev local es el path por defecto; depende de que producción use Atlas/replica
+    set. No hay assert que impida arrancar prod en standalone.
+  - Reserva de carrito no transaccional: reserveStockAtomic + upsert Reservation +
+    cart.save() son 3 ops sin sesión común (cartController.js:103-130) -> fallo
+    intermedio deja reserved inflado (mitigado por try/catch y fallback reserved:0).
+
+KARDEX
+  StockMovement (StockMovement.js) es APPEND-ONLY por diseño (timestamps.updatedAt:
+  false, :47); ningún path lo edita/borra. Tipos: venta, anulacion, expiracion,
+  reembolso, ajuste, recepcion. Se escribe en la MISMA sesión que cada mutación,
+  SALVO: productController.js:526 (overwrite de stock sin movimiento ->
+  desincronización permanente) y seeds/scripts.
+
+LIBERACIÓN DE RESERVA POR TTL
+  NO usa TTL index de Mongo. Es setInterval en proceso + lazy-release:
+  - Job releaseExpiredReservations.js:24 (cada CART_RESERVATION_SWEEP_MINUTES,
+    default 2 min; wired en server.js:11): busca {status:active, expires_at:{$lt:now}},
+    marca released (guarded) y $inc reserved:-q atómico. No toca físico.
+  - Lazy-release en getCart (cartController.js:161). TTL default 20 min
+    (CART_RESERVATION_TTL_MINUTES).
+  - En Render free el server duerme y el setInterval no corre -> reservas "zombi"
+    reteniendo reserved hasta el próximo arranque (pasada inicial al boot mitiga).
+
+
+================================================================================
+3. FLUJO DE ENTRADA (INBOUND)
+================================================================================
+
+Existe recepción real pero es mínima.
+
+  - Recepción: POST /inventory/receive -> receiveStock (inventoryService.js:163).
+    Ingreso masivo en una transacción: $inc stock:+qty por ítem + kardex recepcion.
+    supplier/doc_ref son SOLO texto libre al reason. Si un producto no existe,
+    revierte todo.
+  - Ajuste: POST /inventory/adjust -> adjustStock (:102), reason obligatorio, deja
+    kardex.
+  - Vías de entrada de stock hoy: (1) recepción, (2) ajuste +, (3) EDICIÓN DIRECTA
+    del producto (PUT, stock en whitelist productController.js:112, SIN kardex),
+    (4) seed.
+
+NO EXISTE:
+  - Control de calidad / cuarentena (cero qc|quality|inspeccion).
+  - Putaway: el campo Product.location{zone,rack,level,code} existe en :136 y tiene
+    índice, PERO receiveStock nunca lo escribe y NO es escribible por ninguna API
+    (no está en ningún whitelist).
+  - Orden de compra (no hay modelo PurchaseOrder).
+  - Lotes/batch (expiry_date es único por producto, se sobrescribe en cada recepción).
+  - Costeo de entrada (receiveStock no actualiza cost_price).
+
+
+================================================================================
+4. FLUJO DE SALIDA (OUTBOUND / BOPIS)
+================================================================================
+
+Secuencia real: agregar al carrito (reserva reserved) -> checkout (descuento
+físico, pending) -> pago (paid) -> preparing -> ready -> delivered/pickup.
+
+  - Reserva: al agregar al carrito (cartController.js:236), no en checkout.
+  - Checkout (createOrderFromCart, orderService.js:542, transaccional): recalcula
+    items/precios desde Product (no confía en cart.items), decrementStockAtomic con
+    guard -> 409 si no alcanza, confirmReservation cierra la reserva, kardex venta,
+    carrito -> converted. El físico baja AQUÍ, antes de pagar.
+  - Picking: NO EXISTE como proceso. Solo el estado preparing + permiso
+    ORDERS_PREPARE y un lookup de apoyo GET /inventory/by-barcode/:code que NO se ata
+    a la orden. No hay pick list, confirmación ítem-a-ítem, faltantes ni asignación
+    de operario.
+  - Packing: NO EXISTE (cero referencias). label_url queda null (orderService.js:497).
+  - BOPIS: delivery_method:"pickup" con pickup.committed_date. ready lo marca
+    ORDERS_PREPARE; delivered lo marca ORDERS_DELIVER (cajero), seteando
+    pickup.picked_up_at. Pago efectivo en mostrador: POST /orders/admin/:id/pay-cash
+    con cuadre cashSummary. El stock NO baja en el retiro (ya bajó en checkout).
+
+
+================================================================================
+5. INTEGRACIONES
+================================================================================
+
+TRANSBANK WEBPAY PLUS
+  - Crear: POST /webpay/create -> tx.create() (paymentService.js:94), exige orden
+    PENDING, persiste payment.status=processing + token + URL de redirección.
+  - Commit/return: GET/POST /webpay/return (sin auth) -> commitWebpayTransaction ->
+    tx.commit(). Idempotencia sólida: lock optimista pending|processing ->
+    processing_commit (findOneAndUpdate atómico), guard separado
+    claimApprovedSideEffects sobre payment.side_effects_at, recuperación de commits
+    atrapados pasados 5 min (STUCK_COMMIT_MS).
+  - Validación de monto: SÍ, exige AUTHORIZED + response_code===0 + monto coincidente
+    (paymentService.js:218-223).
+  - Estados: éxito -> paid/approved + webhook_processed_at; rechazo ->
+    payment.status=rejected, orden sigue pending; abandono (TBK_TOKEN sin token_ws)
+    -> no muta estado (decisión de seguridad; lo limpia el TTL).
+  - Si el pago falla a mitad: el stock YA está descontado (checkout). Lo repone el
+    job expirePendingOrders.js:21 (solo webpay, payment.status in {pending,rejected},
+    pasado ORDER_PENDING_TTL_MINUTES). En hosting que duerme, queda colgado más allá
+    del TTL.
+  - Credenciales: SDK oficial, sandbox hardcodeado por defecto; en production toma
+    WEBPAY_COMMERCE_CODE/WEBPAY_API_KEY de env o falla el arranque (webpay.js:14).
+
+SII (FACTURACIÓN)
+  - ES STUB, NO IMPLEMENTADO. emitDocumentForOrder (siiService.js:23): con
+    SII_ENABLED=false (default) genera folio falso STUB-... y status="accepted"; con
+    SII_ENABLED=true hay un bloque TODO que solo loguea
+    real_integration_not_implemented y crea el doc pending sin folio. Ni en modo
+    habilitado emite de verdad.
+  - Enganche: post-commit aprobado, emitTaxDocumentForPaidOrder emite siempre boleta,
+    best-effort (try/catch, no bloquea la orden, ya quedó paid).
+
+
+================================================================================
+6. PERSISTENCIA (colecciones, índices, hooks)
+================================================================================
+
+Product (products):
+  Campos: stock:104, reserved:109, available virtual :168, location:136,
+  expiry_date:113, cost_price:148.
+  Índices parciales: barcode>"" (:214), {is_active,expiry_date} (:219).
+  Hooks pre(save/findOneAndUpdate) solo calculan min_price/search_name (:174-207).
+
+Reservation (reservations):
+  Campos: cart_id/product_id, quantity/box_qty, status active/released/confirmed:44,
+  expires_at:52.
+  Índice ÚNICO parcial {cart_id,product_id} sobre status:active (:64) -> 1 reserva
+  activa/par; {status,expires_at} para el sweep (:73). SIN TTL index.
+
+Cart (carts):
+  Campos: user_id/guest_id, status active/converted/abandoned, items.box_qty.
+  Índice {status,updated_at} para abandonados.
+
+Order (orders):
+  Campos: status:69, payment.status:105, webhook_processed_at:122,
+  side_effects_at:123, stock_restored:174, pickup.committed_date, status_history:177.
+  12 índices (token/buy_order para conciliación Webpay;
+  {delivery_method,pickup.committed_date,status} agenda de retiros). Sin hooks de stock.
+
+StockMovement (stockmovements):
+  Campos: type:25, quantity!=0:30, stock_after:38, by:40, order_id.
+  updatedAt:false -> APPEND-ONLY. Sin hooks.
+
+TaxDocument (taxdocuments):
+  Campos: type boleta/factura, status:28, folio, stub:34.
+  Índices {order_id,type}, {status,created_at}.
+
+Refund (refunds):
+  Campos: amount, type full/partial, status:68, items[], transbank_response Mixed.
+  3 índices. Sin hooks.
+
+NOTA: Toda la lógica transaccional de stock vive en servicios (stockService/
+orderService), NO en hooks del modelo — el equivalente real a "triggers/RPC" son
+los findOneAndUpdate con guards $expr/$ifNull.
+
+
+================================================================================
+SUPUESTOS Y GAPS
+================================================================================
+
+BUGS CONFIRMADOS (verificados leyendo el código):
+
+1. [CRÍTICO] Reverso automático de cobro Webpay roto (ReferenceError) —
+   paymentService.js:202 declara `const tx` dentro del try; se usa en
+   paymentService.js:244 (otro bloque) -> `tx is not defined`. En el caso
+   "autorizado pero monto no coincide", el tx.refund() NUNCA se ejecuta y siempre
+   cae al logger.fatal. Queda dinero capturado sin contrapartida, requiere anulación
+   manual. (Fix: declarar tx antes del primer try.)
+
+2. [CRÍTICO] refundService evade la FSM y duplica reposición —
+   refundService.js:198 asigna REFUNDED sin validar VALID_TRANSITIONS ni compartir el
+   flag stock_restored. Un cancelled (que ya repuso stock) seguido de
+   refundService.full repondría el stock dos veces. Además partial_refunded_amount
+   (refundService.js:202) NO existe en el schema Order.js -> con strict default de
+   Mongoose el set se descarta al guardar (monto parcial no se persiste). (No
+   confirmado qué controller expone refundService vs orderService.refundOrder;
+   conviene unificar en una sola ruta.)
+
+GAPS DE INVENTARIO / AUDITORÍA:
+
+3. [ALTO] updateProduct muta stock sin kardex ni atomicidad
+   (productController.js:526, campo en VENDOR_UPDATE_FIELDS:112). Único path runtime
+   que rompe el invariante "toda mutación deja movimiento" -> desincroniza el kardex
+   permanentemente. (Recomendación: sacar stock del whitelist, forzar cambios por
+   adjustStock.)
+
+4. [ALTO] Atomicidad depende del entorno — transactions.js:28 hace fallback sin
+   transacción en Mongo standalone (sin rollback). Sin guard que impida arrancar
+   producción en standalone.
+
+5. [ALTO] Descuento de stock prematuro — el físico baja al crear pending, antes de
+   pagar/pickear. No hay distinción allocated/committed vs on-hand vs picked. Depende
+   del job TTL para reponer pagos fallidos; en hosting que duerme queda colgado.
+
+GAPS WMS (funcionalidad ausente):
+
+6. Inbound incompleto: sin QC/cuarentena, sin putaway real (campo location existe
+   pero no se asigna ni es escribible), sin orden de compra/proveedor, sin lotes ni
+   costeo de entrada.
+
+7. Outbound sin picking/packing operativos: preparing/ready son saltos de estado
+   manuales, sin pick list, escaneo contra orden, captura de faltantes, asignación de
+   operario ni estación de empaque/etiqueta.
+
+8. SII no funcional: facturación 100% stub. Gap tributario crítico para producción
+   chilena.
+
+9. shipped semi-huérfano en BOPIS: el negocio es solo-retiro, pero shipped sigue
+   siendo destino válido y solo sale a delivered (no se puede cancelar/reembolsar una
+   orden en shipped directamente).
+
+10. processing_commit puede quedar atrapado: el job de expiración solo limpia
+    payment.status in {pending,rejected}; una orden trabada en processing_commit que
+    nunca reintenta no la limpia el TTL (mitigado parcialmente por la ventana de 5 min).
+
+NO CONFIRMADO:
+  - Si producción corre sobre replica set (afecta Gap #4).
+  - Qué controllers exponen refundService vs refundOrder (afecta Gap #2).
+  - Si el webhook BlueExpress está activo para pickup.
+  - Uso real de retryPayment (paymentService.js:356, función existe pero SIN ruta en
+    paymentRoutes.js).
+
+================================================================================
+FIN DEL DOCUMENTO
+================================================================================

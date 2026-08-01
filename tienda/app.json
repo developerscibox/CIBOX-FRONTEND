@@ -1,0 +1,39 @@
+{
+  "expo": {
+    "name": "Bodega 12",
+    "slug": "bodega12-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#E6007E"
+    },
+    "scheme": "bodega12",
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "package": "cl.bodega12.app",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#E6007E"
+      },
+      "edgeToEdgeEnabled": true
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-font"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "2cd33dc1-3ac6-47c5-a492-4fec8572d82b"
+      }
+    }
+  }
+}
