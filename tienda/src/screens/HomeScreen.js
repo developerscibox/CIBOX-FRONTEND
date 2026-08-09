@@ -33,12 +33,14 @@ import { useHomeSlots, cmsText } from "../services/contentService";
 import brand from "../constants/brand";
 // Degradado de marca de Cibox: verde profundo → verde → lima (los tonos del logo).
 const GRAD = ["#3E7D1E", "#4E9B27", "#C3E062"];
-// Ícono "NEWS" de marca para el newsletter.
+// Ícono "NEWS" de marca para el newsletter (versión móvil, ver Newsletter).
 const NEWS_ICON = require("../../assets/home/qa-news.png");
-// Logo de Cibox en blanco: el hero va sobre el degradado verde de marca.
-const LOGO_HERO = require("../../assets/logo-cibox-blanco.png");
-// Fondo temático del banner (provisto por el diseño).
-const BANNER_BG = require("../../assets/home/banner-hero.jpg");
+// Arte del hero (1600x800, provisto por diseño): trae el logo de Cibox a la
+// izquierda y la caja de productos a la derecha.
+const BANNER_BG = require("../../assets/home/banner-hero.webp");
+// Franja del newsletter (1435x147, provista por diseño): degradado de marca con
+// el ícono de noticias a la izquierda.
+const BANNER_NEWS = require("../../assets/home/banner-news.webp");
 
 // Ícono por categoría (según el nombre) para "Categorías principales".
 const catIcon = (name = "") => {
@@ -89,44 +91,35 @@ function Hero({ navigation, isWebDesktop, isWide, content }) {
   const cta = cmsText(content?.cta, "Ver ofertas");
   const remoteImage = cmsText(content?.image_url, "");
   return (
-    <ImageBackground
-      source={remoteImage ? { uri: remoteImage } : BANNER_BG}
-      resizeMode="cover"
-      imageStyle={{ borderRadius: 24 }}
-      style={{
-        borderRadius: 24,
-        overflow: "hidden",
-        marginBottom: spacing.lg,
-        paddingVertical: isWebDesktop ? 52 : 32,
-        paddingHorizontal: isWebDesktop ? 44 : 22,
-        minHeight: isWebDesktop ? 470 : 240,
-        justifyContent: "center",
-        backgroundColor: "#3E7D1E",
-      }}
-    >
-      {/* Canasto a la derecha (PNG transparente provisto). Es parte del arte de
-          fábrica: si el admin sube su propia imagen de hero, no se superpone. */}
-      <View style={{ maxWidth: 560 }}>
+    <View style={{ marginBottom: spacing.lg }}>
+      {/* El arte del hero es una pieza cerrada: ya trae el logo de Cibox y la
+          caja de productos. Por eso va completo y sin nada encima, en la
+          proporción 2:1 con la que fue entregado, y el mensaje va debajo. */}
+      <View
+        style={{ width: "100%", aspectRatio: 2, borderRadius: 24, overflow: "hidden", backgroundColor: "#3E7D1E" }}
+      >
         <Image
-          source={LOGO_HERO}
-          resizeMode="contain"
-          style={{ width: isWebDesktop ? 158 : 116, height: isWebDesktop ? 203 : 149, marginBottom: 16, marginLeft: -6 }}
+          source={remoteImage ? { uri: remoteImage } : BANNER_BG}
+          resizeMode="cover"
+          style={{ width: "100%", height: "100%" }}
         />
-        <AppText style={{ color: "#fff", fontSize: isWebDesktop ? 46 : 30, fontWeight: "900", lineHeight: isWebDesktop ? 50 : 34 }}>
+      </View>
+      <View style={{ maxWidth: 640, marginTop: isWebDesktop ? 26 : 18 }}>
+        <AppText style={{ color: colors.text, fontSize: isWebDesktop ? 40 : 26, fontWeight: "900", lineHeight: isWebDesktop ? 46 : 31 }}>
           {title}
         </AppText>
-        <AppText style={{ color: "rgba(255,255,255,0.94)", fontSize: isWebDesktop ? 17 : 14, marginTop: 14, maxWidth: 460, lineHeight: isWebDesktop ? 25 : 20 }}>
+        <AppText style={{ color: colors.muted, fontSize: isWebDesktop ? 17 : 14, marginTop: 12, maxWidth: 520, lineHeight: isWebDesktop ? 25 : 20 }}>
           {subtitle}
         </AppText>
         <Pressable
           onPress={() => navigation.navigate("Products")}
-          style={{ alignSelf: "flex-start", marginTop: 24, backgroundColor: "#fff", borderRadius: 14, paddingHorizontal: 24, paddingVertical: 13, flexDirection: "row", alignItems: "center", gap: 8, ...shadows.card }}
+          style={{ alignSelf: "flex-start", marginTop: 22, backgroundColor: colors.primary, borderRadius: 14, paddingHorizontal: 24, paddingVertical: 13, flexDirection: "row", alignItems: "center", gap: 8, ...shadows.card }}
         >
-          <AppText style={{ color: colors.primary, fontWeight: "900", fontSize: 15 }}>{cta}</AppText>
-          <Ionicons name="arrow-forward" size={17} color={colors.primary} />
+          <AppText style={{ color: colors.primaryText, fontWeight: "900", fontSize: 15 }}>{cta}</AppText>
+          <Ionicons name="arrow-forward" size={17} color={colors.primaryText} />
         </Pressable>
       </View>
-    </ImageBackground>
+    </View>
   );
 }
 
@@ -276,20 +269,17 @@ function Newsletter({ title, subtitle, isWebDesktop }) {
     setEmail("");
     showToast("¡Listo! Te avisaremos de nuestras ofertas 🎉");
   };
-  return (
-    <LinearGradient
-      colors={GRAD}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 0 }}
-      style={{
-        borderRadius: 22,
-        marginBottom: spacing.lg,
-        padding: isWebDesktop ? 28 : 20,
-        flexDirection: isWebDesktop ? "row" : "column",
-        alignItems: "center",
-        gap: isWebDesktop ? 24 : 14,
-      }}
-    >
+  const layout = {
+    borderRadius: 22,
+    marginBottom: spacing.lg,
+    padding: isWebDesktop ? 28 : 20,
+    flexDirection: isWebDesktop ? "row" : "column",
+    alignItems: "center",
+    gap: isWebDesktop ? 24 : 14,
+  };
+
+  const contenido = (
+    <>
       <Image source={NEWS_ICON} resizeMode="contain" style={{ width: 62, height: 62, flexShrink: 0 }} />
       <View style={{ flex: isWebDesktop ? 1 : undefined, alignItems: isWebDesktop ? "flex-start" : "center" }}>
         <AppText style={{ color: "#fff", fontSize: 20, fontWeight: "900", textAlign: isWebDesktop ? "left" : "center" }}>{title}</AppText>
@@ -309,6 +299,26 @@ function Newsletter({ title, subtitle, isWebDesktop }) {
           <AppText style={{ color: "#fff", fontWeight: "900", fontSize: 14 }}>Suscribirme</AppText>
         </Pressable>
       </View>
+    </>
+  );
+
+  // La franja de diseño es casi 10:1 y el bloque queda mucho más alto, así que
+  // va con `cover`: `stretch` estiraría el arte 2,4x a lo alto y deformaría el
+  // ícono que trae incrustado. Con el recorte ese ícono queda fuera de cuadro,
+  // por eso se sigue dibujando el ícono suelto encima. En móvil el bloque es
+  // vertical y el recorte no dejaría degradado útil: ahí va el de marca.
+  return isWebDesktop ? (
+    <ImageBackground
+      source={BANNER_NEWS}
+      resizeMode="cover"
+      imageStyle={{ borderRadius: 22 }}
+      style={{ ...layout, overflow: "hidden" }}
+    >
+      {contenido}
+    </ImageBackground>
+  ) : (
+    <LinearGradient colors={GRAD} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={layout}>
+      {contenido}
     </LinearGradient>
   );
 }

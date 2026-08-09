@@ -1,13 +1,13 @@
 import { SafeAreaView, View, Image, Platform } from 'react-native';
 import { colors, spacing } from '../constants/theme';
 
-// Logo de Cibox repetido como marca de agua del fondo (verde tenue).
-// En web va FIXED al viewport para que el patrón se vea repetido a lo largo de
-// toda la página al hacer scroll. pointerEvents none para no interferir.
+// Patrón de productos de Cibox repetido como marca de agua del fondo (verde
+// tenue). En web va FIXED al viewport para que el patrón se vea repetido a lo
+// largo de toda la página al hacer scroll. pointerEvents none para no interferir.
 function BrandBackdrop() {
   return (
     <Image
-      source={require('../../assets/home/logo-tile.png')}
+      source={require('../../assets/home/patron.png')}
       resizeMode="repeat"
       pointerEvents="none"
       style={{

@@ -32,6 +32,9 @@ wms-snap.md
 *.zip
 **/*.zip
 
+# Material fuente de diseño (los assets finales viven en tienda/assets/)
+Baner/
+
 # Config local de Claude Code / herramientas
 .claude/
 
