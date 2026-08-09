@@ -90,33 +90,66 @@ function Hero({ navigation, isWebDesktop, isWide, content }) {
   );
   const cta = cmsText(content?.cta, "Ver ofertas");
   const remoteImage = cmsText(content?.image_url, "");
+
+  // El arte va completo, en su proporción 2:1: con `cover` sobre un contenedor
+  // más alto se recortaban los costados y se perdía el logo impreso a la
+  // izquierda. Los tamaños escalan en tres tramos porque el banner se estira
+  // con el ancho de la pantalla y el texto tiene que seguir cabiendo dentro.
+  // En móvil el banner mide ~170px de alto y la bajada no cabe sin comerse el
+  // tercio superior, que es donde va el logo impreso en el arte: ahí queda solo
+  // el título y el botón.
+  const t = isWide
+    ? { titulo: 40, tituloAlto: 45, bajada: 16, bajadaAlto: 22, cta: 15, pad: 24, hueco: 14 }
+    : isWebDesktop
+      ? { titulo: 28, tituloAlto: 32, bajada: 13, bajadaAlto: 18, cta: 14, pad: 20, hueco: 10 }
+      : { titulo: 17, tituloAlto: 21, bajada: 0, cta: 12, pad: 14, hueco: 7 };
+
   return (
-    <View style={{ marginBottom: spacing.lg }}>
-      {/* El arte del hero es una pieza cerrada: ya trae el logo de Cibox y la
-          caja de productos. Por eso va completo y sin nada encima, en la
-          proporción 2:1 con la que fue entregado, y el mensaje va debajo. */}
-      <View
-        style={{ width: "100%", aspectRatio: 2, borderRadius: 24, overflow: "hidden", backgroundColor: "#3E7D1E" }}
-      >
-        <Image
-          source={remoteImage ? { uri: remoteImage } : BANNER_BG}
-          resizeMode="cover"
-          style={{ width: "100%", height: "100%" }}
-        />
-      </View>
-      <View style={{ maxWidth: 640, marginTop: isWebDesktop ? 26 : 18 }}>
-        <AppText style={{ color: colors.text, fontSize: isWebDesktop ? 40 : 26, fontWeight: "900", lineHeight: isWebDesktop ? 46 : 31 }}>
+    <View
+      style={{
+        width: "100%",
+        aspectRatio: 2,
+        borderRadius: 24,
+        overflow: "hidden",
+        marginBottom: spacing.lg,
+        backgroundColor: "#3E7D1E",
+      }}
+    >
+      <Image
+        source={remoteImage ? { uri: remoteImage } : BANNER_BG}
+        resizeMode="cover"
+        style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, width: "100%", height: "100%" }}
+      />
+      {/* Velo de marca sobre la mitad izquierda: da contraste al texto sin
+          apagar la caja de productos de la derecha. El logo impreso queda
+          debajo, y como es blanco sobre verde se sigue leyendo. */}
+      <LinearGradient
+        colors={["rgba(38,79,18,0.92)", "rgba(38,79,18,0.66)", "rgba(38,79,18,0)"]}
+        locations={[0, 0.4, 0.75]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
+        style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}
+      />
+      {/* Anclado abajo a la izquierda: el logo del arte ocupa el tercio
+          superior izquierdo, así que el texto crece hacia arriba sin taparlo. */}
+      <View style={{ position: "absolute", left: "6%", right: isWebDesktop ? "48%" : "30%", bottom: "8%" }}>
+        <AppText style={{ color: "#fff", fontSize: t.titulo, fontWeight: "900", lineHeight: t.tituloAlto }}>
           {title}
         </AppText>
-        <AppText style={{ color: colors.muted, fontSize: isWebDesktop ? 17 : 14, marginTop: 12, maxWidth: 520, lineHeight: isWebDesktop ? 25 : 20 }}>
-          {subtitle}
-        </AppText>
+        {t.bajada > 0 && (
+          <AppText
+            numberOfLines={2}
+            style={{ color: "rgba(255,255,255,0.94)", fontSize: t.bajada, marginTop: t.hueco, lineHeight: t.bajadaAlto }}
+          >
+            {subtitle}
+          </AppText>
+        )}
         <Pressable
           onPress={() => navigation.navigate("Products")}
-          style={{ alignSelf: "flex-start", marginTop: 22, backgroundColor: colors.primary, borderRadius: 14, paddingHorizontal: 24, paddingVertical: 13, flexDirection: "row", alignItems: "center", gap: 8, ...shadows.card }}
+          style={{ alignSelf: "flex-start", marginTop: t.hueco + 4, backgroundColor: "#fff", borderRadius: 14, paddingHorizontal: t.pad, paddingVertical: t.pad * 0.5, flexDirection: "row", alignItems: "center", gap: 8, ...shadows.card }}
         >
-          <AppText style={{ color: colors.primaryText, fontWeight: "900", fontSize: 15 }}>{cta}</AppText>
-          <Ionicons name="arrow-forward" size={17} color={colors.primaryText} />
+          <AppText style={{ color: colors.primary, fontWeight: "900", fontSize: t.cta }}>{cta}</AppText>
+          <Ionicons name="arrow-forward" size={t.cta + 2} color={colors.primary} />
         </Pressable>
       </View>
     </View>
@@ -590,7 +623,7 @@ export default function HomeScreen({ navigation }) {
   ];
 
   return (
-    <ScreenContainer maxWidth={1180} padded decorated>
+    <ScreenContainer maxWidth={1180} padded>
       <FlatList
         data={[]}
         nestedScrollEnabled

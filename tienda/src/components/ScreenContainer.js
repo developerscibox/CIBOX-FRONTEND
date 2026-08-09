@@ -1,28 +1,11 @@
-import { SafeAreaView, View, Image, Platform } from 'react-native';
-import { colors, spacing } from '../constants/theme';
+import { SafeAreaView, View } from 'react-native';
+import { spacing } from '../constants/theme';
 
-// Patrón de productos de Cibox repetido como marca de agua del fondo (verde
-// tenue). En web va FIXED al viewport para que el patrón se vea repetido a lo
-// largo de toda la página al hacer scroll. pointerEvents none para no interferir.
-function BrandBackdrop() {
+// Sin color de fondo: el fondo (color base + patrón de marca) lo pone `App.js`
+// detrás de toda la navegación, y un fondo opaco acá lo taparía.
+export default function ScreenContainer({ children, maxWidth = 900, padded = true }) {
   return (
-    <Image
-      source={require('../../assets/home/patron.png')}
-      resizeMode="repeat"
-      pointerEvents="none"
-      style={{
-        position: Platform.OS === 'web' ? 'fixed' : 'absolute',
-        top: 0, left: 0, right: 0, bottom: 0,
-        opacity: 0.13,
-      }}
-    />
-  );
-}
-
-export default function ScreenContainer({ children, maxWidth = 900, padded = true, decorated = false }) {
-  return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
-      {decorated ? <BrandBackdrop /> : null}
+    <SafeAreaView style={{ flex: 1 }}>
       <View
         style={{
           flex: 1,

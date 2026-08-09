@@ -12,6 +12,8 @@ import { Poppins_400Regular } from "@expo-google-fonts/poppins/400Regular";
 import { Poppins_600SemiBold } from "@expo-google-fonts/poppins/600SemiBold";
 import { Poppins_700Bold } from "@expo-google-fonts/poppins/700Bold";
 import AppText from "./src/components/AppText";
+import BrandBackdrop from "./src/components/BrandBackdrop";
+import { colors } from "./src/constants/theme";
 import { hydrateBrand } from "./src/constants/brand";
 
 export default function App() {
@@ -47,7 +49,14 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
-      <RootNavigation />
+      {/* El patrón de marca se monta acá, una sola vez y detrás de toda la
+          navegación, para que sea el fondo de todas las pantallas de la
+          tienda. El color base también vive acá: los contenedores de pantalla
+          van transparentes para no taparlo. */}
+      <View style={{ flex: 1, backgroundColor: colors.background }}>
+        <BrandBackdrop />
+        <RootNavigation />
+      </View>
     </SafeAreaProvider>
   );
 }

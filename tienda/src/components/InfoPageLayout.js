@@ -61,8 +61,9 @@ export default function InfoPageLayout({
     );
   }
 
+  // Sin color de fondo: lo pone `App.js` junto con el patrón de marca.
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
+    <SafeAreaView style={{ flex: 1 }}>
       <ScrollView
         contentContainerStyle={{ padding: spacing.lg, paddingBottom: spacing.xl }}
         showsVerticalScrollIndicator={false}

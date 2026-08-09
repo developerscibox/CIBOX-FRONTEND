@@ -1,15 +1,15 @@
 import { ScrollView, View, useWindowDimensions } from "react-native";
 import WebHeader from "../components/WebHeader";
 import WebFooter from "../components/WebFooter";
-import { colors } from "../constants/theme";
 
 const HEADER_HEIGHT = 80;
 
 export default function WebLayout({ children }) {
   const { height } = useWindowDimensions();
 
+  // Sin color de fondo: lo pone `App.js` junto con el patrón de marca.
   return (
-    <View style={{ flex: 1, backgroundColor: colors.background }}>
+    <View style={{ flex: 1 }}>
       <WebHeader />
       <ScrollView
         style={{ flex: 1 }}

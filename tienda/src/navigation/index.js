@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import { NavigationContainer } from "@react-navigation/native";
+import { NavigationContainer, DefaultTheme } from "@react-navigation/native";
 import { ActivityIndicator, View } from "react-native";
 import AppStack from "./AppStack";
 import StorePausedGate from "../components/StorePausedGate";
@@ -49,6 +49,14 @@ const linking = {
   },
 };
 
+// El tema de fábrica pinta las escenas de gris (#f2f2f2) y eso tapaba el patrón
+// de marca, que se monta detrás de toda la navegación en `App.js`. Con el fondo
+// transparente el patrón se ve en todas las pantallas de la tienda.
+const tema = {
+  ...DefaultTheme,
+  colors: { ...DefaultTheme.colors, background: "transparent" },
+};
+
 export default function RootNavigation() {
   const navigationRef = useRef(null);
 
@@ -58,6 +66,7 @@ export default function RootNavigation() {
   return (
     <NavigationContainer
       ref={navigationRef}
+      theme={tema}
       linking={linking}
       fallback={
         <View
