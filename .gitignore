@@ -16,10 +16,8 @@ web-build/
 **/.env
 **/.env.*
 !**/.env.example
-deploy/secrets-produccion.env
 
-# Subidas y logs
-backend/uploads/
+# Logs
 *.log
 **/*.log
 
