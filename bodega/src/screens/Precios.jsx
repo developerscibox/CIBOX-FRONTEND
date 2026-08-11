@@ -247,12 +247,19 @@ export default function Precios() {
         </button>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 340px), 1fr))", gap: 16, marginBottom: 18 }}>
+      {/* 520px de mínimo, no 340: la tabla de márgenes tiene 6 columnas y con
+          340 entraban dos tarjetas por fila, dejándole ~470px. La tabla se
+          comprimía por debajo de su ancho natural y el texto de las celdas se
+          encimaba con los botones. */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 520px), 1fr))", gap: 16, marginBottom: 18 }}>
         {/* Tabla de márgenes */}
         <div className="card" style={{ padding: 0, overflow: "hidden" }}>
           <div style={{ padding: "12px 14px", fontWeight: 700, background: "#f3eef6", borderBottom: "1px solid var(--border-soft)" }}>Margen por producto <span style={{ fontWeight: 400, color: "var(--muted)", fontSize: 12 }}>· peor margen primero</span></div>
           <div style={{ maxHeight: 460, overflow: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+            {/* minWidth para que la tabla nunca se comprima por debajo de lo que
+                necesita: si no cabe, el contenedor scrollea en vez de encimar
+                el contenido de las celdas. */}
+            <table style={{ width: "100%", minWidth: 520, borderCollapse: "collapse", fontSize: 13 }}>
               <thead style={{ position: "sticky", top: 0, background: "#fff", zIndex: 1 }}>
                 <tr style={{ textAlign: "left", color: "var(--muted)", fontSize: 12 }}>
                   <th style={{ padding: "8px 6px 8px 12px", width: 30 }}>

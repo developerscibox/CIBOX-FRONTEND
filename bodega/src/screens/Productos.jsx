@@ -658,6 +658,9 @@ export default function Productos() {
             {res.loading ? "…" : products.length === 1 ? "1 producto" : `${products.length} productos`}
           </span>
         </div>
+        {/* 8 columnas no entran en pantallas medianas: con scroll propio se
+            llega a "Activo" y "Acción" en vez de quedar cortadas. */}
+        <div className="tabla-scroll">
         <table>
           <thead>
             <tr>
@@ -747,6 +750,7 @@ export default function Productos() {
             )}
           </tbody>
         </table>
+        </div>
         {usingMock ? (
           <div style={{ padding: "10px 16px", fontSize: 12, color: t.muted }}>
             Modo demostración: alta y edición de productos no se persisten.
