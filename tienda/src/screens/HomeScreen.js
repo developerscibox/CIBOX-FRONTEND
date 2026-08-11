@@ -38,9 +38,10 @@ const NEWS_ICON = require("../../assets/home/qa-news.png");
 // Arte del hero (1600x800, provisto por diseño): trae el logo de Cibox a la
 // izquierda y la caja de productos a la derecha.
 const BANNER_BG = require("../../assets/home/banner-hero.webp");
-// Franja del newsletter (1435x147, provista por diseño): degradado de marca con
-// el ícono de noticias a la izquierda.
-const BANNER_NEWS = require("../../assets/home/banner-news.webp");
+// Franja del newsletter: el degradado de marca del arte entregado, ya sin el
+// ícono que venía incrustado (lo genera scripts/generarFranjaNewsletter.ps1).
+// El ícono lo dibuja el layout: así no se pisan entre sí ni con el título.
+const BANNER_NEWS = require("../../assets/home/banner-news.png");
 
 // Ícono por categoría (según el nombre) para "Categorías principales".
 const catIcon = (name = "") => {
@@ -335,24 +336,18 @@ function Newsletter({ title, subtitle, isWebDesktop }) {
     </>
   );
 
-  // La franja de diseño es casi 10:1 y el bloque queda mucho más alto, así que
-  // va con `cover`: `stretch` estiraría el arte 2,4x a lo alto y deformaría el
-  // ícono que trae incrustado. Con el recorte ese ícono queda fuera de cuadro,
-  // por eso se sigue dibujando el ícono suelto encima. En móvil el bloque es
-  // vertical y el recorte no dejaría degradado útil: ahí va el de marca.
-  return isWebDesktop ? (
+  // Ya sin el ícono incrustado, la franja es un degradado horizontal puro: se
+  // estira a cualquier alto sin deformar nada, así que sirve igual en desktop
+  // que en el bloque vertical de móvil.
+  return (
     <ImageBackground
       source={BANNER_NEWS}
-      resizeMode="cover"
+      resizeMode="stretch"
       imageStyle={{ borderRadius: 22 }}
       style={{ ...layout, overflow: "hidden" }}
     >
       {contenido}
     </ImageBackground>
-  ) : (
-    <LinearGradient colors={GRAD} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={layout}>
-      {contenido}
-    </LinearGradient>
   );
 }
 
