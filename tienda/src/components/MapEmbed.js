@@ -4,22 +4,49 @@ import { Ionicons } from "@expo/vector-icons";
 import { colors } from "../constants/theme";
 import AppText from "./AppText";
 
-import brand from "../constants/brand";
-// Dirección real de la bodega (Centro Logístico Mersan, Lo Espejo).
-export const BODEGA_ADDRESS =
-  "Av. Lo Espejo 01565, Patio 6, Bodega 826, Lo Espejo, Santiago, Chile";
-
-const Q = encodeURIComponent(BODEGA_ADDRESS);
-// Embed clásico de Google Maps: NO requiere API key (sirve en iframe).
-const EMBED_URL = `https://maps.google.com/maps?q=${Q}&z=16&output=embed`;
-// Deep link de navegación (abre la ruta en Google Maps / app móvil).
-const DIRECTIONS_URL = `https://www.google.com/maps/dir/?api=1&destination=${Q}`;
+import brand, { hasAddress } from "../constants/brand";
 
 /**
  * Minimapa de la tienda. En web embebe Google Maps (iframe, sin API key); en
  * nativo muestra un botón que abre el mapa. Siempre incluye "Cómo llegar".
+ *
+ * Mientras la ubicación de Cibox no esté definida (`brand.address` vacía), no
+ * dibuja ningún mapa: apuntar a una dirección equivocada es peor que no tener
+ * mapa, porque manda gente al lugar incorrecto.
  */
 export default function MapEmbed({ height = 320 }) {
+  if (!hasAddress()) {
+    return (
+      <View
+        style={{
+          borderRadius: 18,
+          borderWidth: 1,
+          borderStyle: "dashed",
+          borderColor: colors.border,
+          backgroundColor: colors.surface,
+          height,
+          justifyContent: "center",
+          alignItems: "center",
+          gap: 8,
+          padding: 24,
+        }}
+      >
+        <Ionicons name="location-outline" size={38} color={colors.muted} />
+        <AppText style={{ color: colors.text, fontWeight: "800", fontSize: 15 }}>
+          Dirección por confirmar
+        </AppText>
+        <AppText style={{ color: colors.muted, fontSize: 13, textAlign: "center" }}>
+          Estamos definiendo la ubicación de nuestra bodega. Te avisamos apenas esté lista.
+        </AppText>
+      </View>
+    );
+  }
+
+  const q = encodeURIComponent(brand.address.one_line);
+  // Embed clásico de Google Maps: NO requiere API key (sirve en iframe).
+  const EMBED_URL = `https://maps.google.com/maps?q=${q}&z=16&output=embed`;
+  // Deep link de navegación (abre la ruta en Google Maps / app móvil).
+  const DIRECTIONS_URL = `https://www.google.com/maps/dir/?api=1&destination=${q}`;
   const openDirections = () => Linking.openURL(DIRECTIONS_URL);
 
   return (

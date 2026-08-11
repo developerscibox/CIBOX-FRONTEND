@@ -6,9 +6,13 @@ import TransferPaymentCard from "../components/TransferPaymentCard";
 import { colors, spacing } from "../constants/theme";
 import AppText from "../components/AppText";
 import useAuthStore from "../store/authStore";
+import { addressText } from "../constants/brand";
 
-const PICKUP_ADDRESS =
-  "Av. Lo Espejo 01565, Patio 6, Bodega 826, Centro Logístico Mersan, Lo Espejo (2da entrada por Américo Vespucio)";
+// La dirección sale de la marca (backend). Mientras no esté definida se muestra
+// el aviso en vez de una dirección equivocada.
+const PICKUP_ADDRESS = addressText(
+  "Te avisaremos por correo dónde retirar apenas confirmemos la dirección de la bodega.",
+);
 
 export default function OrderSuccessScreen({ route, navigation }) {
   const params = route.params || {};

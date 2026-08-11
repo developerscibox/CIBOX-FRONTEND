@@ -14,7 +14,7 @@ import AppButton from "../components/AppButton";
 import { colors, radius, shadows, spacing } from "../constants/theme";
 import { showAppAlert } from "../utils/appAlerts";
 
-import brand, { links } from "../constants/brand";
+import brand, { links, addressText } from "../constants/brand";
 const PRIMARY = colors.primary;
 
 // ─── Tarjeta de contacto directo ─────────────────────────────────────────────
@@ -184,8 +184,8 @@ export default function ContactScreen({ navigation }) {
               Retiro en bodega
             </AppText>
             <AppText style={{ fontSize: 13, color: colors.muted, lineHeight: 19 }}>
-              {brand.address.one_line}
-              {"\n"}2da entrada por Américo Vespucio.
+              {addressText()}
+              {brand.address.hint ? `\n${brand.address.hint}` : ""}
             </AppText>
           </View>
         </View>

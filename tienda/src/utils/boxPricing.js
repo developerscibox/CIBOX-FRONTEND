@@ -24,8 +24,8 @@ export const boxTierOf = (product) => {
 
 /**
  * Paso de compra: SIEMPRE 1. En un supermercado el cliente puede llevar una
- * sola unidad. (Antes devolvía las unidades por caja porque Bodega 12 vendía
- * solo por bulto.)
+ * sola unidad. (Antes devolvía las unidades por caja, cuando el catálogo era
+ * mayorista y se vendía solo por bulto.)
  */
 export const boxQtyOf = () => 1;
 

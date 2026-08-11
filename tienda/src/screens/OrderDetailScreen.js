@@ -40,8 +40,8 @@ const STEP_LOOK = {
 
 const PICKUP_LOCATION = {
   get address() { return brand.address.one_line; },
-  hint: "2da entrada por Américo Vespucio",
-  hours: "Lun a Vie 09:00–18:00 · Sáb 09:00–13:00",
+  get hint() { return brand.address.hint || ""; },
+  get hours() { return brand.address.hours || ""; },
 };
 
 const ACTIVE_STATUSES = ["pending", "paid", "preparing", "ready", "shipped"];

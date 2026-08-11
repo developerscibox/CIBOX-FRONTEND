@@ -21,7 +21,7 @@ const SLIDES = [
   {
     emoji: "🏬",
     title: "Solo retiro en bodega",
-    body: "Hoy retiras tu pedido GRATIS en nuestra bodega de Lo Espejo (Av. Lo Espejo 01565, Patio 6, Bodega 826). El despacho a domicilio viene pronto. En el carrito eliges el día de retiro.",
+    body: "Hoy retiras tu pedido GRATIS en nuestra bodega. El despacho a domicilio viene pronto. En el carrito eliges el día de retiro.",
   },
   {
     emoji: "🔎",

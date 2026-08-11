@@ -18,7 +18,7 @@ export const MOVEMENTS = [
 
 export const ORDERS_TO_PREPARE = [
   {
-    _id: "o1", number: "B12-10432", status: "preparing", customer: "Minimarket Don Pedro", total: 53970, created_at: "2026-06-12T12:02:00Z",
+    _id: "o1", number: "CIB-10432", status: "preparing", customer: "Minimarket Don Pedro", total: 53970, created_at: "2026-06-12T12:02:00Z",
     items: [
       { product_id: "p2", name: "Arroz Grado 2 — saco 25 kg",  qty: 1, barcode: "7801234500021", location: { code: "A-03-2" }, picked: false },
       { product_id: "p1", name: "Aceite vegetal 1L — caja 12", qty: 1, barcode: "7801234500011", location: { code: "A-01-1" }, picked: false },
@@ -26,14 +26,14 @@ export const ORDERS_TO_PREPARE = [
     ],
   },
   {
-    _id: "o2", number: "B12-10433", status: "preparing", customer: "Almacén La Esquina", total: 31940, created_at: "2026-06-12T12:18:00Z",
+    _id: "o2", number: "CIB-10433", status: "preparing", customer: "Almacén La Esquina", total: 31940, created_at: "2026-06-12T12:18:00Z",
     items: [
       { product_id: "p5", name: "Bebida cola 1.5L — pack 6", qty: 3, barcode: "7801234500055", location: { code: "B-02-1" }, picked: false },
       { product_id: "p11", name: "Galletas surtidas — display 24", qty: 2, barcode: "7801234500111", location: { code: "D-01-2" }, picked: false },
     ],
   },
   {
-    _id: "o3", number: "B12-10435", status: "ready", customer: "Cliente final — despacho", total: 18990, created_at: "2026-06-12T11:50:00Z",
+    _id: "o3", number: "CIB-10435", status: "ready", customer: "Cliente final — despacho", total: 18990, created_at: "2026-06-12T11:50:00Z",
     items: [
       { product_id: "p4", name: "Harina sin polvos — saco 25 kg", qty: 1, barcode: "7801234500044", location: { code: "A-05-1" }, picked: true },
     ],

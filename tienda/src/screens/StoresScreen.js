@@ -1,13 +1,13 @@
 import { View, Pressable, Linking } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import InfoPageLayout from "../components/InfoPageLayout";
-import MapEmbed, { BODEGA_ADDRESS } from "../components/MapEmbed";
+import MapEmbed from "../components/MapEmbed";
 import { colors, spacing, shadows } from "../constants/theme";
 import AppText from "../components/AppText";
 
-import brand from "../constants/brand";
+import brand, { addressText, openingHours, links } from "../constants/brand";
 const PHONE = brand.contact.phone;
-const WHATSAPP_URL = "https://wa.me/56932445772";
+const WHATSAPP_URL = links.whatsapp();
 
 function InfoRow({ icon, children, onPress }) {
   const content = (
@@ -42,14 +42,17 @@ export default function StoresScreen() {
           }}
         >
           <AppText style={{ fontSize: 18, fontWeight: "900", color: colors.text, marginBottom: 4 }}>
-            {brand.name} — {brand.address.comuna}
+            {brand.name}
+            {brand.address.comuna ? ` — ${brand.address.comuna}` : ""}
           </AppText>
-          <AppText style={{ fontSize: 13, color: colors.muted, marginBottom: 16 }}>
-            Centro Logístico Mersan
-          </AppText>
+          {brand.address.line2 ? (
+            <AppText style={{ fontSize: 13, color: colors.muted, marginBottom: 16 }}>
+              {brand.address.line2}
+            </AppText>
+          ) : null}
 
-          <InfoRow icon="location-outline">{BODEGA_ADDRESS}</InfoRow>
-          <InfoRow icon="time-outline">Lun a Vie 09:00–18:00 · Sáb 09:00–13:00</InfoRow>
+          <InfoRow icon="location-outline">{addressText()}</InfoRow>
+          {openingHours() ? <InfoRow icon="time-outline">{openingHours()}</InfoRow> : null}
           <InfoRow icon="call-outline" onPress={() => Linking.openURL(WHATSAPP_URL)}>
             {PHONE} (WhatsApp)
           </InfoRow>

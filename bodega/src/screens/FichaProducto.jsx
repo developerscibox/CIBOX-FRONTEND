@@ -14,7 +14,7 @@ const MOCK_SERIE = Array.from({ length: 30 }, (_, i) => {
 });
 const MOCK_FICHA = {
   producto: {
-    sku: "B12-R01", barcode: "7801000001", nombre: "Aceite vegetal 900ml",
+    sku: "CIB-R01", barcode: "7801000001", nombre: "Aceite vegetal 900ml",
     categoria: "Abarrotes", imagen: "", is_active: true,
     precio_compra: 980, precio_venta: 1449, box_qty: 12,
     margen_bruto: 469, margen_pct: 32.4,

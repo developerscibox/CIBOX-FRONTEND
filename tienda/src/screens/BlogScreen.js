@@ -17,7 +17,7 @@ const POSTS = [
   {
     tag: "Cibox",
     title: "Novedades y nuevos productos en bodega",
-    excerpt: "Te contamos qué llegó esta semana al Centro Logístico Mersan.",
+    excerpt: "Te contamos qué llegó esta semana a nuestra bodega.",
   },
   {
     tag: "Tips",

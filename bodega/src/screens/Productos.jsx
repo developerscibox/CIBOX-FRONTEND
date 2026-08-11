@@ -12,7 +12,7 @@ const MOCK_PRODUCTS = {
     {
       _id: "p1", name: "Aceite vegetal 900ml", brand: "Los Silos",
       category: { id: "c1", name: "Abarrotes" }, stock: 120, is_active: true,
-      barcode: "7801000001", sku: "B12-R01",
+      barcode: "7801000001", sku: "CIB-R01",
       pricing: { tiers: [
         { min_qty: 1, price: 1449, label: "Unidad" },
         { min_qty: 12, price: 1290, label: "Caja 12 un" },
@@ -21,7 +21,7 @@ const MOCK_PRODUCTS = {
     {
       _id: "p2", name: "Spaghetti N5 400g", brand: "Lucchetti",
       category: { id: "c1", name: "Abarrotes" }, stock: 0, is_active: false,
-      barcode: "7801000002", sku: "B12-001",
+      barcode: "7801000002", sku: "CIB-001",
       pricing: { tiers: [
         { min_qty: 1, price: 890, label: "Unidad" },
         { min_qty: 20, price: 790, label: "Caja 20 un" },

@@ -36,6 +36,7 @@ export const brand = {
     instagram: "cibox.cl",
     tiktok: "cibox.cl",
   },
+  // Sin definir hasta que Cibox tenga bodega. Ver `hasAddress()`.
   address: {
     one_line: "",
     line1: "",
@@ -44,6 +45,8 @@ export const brand = {
     ciudad: "",
     region: "",
     pais: "Chile",
+    hint: "",
+    hours: "",
   },
   web: { site_url: "https://cibox.cl", app_scheme: "cibox", storage_prefix: "cibox" },
   loaded: false,
@@ -51,6 +54,23 @@ export const brand = {
 
 /** Prefijo único de las claves de almacenamiento local de la tienda. */
 export const storageKey = (name) => `${brand.web.storage_prefix}_${name}`;
+
+/**
+ * ¿Hay una dirección real que mostrar?
+ *
+ * La ubicación de Cibox todavía no está definida, así que el backend la sirve
+ * vacía. Las pantallas que hablan de retiro (mapa, checkout, detalle del
+ * pedido, contacto) preguntan por esto antes de dibujar la dirección: es
+ * preferible no decir nada a mostrar una dirección equivocada.
+ */
+export const hasAddress = () => Boolean(brand.address?.one_line?.trim());
+
+/** Dirección para mostrar, o un texto neutro mientras no esté definida. */
+export const addressText = (placeholder = "Dirección por confirmar") =>
+  hasAddress() ? brand.address.one_line : placeholder;
+
+/** Horario de atención, o cadena vacía si todavía no se define. */
+export const openingHours = () => brand.address?.hours?.trim() || "";
 
 /** Enlaces derivados del contacto — para no repetir el armado en cada pantalla. */
 export const links = {

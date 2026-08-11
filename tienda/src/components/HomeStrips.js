@@ -11,7 +11,7 @@ export const COUPON_CODE = "BODEGA10";
 // Barra horizontal compacta. En desktop los 4 ítems van en fila; en móvil 2×2.
 export function TrustStrip() {
   const items = [
-    { icon: "storefront-outline", label: "Retiro gratis", sub: "en bodega Lo Espejo" },
+    { icon: "storefront-outline", label: "Retiro gratis", sub: "en nuestra bodega" },
     { icon: "cash-outline", label: "Efectivo o transferencia", sub: "pago al retirar" },
     { icon: "cube-outline", label: "Venta por caja", sub: "precio mayorista" },
     { icon: "time-outline", label: "Lun a Sáb", sub: "horario de atención" },
@@ -196,7 +196,7 @@ export function HowToBoxStrip({ isWebDesktop }) {
   const steps = [
     { n: "1", icon: "search-outline", label: "Elige tu producto", sub: "del catálogo mayorista" },
     { n: "2", icon: "cube-outline", label: "Suma cajas", sub: "mientras más, mejor precio" },
-    { n: "3", icon: "storefront-outline", label: "Retira gratis", sub: "en bodega Lo Espejo" },
+    { n: "3", icon: "storefront-outline", label: "Retira gratis", sub: "en nuestra bodega" },
   ];
   return (
     <View

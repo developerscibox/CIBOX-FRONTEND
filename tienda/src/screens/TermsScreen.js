@@ -4,12 +4,22 @@ import ScreenContainer from "../components/ScreenContainer";
 import AppText from "../components/AppText";
 import { colors, radius, shadows, spacing } from "../constants/theme";
 
-import brand from "../constants/brand";
+import brand, { hasAddress } from "../constants/brand";
 
 // Identidad: viene de constants/brand.js (que a su vez la trae del backend).
+// Es un documento legal: la razón social, el RUT y el domicilio NO se escriben
+// a mano acá, tienen que ser los mismos que declara el backend.
 const EMPRESA = brand.name;
 const EMAIL = brand.contact.email;
 const SITIO = brand.web.site_url;
+const RAZON_SOCIAL = brand.legal.razon_social;
+const RUT = brand.legal.rut;
+const TELEFONO = brand.contact.phone;
+// Sin dirección definida no se declara domicilio: en un contrato electrónico
+// una dirección equivocada es peor que ninguna.
+const DOMICILIO = hasAddress() ? brand.address.one_line : "";
+const DOMICILIO_LINEA = DOMICILIO ? `
+📍 ${DOMICILIO}` : "";
 const SECTIONS = [
   {
     roman: "I",
@@ -38,7 +48,7 @@ Este documento constituye contrato electrónico y se regulan conforme a la Ley N
       {
         num: "2",
         title: "Identificación del Proveedor",
-        content: `El proveedor responsable de la plataforma y de las ventas efectuadas a través del Sitio es: BODEGA 12 SpA, sociedad legalmente constituida en Chile, dedicada a la comercialización digital de productos de supermercado, abarrotes, alimentos, bebidas, artículos de aseo y productos para el hogar.`,
+        content: `El proveedor responsable de la plataforma y de las ventas efectuadas a través del Sitio es: ${RAZON_SOCIAL}, RUT ${RUT}, sociedad legalmente constituida en Chile, dedicada a la comercialización digital de productos de supermercado, abarrotes, alimentos, bebidas, artículos de aseo y productos para el hogar.`,
       },
     ],
   },
@@ -56,7 +66,7 @@ Este documento constituye contrato electrónico y se regulan conforme a la Ley N
 • Programas de ahorro y membresías.
 • Comercializador directo de productos, cajas temáticas, packs u otro bulto.
 
-La venta es exclusivamente por caja y el retiro se realiza únicamente en nuestra bodega de Av. Lo Espejo, comuna de Lo Espejo, Santiago. No se realiza despacho a domicilio.
+El retiro se realiza únicamente en nuestra bodega. No se realiza despacho a domicilio.
 
 ${EMPRESA} podrá abastecer productos desde:
 
@@ -161,7 +171,7 @@ ${EMPRESA} podrá rechazar pedidos por:
 
 Lugar de retiro:
 
-• Av. Lo Espejo, comuna de Lo Espejo, Santiago, Región Metropolitana.
+• En la bodega de ${EMPRESA}. La dirección se informa al confirmar el pedido.
 
 El retiro se realiza dentro del horario y plazo informados al cliente una vez que su pedido se encuentre preparado.`,
       },
@@ -476,7 +486,7 @@ Las condiciones específicas de membresías, incluyendo beneficios, descuentos, 
 
 📧 ${EMAIL}
 📞 +56 9 3244 5772
-📍 La Concepción 81, Oficina 214, Providencia.`,
+${DOMICILIO_LINEA}`,
       },
     ],
   },
@@ -655,11 +665,11 @@ export default function TermsScreen() {
             gap: 6,
           }}>
             <AppText style={{ fontSize: 13, fontWeight: "800", color: colors.text }}>
-              BODEGA 12 SpA
+              {RAZON_SOCIAL}
             </AppText>
             <AppText style={{ fontSize: 12, color: colors.muted }}>RUT: 78.245.061-1</AppText>
             <AppText style={{ fontSize: 12, color: colors.muted }}>
-              La Concepción 81, Oficina 214, Providencia, Región Metropolitana, Chile
+              {hasAddress() ? brand.address.one_line : `RUT: ${RUT}`}
             </AppText>
             <AppText style={{ fontSize: 12, color: colors.muted }}>📧 {EMAIL}</AppText>
             <AppText style={{ fontSize: 12, color: colors.muted }}>📞 +56 9 3244 5772</AppText>
@@ -698,7 +708,7 @@ export default function TermsScreen() {
           alignItems: "center",
         }}>
           <AppText style={{ fontSize: 11, color: colors.muted, textAlign: "center" }}>
-            © 2026 BODEGA 12 SpA — Todos los derechos reservados
+            © 2026 {RAZON_SOCIAL} — Todos los derechos reservados
           </AppText>
         </View>
 

@@ -1,7 +1,8 @@
 import { View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import InfoPageLayout, { InfoCard, SectionHeading } from "../components/InfoPageLayout";
-import MapEmbed, { BODEGA_ADDRESS } from "../components/MapEmbed";
+import MapEmbed from "../components/MapEmbed";
+import { addressText, openingHours } from "../constants/brand";
 import { colors, spacing } from "../constants/theme";
 import AppText from "../components/AppText";
 
@@ -21,16 +22,18 @@ export default function DespachoScreen() {
           <InfoCard
             icon={<Ionicons name="location-outline" size={22} color={colors.primary} />}
             title="Dónde retirar"
-            desc={BODEGA_ADDRESS}
+            desc={addressText("Estamos definiendo la ubicación de la bodega. Te avisamos apenas esté lista.")}
           />
         </View>
-        <View style={{ flexGrow: 1, flexBasis: 300 }}>
-          <InfoCard
-            icon={<Ionicons name="time-outline" size={22} color={colors.primary} />}
-            title="Horario"
-            desc="Lun a Vie 09:00–18:00 · Sáb 09:00–13:00"
-          />
-        </View>
+        {openingHours() ? (
+          <View style={{ flexGrow: 1, flexBasis: 300 }}>
+            <InfoCard
+              icon={<Ionicons name="time-outline" size={22} color={colors.primary} />}
+              title="Horario"
+              desc={openingHours()}
+            />
+          </View>
+        ) : null}
         <View style={{ flexGrow: 1, flexBasis: 300 }}>
           <InfoCard
             icon={<Ionicons name="cash-outline" size={22} color={colors.primary} />}

@@ -105,8 +105,8 @@ const isValidRut = (rut = "") => {
 const PICKUP_LOCATION = {
   get name() { return brand.name; },
   get address() { return brand.address.one_line; },
-  hint: "2da entrada por Américo Vespucio",
-  hours: "Lun a Vie 09:00–18:00 · Sáb 09:00–13:00",
+  get hint() { return brand.address.hint || ""; },
+  get hours() { return brand.address.hours || ""; },
 };
 
 const PAYMENT_OPTIONS = [
@@ -737,7 +737,7 @@ export default function CheckoutScreen({ navigation }) {
                   Retiro en tienda — Gratis
                 </AppText>
                 <AppText style={{ color: colors.muted, fontSize: 13 }}>
-                  Retira tu pedido en nuestra bodega de Lo Espejo.
+                  Retira tu pedido en nuestra bodega, sin costo.
                 </AppText>
               </View>
             </View>

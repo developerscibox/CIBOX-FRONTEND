@@ -4,12 +4,20 @@ import ScreenContainer from "../components/ScreenContainer";
 import AppText from "../components/AppText";
 import { colors, radius, shadows, spacing } from "../constants/theme";
 
-import brand from "../constants/brand";
+import brand, { hasAddress } from "../constants/brand";
 
 // Identidad: viene de constants/brand.js (que a su vez la trae del backend).
+// Nada de esto se escribe a mano: es el responsable legal de los datos y tiene
+// que coincidir con lo que declara el backend.
 const EMPRESA = brand.name;
 const EMAIL = brand.contact.email;
 const SITIO = brand.web.site_url;
+const RAZON_SOCIAL = brand.legal.razon_social;
+const RUT = brand.legal.rut;
+const TELEFONO = brand.contact.phone;
+// Mientras no haya dirección definida no se declara ninguna: en una política de
+// privacidad, una dirección equivocada es peor que ninguna.
+const DOMICILIO = hasAddress() ? `\n${brand.address.one_line}` : "";
 const SECTIONS = [
   {
     roman: "I",
@@ -17,11 +25,10 @@ const SECTIONS = [
     icon: "business-outline",
     content: `El responsable del tratamiento de sus datos personales es:
 
-BODEGA 12 SpA
-RUT: 78.245.061-1
-La Concepción 81, Oficina 214, Providencia, Región Metropolitana, Chile
+${RAZON_SOCIAL}
+RUT: ${RUT}${DOMICILIO}
 📧 ${EMAIL}
-📞 +56 9 3244 5772
+📞 ${TELEFONO}
 
 Para ejercer cualquier derecho sobre sus datos personales, puede contactarnos directamente a través de los medios indicados anteriormente.`,
   },
@@ -245,8 +252,7 @@ Cualquier controversia derivada de la aplicación de esta política será someti
     content: `Para cualquier consulta, solicitud o reclamo relacionado con el tratamiento de sus datos personales, puede contactarnos:
 
 📧 ${EMAIL}
-📞 +56 9 3244 5772
-📍 La Concepción 81, Oficina 214, Providencia, Santiago.
+📞 ${TELEFONO}${DOMICILIO}
 
 Horario de atención: Lunes a viernes, 9:00 a 18:00 hrs.
 Tiempo de respuesta: máximo 15 días hábiles.`,
@@ -359,14 +365,16 @@ export default function PrivacyScreen() {
             gap: 6,
           }}>
             <AppText style={{ fontSize: 13, fontWeight: "800", color: colors.text }}>
-              BODEGA 12 SpA
+              {RAZON_SOCIAL}
             </AppText>
-            <AppText style={{ fontSize: 12, color: colors.muted }}>RUT: 78.245.061-1</AppText>
-            <AppText style={{ fontSize: 12, color: colors.muted }}>
-              La Concepción 81, Oficina 214, Providencia, Región Metropolitana, Chile
-            </AppText>
+            <AppText style={{ fontSize: 12, color: colors.muted }}>RUT: {RUT}</AppText>
+            {hasAddress() ? (
+              <AppText style={{ fontSize: 12, color: colors.muted }}>
+                {brand.address.one_line}
+              </AppText>
+            ) : null}
             <AppText style={{ fontSize: 12, color: colors.muted }}>📧 {EMAIL}</AppText>
-            <AppText style={{ fontSize: 12, color: colors.muted }}>📞 +56 9 3244 5772</AppText>
+            <AppText style={{ fontSize: 12, color: colors.muted }}>📞 {TELEFONO}</AppText>
           </View>
 
           {/* Fecha + Ley */}
@@ -445,7 +453,7 @@ export default function PrivacyScreen() {
           alignItems: "center",
         }}>
           <AppText style={{ fontSize: 11, color: colors.muted, textAlign: "center" }}>
-            © 2026 BODEGA 12 SpA — Todos los derechos reservados
+            © 2026 {RAZON_SOCIAL} — Todos los derechos reservados
           </AppText>
         </View>
 
