@@ -147,6 +147,11 @@ export const authApi = {
     setSession(data.accessToken, data.user, data.refreshToken);
     return data.user;
   },
+  // POST /auth/forgot-password → manda el correo con el enlace para cambiarla.
+  // El backend responde igual exista o no la cuenta, para no delatar qué correos
+  // están registrados; el panel muestra el mismo mensaje en los dos casos.
+  forgotPassword: (email) =>
+    req("/auth/forgot-password", { method: "POST", body: { email }, auth: false }),
   logout: () => clearSession(),
 };
 
