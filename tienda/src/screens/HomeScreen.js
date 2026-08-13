@@ -20,6 +20,8 @@ import useCategoryStore from "../store/categoryStore";
 import ProductRowSection from "../components/ProductRowSection";
 import { getProducts, getRecommendedProducts } from "../services/productService";
 import { addItemToCart } from "../services/cartService";
+import { esAlcohol } from "../constants/alcohol";
+import { exigirMayoriaDeEdad } from "../store/edadStore";
 import useCartStore from "../store/cartStore";
 import { showToast } from "../store/toastStore";
 import { boxQtyOf } from "../utils/boxPricing";
@@ -531,6 +533,14 @@ export default function HomeScreen({ navigation }) {
     if (!product?._id) return;
     // Compra sin cuenta: el carrito de invitado (x-guest-id) ya funciona en el
     // backend; no exigimos login para agregar (igual que ProductsScreen).
+
+    // Alcohol: hay que declarar mayoría de edad antes de agregarlo (Ley 19.925).
+    // Importa acá: hay vinos en "Productos destacados" de la portada.
+    if (esAlcohol(product) && !(await exigirMayoriaDeEdad())) {
+      showToast("No podemos venderte alcohol si eres menor de 18 años");
+      return;
+    }
+
     try {
       setAddingProductId(product._id);
       const n = Math.max(1, Number(cajas) || 1);

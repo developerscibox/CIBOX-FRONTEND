@@ -375,8 +375,23 @@ export default function Gerencia({ onNav }) {
         <>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(165px,1fr))", gap: 12, marginBottom: 8 }}>
             <Kpi label="Ingresos · Ventas" value={mm(finanzas.ingresos.ventas)} sub="facturado en el periodo" onClick={ir("ventas")} />
-            <Kpi label="Costo de lo vendido" value={`− ${mm(finanzas.egresos.cogs)}`} sub="costo de los productos vendidos" onClick={ir("lotes")} />
-            <Kpi label="Utilidad bruta" value={mm(finanzas.utilidadBruta)} sub={finanzas.margenBrutoPct != null ? `margen ${finanzas.margenBrutoPct}%` : null} onClick={ir("precios")} />
+            {/* Sin costos cargados el backend manda null a propósito: mostrar
+                "$0 de costo" y "100% de margen" es peor que decir que falta el
+                dato, porque el número se ve creíble y no lo es. */}
+            <Kpi
+              label="Costo de lo vendido"
+              value={finanzas.egresos.cogs != null ? `− ${mm(finanzas.egresos.cogs)}` : "Sin datos"}
+              sub={finanzas.egresos.cogs != null ? "costo de los productos vendidos" : "falta cargar el costo de compra"}
+              onClick={ir("precios")}
+            />
+            <Kpi
+              label="Utilidad bruta"
+              value={finanzas.utilidadBruta != null ? mm(finanzas.utilidadBruta) : "Sin datos"}
+              sub={finanzas.margenBrutoPct != null
+                ? `margen ${finanzas.margenBrutoPct}%`
+                : "no se puede calcular sin costos"}
+              onClick={ir("precios")}
+            />
             <Kpi label="Compras" value={`− ${mm(finanzas.egresos.compras)}`} sub="reposición de inventario" onClick={ir("lotes")} />
             {/* Desglose por método (antes "Cobrado (caja)", que era siempre ≡ Ventas) */}
             <div className="card" style={{ padding: 16 }}>
@@ -390,9 +405,19 @@ export default function Gerencia({ onNav }) {
             </div>
             <Kpi label="Por cobrar" value={aging ? mm(aging.total) : "Sin datos"} sub={subVencido} onClick={ir("cobranza")} />
           </div>
-          <div style={{ fontSize: 11.5, color: "var(--muted)", marginBottom: 14 }}>
-            Utilidad bruta = ventas − costo de lo vendido{finanzas.sinCosto > 0 ? ` (margen sobre los productos con costo; ${finanzas.sinCosto} sin costo cargado)` : ""}. Los <b>gastos operativos</b> (sueldos, arriendo, servicios) se llevan aparte.
-          </div>
+          {finanzas.utilidadBruta == null ? (
+            <div className="card" style={{ padding: "10px 14px", marginBottom: 14, borderLeft: "4px solid var(--warn)", fontSize: 12.5 }}>
+              <b>No se puede calcular la utilidad todavía.</b> Ninguno de los productos vendidos
+              tiene cargado su costo de compra{finanzas.sinCosto > 0 ? ` (${finanzas.sinCosto} sin costo)` : ""},
+              así que el costo de lo vendido y el margen no se muestran: con costo cero saldría
+              100% de margen, que sería falso. Cárgalos en <b>Precios y márgenes</b> y estas
+              cifras aparecen solas.
+            </div>
+          ) : (
+            <div style={{ fontSize: 11.5, color: "var(--muted)", marginBottom: 14 }}>
+              Utilidad bruta = ventas − costo de lo vendido{finanzas.sinCosto > 0 ? ` (margen sobre los ${finanzas.conCosto} productos con costo; ${finanzas.sinCosto} sin costo cargado)` : ""}. Los <b>gastos operativos</b> (sueldos, arriendo, servicios) se llevan aparte.
+            </div>
+          )}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(300px,1fr))", gap: 14 }}>
           <Card>
             <div style={{ fontWeight: 700, marginBottom: 10 }}>Cobros del periodo · {clp(cobros?.total || 0)} <span style={{ fontWeight: 400, color: "var(--muted)", fontSize: 12 }}>({num(cobros?.count || 0)} cobros)</span></div>

@@ -17,6 +17,8 @@ import AppButton from "../components/AppButton";
 import ProductRowSection from "../components/ProductRowSection";
 import { colors, radius, spacing } from "../constants/theme";
 import { addItemToCart } from "../services/cartService";
+import { esAlcohol } from "../constants/alcohol";
+import { exigirMayoriaDeEdad } from "../store/edadStore";
 import { addItemToPantry } from "../services/pantryService";
 import {
   addFavorite,
@@ -200,6 +202,12 @@ export default function ProductDetailScreen({ route, navigation }) {
     // Compra sin cuenta: el carrito de invitado (x-guest-id) ya funciona en el
     // backend; no exigimos login para agregar (igual que ProductsScreen).
     if (!product?._id) return;
+
+    // Alcohol: hay que declarar mayoría de edad antes de agregarlo (Ley 19.925).
+    if (esAlcohol(product) && !(await exigirMayoriaDeEdad())) {
+      showToast("No podemos venderte alcohol si eres menor de 18 años");
+      return;
+    }
 
     try {
       setAdding(true);

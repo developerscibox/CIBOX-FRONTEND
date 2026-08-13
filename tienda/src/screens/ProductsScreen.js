@@ -18,6 +18,8 @@ import { colors, spacing, radius, shadows } from "../constants/theme";
 import { getProducts } from "../services/productService";
 import { getCategories } from "../services/categoryService";
 import { addItemToCart } from "../services/cartService";
+import { esAlcohol } from "../constants/alcohol";
+import { exigirMayoriaDeEdad } from "../store/edadStore";
 import useCartStore from "../store/cartStore";
 import { showAppAlert } from "../utils/appAlerts";
 import { showToast } from "../store/toastStore";
@@ -180,6 +182,12 @@ export default function ProductsScreen({ navigation, route }) {
 
   const handleAddFromCard = async (product, cajas = 1) => {
     if (!product?._id) return;
+
+    // Alcohol: hay que declarar mayoría de edad antes de agregarlo (Ley 19.925).
+    if (esAlcohol(product) && !(await exigirMayoriaDeEdad())) {
+      showToast("No podemos venderte alcohol si eres menor de 18 años");
+      return;
+    }
 
     try {
       setAddingProductId(product._id);
