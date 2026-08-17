@@ -5,7 +5,7 @@ import ScreenContainer from "../components/ScreenContainer";
 import { colors, spacing } from "../constants/theme";
 import AppText from "../components/AppText";
 
-const BACKEND_HOST = "backend-app-cibox-tmvlv.ondigitalocean.app";
+const BACKEND_HOST = "api.cibox.cl";
 const SUCCESS_PATH = "/orders/success";
 const FAILED_PATH = "/orders/failed";
 // Esquema nuevo + legado: el backend redirige con MOBILE_DEEP_LINK, que puede
@@ -85,9 +85,8 @@ export default function WebpayScreen({ route, navigation }) {
       const isOwnUrl =
         startsWithScheme(url) ||
         host === BACKEND_HOST ||
-        host === "cibox-frontend-j7257.ondigitalocean.app" ||
-        host === "app.cibox.cl" ||
-        host === "app.cibox.cl" ||
+        host === "www.cibox.cl" ||
+        host === "urchin-app-4d3ww.ondigitalocean.app" ||
         host === "localhost";
 
       if (!isOwnUrl) return;

@@ -40,6 +40,7 @@ import BeneficiosScreen from "../screens/BeneficiosScreen";
 import DespachoScreen from "../screens/DespachoScreen";
 import BlogScreen from "../screens/BlogScreen";
 import StoresScreen from "../screens/StoresScreen";
+import B2BProviderScreen from "../screens/B2BProviderScreen";
 
 import brand from "../constants/brand";
 const Stack = createNativeStackNavigator();
@@ -358,6 +359,11 @@ export default function AppStack() {
         name="Stores"
         component={isWebDesktop ? withWebLayout(StoresScreen) : StoresScreen}
         options={isWebDesktop ? { headerShown: false } : { title: "Nuestras tiendas" }}
+      />
+      <Stack.Screen
+        name="B2BProvider"
+        component={isWebDesktop ? withWebLayout(B2BProviderScreen) : B2BProviderScreen}
+        options={isWebDesktop ? { headerShown: false } : { title: "Proveedores" }}
       />
 
       {!token && (
