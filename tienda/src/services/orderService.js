@@ -130,7 +130,7 @@ export const adminUpdateOrderStatus = async (orderId, { status, tracking_number,
  * la pinta. `guestToken` permite seguir un pedido hecho sin cuenta.
  */
 export const getOrderTracking = async (orderId, guestToken = null) => {
-  const { data } = await api.get(`/tracking/orders/${orderId}`, {
+  const { data } = await client.get(`/tracking/orders/${orderId}`, {
     params: guestToken ? { token: guestToken } : undefined,
   });
   return data?.data ?? data;

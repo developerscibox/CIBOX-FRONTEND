@@ -111,6 +111,11 @@ const PICKUP_LOCATION = {
 
 const PAYMENT_OPTIONS = [
   {
+    value: "webpay",
+    title: "Webpay",
+    desc: "Paga con tarjeta de débito, crédito o prepago a través de Webpay.",
+  },
+  {
     value: "transfer",
     title: "Transferencia bancaria",
     desc: "Al confirmar te mostramos los datos bancarios (también te llegan al correo).",
@@ -120,7 +125,6 @@ const PAYMENT_OPTIONS = [
     title: "Efectivo al retirar",
     desc: "Pagas en efectivo al retirar en la bodega.",
   },
-  // Webpay deshabilitado temporalmente — solo efectivo y transferencia.
 ];
 
 const pad2 = (n) => String(n).padStart(2, "0");
@@ -293,8 +297,7 @@ export default function CheckoutScreen({ navigation }) {
         setEmail(saved.email || "");
         setPhone(saved.phone || "");
         setRut(saved.rut || "");
-        // Webpay deshabilitado: si quedó guardado, se ignora y cae a "transfer".
-        if (["transfer", "cash_on_pickup"].includes(saved.paymentMethod)) {
+          if (["webpay", "transfer", "cash_on_pickup"].includes(saved.paymentMethod)) {
           setPaymentMethod(saved.paymentMethod);
         }
       }
