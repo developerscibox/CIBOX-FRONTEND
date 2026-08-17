@@ -12,7 +12,6 @@ const linking = {
   prefixes: [
     "cibox://",
     "https://app.cibox.cl",
-    // despliegue actual en DigitalOcean — quitar cuando se migre al dominio nuevo
     "https://cibox-frontend-j7257.ondigitalocean.app",
     "http://192.168.1.3:8081",
     "http://localhost:8081",
@@ -45,6 +44,7 @@ const linking = {
       Despacho: "despacho",
       Blog: "blog",
       Stores: "nuestras-tiendas",
+      B2BProvider: "b2bprovider",
     },
   },
 };
