@@ -66,6 +66,15 @@ export default function ProductCard({
   const perUnit = boxQty ? boxUnitPrice : null; // c/u dentro de la caja
   const unitPrice = unitTier?.price ?? null;
   const boxLabel = boxTier?.label || (boxQty ? `Caja de ${boxQty} un` : "Por caja");
+  // Un tramo por cantidad puede ser dos cosas distintas y la ficha tiene que
+  // mostrarlas distinto: un PACK CERRADO que se vende junto (el precio grande es
+  // el del pack) o un DESCUENTO POR VOLUMEN sobre el producto suelto (el precio
+  // grande sigue siendo el de una unidad, y llevar más solo la abarata).
+  // El rótulo del tramo lo distingue: "pack de N" contra "N o más"
+  // (ver backend catalogo/precio.js).
+  const esPackCerrado =
+    !!boxQty && /^pack|^caja/i.test(String(boxTier?.label || "")) ;
+  const esVolumen = !!boxQty && !esPackCerrado;
   const boxSavingsPct =
     unitPrice && boxUnitPrice && boxQty && unitPrice > boxUnitPrice
       ? Math.round((1 - boxUnitPrice / unitPrice) * 100)
@@ -236,7 +245,7 @@ export default function ProductCard({
             {hasPackTier ? (
               <View style={chipStyle(colors.primary)}>
                 <AppText style={{ color: "#fff", fontSize: 11, fontWeight: "800" }}>
-                  Venta por caja
+                  {esPackCerrado ? "Venta por caja" : `Ahorra desde ${boxQty}`}
                 </AppText>
               </View>
             ) : null}
@@ -256,7 +265,7 @@ export default function ProductCard({
             {hasPackTier && (
               <View style={chipStyle(colors.primary)}>
                 <AppText style={{ color: "#fff", fontSize: 10, fontWeight: "800" }}>
-                  Por caja
+                  {esPackCerrado ? "Por caja" : `${boxQty}+`}
                 </AppText>
               </View>
             )}
@@ -298,7 +307,7 @@ export default function ProductCard({
             <AppText
               style={{ fontSize: priceSize, fontWeight: "900", color: colors.text }}
             >
-              {formatPrice(boxTotal)}
+              {formatPrice(esVolumen ? unitPrice : boxTotal)}
             </AppText>
             <AppText
               style={{
@@ -307,18 +316,18 @@ export default function ProductCard({
                 fontWeight: "800",
               }}
             >
-              {boxQty ? "/ caja" : "/ un"}
+              {esPackCerrado ? "/ caja" : "/ un"}
             </AppText>
           </View>
 
           {/* PPUM (decreto 38/2024, art. 9°): junto al precio, mismo campo visual. */}
-          <UnitPrice product={product} unitPrice={boxUnitPrice} priceSize={priceSize} />
+          <UnitPrice product={product} unitPrice={esVolumen ? unitPrice : boxUnitPrice} priceSize={priceSize} />
 
           <AppText
             style={{ fontSize: mini ? 10 : 12, color: colors.muted, marginTop: 1 }}
           >
-            {boxLabel}
-            {perUnit ? ` · ≈ ${formatPrice(perUnit)} c/u` : ""}
+            {esVolumen ? `${boxQty} o más · ${formatPrice(perUnit)} c/u` : boxLabel}
+            {!esVolumen && perUnit ? ` · ≈ ${formatPrice(perUnit)} c/u` : ""}
           </AppText>
 
           {boxSavingsPct >= 3 && (
@@ -330,7 +339,7 @@ export default function ProductCard({
                 marginTop: 2,
               }}
             >
-              Ahorra {boxSavingsPct}% por caja
+              Ahorra {boxSavingsPct}% {esVolumen ? `llevando ${boxQty} o más` : "por caja"}
             </AppText>
           )}
         </View>
