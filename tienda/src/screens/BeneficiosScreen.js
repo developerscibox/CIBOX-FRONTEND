@@ -44,7 +44,7 @@ export default function BeneficiosScreen() {
   return (
     <InfoPageLayout
       title="Beneficios de comprar en Cibox"
-      subtitle="Todo el supermercado en tu casa: compra online y nosotros te lo llevamos."
+      subtitle="Todo el supermercado a un clic: compra online y retira tu pedido ya preparado."
       icon={ICON}
     >
       <View style={{ flexDirection: "row", flexWrap: "wrap", gap: spacing.md }}>

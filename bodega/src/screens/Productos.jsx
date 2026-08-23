@@ -94,6 +94,12 @@ const EMPTY_FORM = {
   saleUnit: "unidad",
   contentValue: "",
   contentUnit: "",
+  // Precio por unidad de medida (decreto 38/2024)
+  ppumBulk: false,
+  ppumPieces: "",
+  ppumLengthPerPiece: "",
+  ppumDrained: "",
+  ppumExemptReason: "",
   imageUrls: [], // fotos del producto (la primera es la portada)
   unitPrice: "",
   packPrice: "",
@@ -184,6 +190,11 @@ export default function Productos() {
       saleUnit: p.sale_unit || "unidad",
       contentValue: p.unit_content?.value ? String(p.unit_content.value) : "",
       contentUnit: p.unit_content?.unit || "",
+      ppumBulk: Boolean(p.ppum?.bulk),
+      ppumPieces: p.ppum?.pieces_per_pack ? String(p.ppum.pieces_per_pack) : "",
+      ppumLengthPerPiece: p.ppum?.length_per_piece_m ? String(p.ppum.length_per_piece_m) : "",
+      ppumDrained: p.ppum?.drained_value ? String(p.ppum.drained_value) : "",
+      ppumExemptReason: p.ppum?.mode === "exempt" ? (p.ppum?.exempt_reason || "") : "",
       imageUrls: p.images?.length ? [...p.images] : (p.thumbnail ? [p.thumbnail] : []),
       unitPrice: String(p.price ?? u?.price ?? ""),
       packPrice: p.pack_price ? String(p.pack_price) : (b ? String(Number(b.price) * Number(b.min_qty)) : ""),
@@ -323,6 +334,17 @@ export default function Productos() {
       unit_content: {
         value: Number(form.contentValue) || 0,
         unit: form.contentUnit.trim(),
+      },
+      // Precio por unidad de medida. Solo se mandan las entradas: el backend
+      // deriva el texto que ve el cliente y rechaza que llegue calculado.
+      ppum: {
+        bulk: Boolean(form.ppumBulk),
+        pieces_per_pack: Number(form.ppumPieces) || 0,
+        length_per_piece_m: Number(form.ppumLengthPerPiece) || 0,
+        drained_value: Number(form.ppumDrained) || 0,
+        ...(form.ppumExemptReason.trim()
+          ? { mode: "exempt", exempt_reason: form.ppumExemptReason.trim() }
+          : { mode: "auto", exempt_reason: "" }),
       },
       pack_size: form.unitsPerBox !== "" && upb > 1 ? upb : 0,
       pack_price: form.packPrice !== "" ? Number(form.packPrice) : 0,
@@ -556,7 +578,56 @@ export default function Productos() {
               <div className="field" style={{ flex: "1 1 100px" }}>
                 <label>Medida</label>
                 <input type="text" value={form.contentUnit} onChange={(e) => setF({ contentUnit: e.target.value })} placeholder="ml, g, un" />
-                <div className="hint">Informativo: va en la ficha del producto.</div>
+                <div className="hint">Con el precio, define el precio por unidad de medida.</div>
+              </div>
+            </div>
+
+            <Sec>Precio por unidad de medida (decreto 38/2024)</Sec>
+            <div className="hint" style={{ marginBottom: 10 }}>
+              Obligatorio desde el 10-09-2025 tambien en la tienda online. Con el
+              contenido y el precio ya se calcula solo; esto es para los casos que
+              el contenido no alcanza a cubrir.
+            </div>
+            <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
+              <div className="field" style={{ flex: "1 1 160px" }}>
+                <label>Piezas por envase</label>
+                <input type="number" min="0" step="1" value={form.ppumPieces} onChange={(e) => setF({ ppumPieces: e.target.value })} placeholder="Ej: 12" />
+                <div className="hint">Unidades identicas dentro del envase (art. 6).</div>
+              </div>
+              <div className="field" style={{ flex: "1 1 160px" }}>
+                <label>Metros por rollo</label>
+                <input type="number" min="0" step="any" value={form.ppumLengthPerPiece} onChange={(e) => setF({ ppumLengthPerPiece: e.target.value })} placeholder="Ej: 25" />
+                <div className="hint">Papel higienico y toalla: el art. 11 exige informar por metro.</div>
+              </div>
+              <div className="field" style={{ flex: "1 1 160px" }}>
+                <label>Peso escurrido</label>
+                <input type="number" min="0" step="any" value={form.ppumDrained} onChange={(e) => setF({ ppumDrained: e.target.value })} placeholder="Ej: 100" />
+                <div className="hint">Conservas: en la misma medida del contenido (art. 10).</div>
+              </div>
+            </div>
+            <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginTop: 10 }}>
+              <div className="field" style={{ flex: "1 1 200px" }}>
+                <label>
+                  <input type="checkbox" checked={form.ppumBulk} onChange={(e) => setF({ ppumBulk: e.target.checked })} />
+                  {" "}Se vende a granel
+                </label>
+                <div className="hint">A granel el precio de venta ya ES el precio por unidad (art. 5).</div>
+              </div>
+              <div className="field" style={{ flex: "1 1 260px" }}>
+                <label>Exceptuado del PPUM — motivo</label>
+                <select value={form.ppumExemptReason} onChange={(e) => setF({ ppumExemptReason: e.target.value })}>
+                  <option value="">No — se informa el precio por unidad</option>
+                  <option value="distinta_naturaleza">Unidades de distinta naturaleza en un envase</option>
+                  <option value="menor_a_50">Menos de 50 g o ml</option>
+                  <option value="con_servicio">Suministrado junto a un servicio</option>
+                  <option value="subasta">Subasta publica</option>
+                  <option value="arte_antiguedad">Obra de arte o antiguedad</option>
+                  <option value="expendedora">Maquina expendedora</option>
+                  <option value="porcion_no_envasada">Porcion individual no envasada</option>
+                  <option value="normativa_sectorial">Normativa sectorial propia (ej: medicamentos)</option>
+                  <option value="comida_preparada">Comida o plato preparado de consumo inmediato</option>
+                </select>
+                <div className="hint">Solo si de verdad aplica una excepcion del art. 8.</div>
               </div>
             </div>
 

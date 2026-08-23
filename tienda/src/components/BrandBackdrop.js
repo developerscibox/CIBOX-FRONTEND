@@ -22,11 +22,15 @@ export default function BrandBackdrop() {
         position: Platform.OS === 'web' ? 'fixed' : 'absolute',
         top: 0, left: 0, right: 0, bottom: 0,
         // El ancho y el alto van explícitos: react-native-web le pone al Image
-        // el tamaño intrínseco del archivo (320x320) y ese gana sobre el
+        // el tamaño intrínseco del archivo (560x560) y ese gana sobre el
         // top/right/bottom/left, dejando el patrón en un cuadrado de la esquina
         // en vez de cubrir la pantalla.
         width: '100%', height: '100%',
-        opacity: 0.13,
+        // 0.22 y no 0.13: el patrón estaba corrupto (el generador viejo rellenaba
+        // el interior de los íconos, que en el arte son contornos huecos). El tile
+        // limpio tiene ~43% menos tinta, así que con la opacidad anterior el fondo
+        // quedaba prácticamente vacío.
+        opacity: 0.22,
       }}
     />
   );

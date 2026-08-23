@@ -88,6 +88,14 @@ export default function ProductForm({
     Boolean(initialValues?.ciboxPlusEnabled),
   );
 
+  // Contenido del envase: sin esto el backend no publica el producto, porque no
+  // puede calcular el precio por unidad de medida (decreto 38/2024).
+  const [contentValue, setContentValue] = useState(
+    initialValues?.unit_content?.value ? String(initialValues.unit_content.value) : "",
+  );
+  const [contentUnit, setContentUnit] = useState(
+    initialValues?.unit_content?.unit || "",
+  );
   const [selectedImages, setSelectedImages] = useState([]);
   const [currentImageUrls, setCurrentImageUrls] = useState(
     Array.isArray(initialValues?.images) ? initialValues.images : [],
@@ -284,6 +292,10 @@ export default function ProductForm({
           tiers,
         },
         stock: parseNumber(stock),
+        unit_content: {
+          value: contentValue.trim() ? parseNumber(contentValue) : 0,
+          unit: contentUnit.trim(),
+        },
         weight: {
           value: weightValue.trim() ? parseNumber(weightValue) : 0,
           unit: weightUnit.trim() || "g",
@@ -377,6 +389,43 @@ export default function ProductForm({
         onChangeText={setBrand}
         placeholder="Ej: Nutrivital"
         placeholderTextColor={colors.muted}
+        style={inputStyle}
+      />
+
+      <AppText
+        style={{
+          fontSize: 18,
+          fontWeight: "800",
+          color: colors.text,
+          marginBottom: spacing.md,
+          marginTop: spacing.sm,
+        }}
+      >
+        Contenido del envase
+      </AppText>
+
+      <AppText style={{ fontSize: 12, color: colors.muted, marginBottom: spacing.sm }}>
+        Con el precio define el precio por unidad de medida que exige el decreto
+        38/2024. Sin esto el producto no se puede publicar.
+      </AppText>
+
+      <AppText style={labelStyle}>Cantidad</AppText>
+      <TextInput
+        value={contentValue}
+        onChangeText={setContentValue}
+        placeholder="Ej: 900"
+        placeholderTextColor={colors.muted}
+        keyboardType="numeric"
+        style={inputStyle}
+      />
+
+      <AppText style={labelStyle}>Medida</AppText>
+      <TextInput
+        value={contentUnit}
+        onChangeText={setContentUnit}
+        placeholder="Ej: g, ml, kg, L, un"
+        placeholderTextColor={colors.muted}
+        autoCapitalize="none"
         style={inputStyle}
       />
 

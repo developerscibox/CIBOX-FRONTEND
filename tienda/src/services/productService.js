@@ -31,11 +31,30 @@ export const getRecommendedProducts = async (params = {}) => {
   return unwrap(response);
 };
 
+/**
+ * Productos relacionados: otros de la misma categoría, sin el que se está viendo.
+ *
+ * ANTES ignoraba el productId y pedía el listado genérico /products, cuya
+ * respuesta es { items, pagination }. La ficha, en cambio, leía
+ * `data.related_products`, un campo que ese endpoint nunca devuelve: la lista
+ * quedaba siempre vacía y la sección entera desaparecía de todas las fichas.
+ *
+ * No hay endpoint de relacionados en el backend, así que se arma con el listado
+ * filtrando por categoría y se devuelve en la forma que la ficha espera.
+ */
 export const getRelatedProducts = async (productId, params = {}) => {
+  const { categoryId, limit = 8, ...resto } = params;
   const response = await client.get("/products", {
-    params: { limit: 8, ...params },
+    params: { limit: limit + 1, ...(categoryId ? { category: categoryId } : {}), ...resto },
   });
-  return unwrap(response);
+  const data = unwrap(response);
+  const items = Array.isArray(data?.items) ? data.items : [];
+  return {
+    ...data,
+    related_products: items
+      .filter((p) => String(p?._id) !== String(productId))
+      .slice(0, limit),
+  };
 };
 
 export const getMyProducts = async (params = {}) => {

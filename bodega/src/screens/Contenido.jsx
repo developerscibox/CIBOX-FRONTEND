@@ -17,26 +17,28 @@ const MOCK_SPECS = {
   hero: {
     nombre: "Banner principal (hero)",
     descripcion: "Imagen grande de bienvenida con título, bajada y botón de acción. Es lo primero que ve el cliente.",
-    tamano: "1600×500 px (web) · se recorta a 16:9 en móvil",
-    ratio_web: "16:5",
-    ratio_movil: "16:9",
+    // La tienda dibuja el hero con aspectRatio 2 fijo (web y celular igual):
+    // estos tres valores tienen que ser idénticos a los del backend.
+    tamano: "1600×800 px (2:1)",
+    ratio_web: "2:1",
+    ratio_movil: "2:1",
     campos: { title: { max: 60 }, subtitle: { max: 120 }, cta: { max: 25 }, image_url: {} },
   },
   banner_1: {
     nombre: "Banner secundario 1",
-    descripcion: "Franja promocional bajo el hero. Ideal para ofertas o liquidación.",
+    descripcion: "Franja promocional bajo el hero. Ideal para ofertas o liquidación. En celular se ve solo la mitad central de la imagen: pon lo importante al centro.",
     tamano: "1200×300 px", ratio_web: "4:1", ratio_movil: "2:1",
     campos: { title: { max: 50 }, image_url: {}, link: { max: 120 } },
   },
   banner_2: {
     nombre: "Banner secundario 2",
-    descripcion: "Segunda franja promocional. Ideal para categorías destacadas.",
+    descripcion: "Segunda franja promocional. Ideal para categorías destacadas. En celular se ve solo la mitad central de la imagen: pon lo importante al centro.",
     tamano: "1200×300 px", ratio_web: "4:1", ratio_movil: "2:1",
     campos: { title: { max: 50 }, image_url: {}, link: { max: 120 } },
   },
   banner_3: {
     nombre: "Banner secundario 3",
-    descripcion: "Tercera franja promocional. Ideal para novedades o temporada.",
+    descripcion: "Tercera franja promocional. Ideal para novedades o temporada. En celular se ve solo la mitad central de la imagen: pon lo importante al centro.",
     tamano: "1200×300 px", ratio_web: "4:1", ratio_movil: "2:1",
     campos: { title: { max: 50 }, image_url: {}, link: { max: 120 } },
   },
@@ -76,7 +78,7 @@ const EMPTY_SLOTS = {
 };
 
 const uid = () => Math.random().toString(36).slice(2, 10);
-// "16:5" → "16 / 5" (CSS aspect-ratio)
+// "2:1" → "2 / 1" (CSS aspect-ratio)
 const cssRatio = (r) => (r && /^\d+:\d+$/.test(r) ? r.replace(":", " / ") : "16 / 9");
 const fmtFecha = (d) => {
   if (!d) return null;
@@ -99,10 +101,16 @@ const hydrateSlots = (s) => ({
 
 function Nota({ spec }) {
   if (!spec?.tamano) return null;
+  // Desde que el hero declara la misma proporción en computador y celular, la
+  // frase de siempre repetía el mismo número dos veces ("2:1 ... y en celular
+  // en 2:1") y hacía dudar al administrador de si eran dos formatos distintos.
+  const mismoRatio = spec.ratio_web && spec.ratio_web === spec.ratio_movil;
   return (
     <div style={{ fontSize: 12.5, background: "#f8f6fa", border: "1px solid var(--border-soft)", borderRadius: 8, padding: "8px 12px", margin: "8px 0 14px", color: "var(--muted)", lineHeight: 1.5 }}>
 <b>Tamaño recomendado:</b> {spec.tamano}.{" "}
-      En computador se muestra en proporción {spec.ratio_web} y en celular en {spec.ratio_movil}.
+      {mismoRatio
+        ? <>Se muestra en proporción {spec.ratio_web} tanto en computador como en celular.</>
+        : <>En computador se muestra en proporción {spec.ratio_web} y en celular en {spec.ratio_movil}.</>}
     </div>
   );
 }

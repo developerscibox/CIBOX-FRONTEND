@@ -39,6 +39,7 @@ import { showAppAlert } from "../utils/appAlerts";
 import { showToast } from "../store/toastStore";
 import { boxTierOf } from "../utils/boxPricing";
 import AppText from "../components/AppText";
+import UnitPrice from "../components/UnitPrice";
 
 export default function ProductDetailScreen({ route, navigation }) {
   const { productId } = route.params;
@@ -116,7 +117,12 @@ export default function ProductDetailScreen({ route, navigation }) {
   const fetchRelatedProducts = async () => {
     try {
       setRelatedLoading(true);
-      const data = await getRelatedProducts(productId, { limit: 8 });
+      // La categoría se pasa para que sean de verdad relacionados y no los 8
+      // primeros del catálogo completo.
+      const data = await getRelatedProducts(productId, {
+        limit: 8,
+        categoryId: product?.category?._id || product?.category?.id || undefined,
+      });
       const items = data?.related_products || [];
       setRelatedProducts(Array.isArray(items) ? items : []);
     } catch (error) {
@@ -678,6 +684,9 @@ export default function ProductDetailScreen({ route, navigation }) {
                 </View>
               )}
             </View>
+            {/* PPUM — decreto 38/2024, art. 9°: junto al precio, mismo campo visual. */}
+            <UnitPrice product={product} unitPrice={selectedTierPrice} priceSize={32} style={{ marginTop: 4 }} />
+
             {isCaja && (
               <AppText style={{ color: colors.muted, fontSize: 13, marginTop: 4 }}>
                 ≈ ${selectedTierPrice.toLocaleString("es-CL")} c/u · caja de {cajaQty} un

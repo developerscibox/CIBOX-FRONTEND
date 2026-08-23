@@ -18,7 +18,7 @@ import api from "../api/client";
 export const brand = {
   name: "Cibox",
   tagline: "Tu supermercado online",
-  description: "Supermercado 100% online: compra desde la web y te lo preparamos y despachamos.",
+  description: "Supermercado 100% online: compra desde la web y te preparamos el pedido para que lo retires.",
   logo: require("../../assets/logo-cibox.png"),
   legal: {
     razon_social: "CIBOX COMERCIALIZADORA SPA",

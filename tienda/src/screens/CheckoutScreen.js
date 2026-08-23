@@ -23,13 +23,14 @@ import {
 } from "../utils/checkoutStorage";
 import { showAppAlert } from "../utils/appAlerts";
 import AppText from "../components/AppText";
+import UnitPrice from "../components/UnitPrice";
 import {
   getCheckoutCouponPreview,
   validateCouponCode,
 } from "../services/couponService";
 import useAuthStore from "../store/authStore";
 
-import brand from "../constants/brand";
+import brand, { hasAddress } from "../constants/brand";
 const normalizeEmail = (email = "") => String(email).trim().toLowerCase();
 
 const isValidEmail = (email = "") =>
@@ -111,11 +112,6 @@ const PICKUP_LOCATION = {
 
 const PAYMENT_OPTIONS = [
   {
-    value: "webpay",
-    title: "Webpay",
-    desc: "Paga con tarjeta de débito, crédito o prepago a través de Webpay.",
-  },
-  {
     value: "transfer",
     title: "Transferencia bancaria",
     desc: "Al confirmar te mostramos los datos bancarios (también te llegan al correo).",
@@ -125,6 +121,7 @@ const PAYMENT_OPTIONS = [
     title: "Efectivo al retirar",
     desc: "Pagas en efectivo al retirar en la bodega.",
   },
+  // Webpay deshabilitado temporalmente — solo efectivo y transferencia.
 ];
 
 const pad2 = (n) => String(n).padStart(2, "0");
@@ -297,7 +294,8 @@ export default function CheckoutScreen({ navigation }) {
         setEmail(saved.email || "");
         setPhone(saved.phone || "");
         setRut(saved.rut || "");
-          if (["webpay", "transfer", "cash_on_pickup"].includes(saved.paymentMethod)) {
+        // Webpay deshabilitado: si quedó guardado, se ignora y cae a "transfer".
+        if (["transfer", "cash_on_pickup"].includes(saved.paymentMethod)) {
           setPaymentMethod(saved.paymentMethod);
         }
       }
@@ -818,31 +816,51 @@ export default function CheckoutScreen({ navigation }) {
               marginBottom: 18,
             }}
           >
+            {/* Mientras no haya dirección definida (brand.address viene vacía a
+                propósito desde el backend), esta caja pintaba "📍 Cibox", una
+                línea en blanco, otra en blanco y un "🕘 " con solo el emoji: el
+                cliente comprometía fecha de retiro sin saber dónde ir. El resto
+                de las pantallas ya preguntaba con hasAddress(); esta era la
+                única que dibujaba a ciegas. */}
             <AppText
               style={{ color: colors.text, fontWeight: "800", marginBottom: 6 }}
             >
               📍 {PICKUP_LOCATION.name}
             </AppText>
-            <AppText
-              style={{ color: colors.text, fontSize: 13, lineHeight: 19 }}
-            >
-              {PICKUP_LOCATION.address}
-            </AppText>
-            <AppText
-              style={{ color: colors.muted, fontSize: 12, marginTop: 2 }}
-            >
-              {PICKUP_LOCATION.hint}
-            </AppText>
-            <AppText
-              style={{
-                color: colors.accent,
-                fontWeight: "700",
-                fontSize: 13,
-                marginTop: 8,
-              }}
-            >
-              🕘 {PICKUP_LOCATION.hours}
-            </AppText>
+            {hasAddress() ? (
+              <>
+                <AppText
+                  style={{ color: colors.text, fontSize: 13, lineHeight: 19 }}
+                >
+                  {PICKUP_LOCATION.address}
+                </AppText>
+                {PICKUP_LOCATION.hint ? (
+                  <AppText
+                    style={{ color: colors.muted, fontSize: 12, marginTop: 2 }}
+                  >
+                    {PICKUP_LOCATION.hint}
+                  </AppText>
+                ) : null}
+              </>
+            ) : (
+              <AppText
+                style={{ color: colors.muted, fontSize: 13, lineHeight: 19 }}
+              >
+                Te confirmaremos la dirección exacta de retiro junto con tu pedido.
+              </AppText>
+            )}
+            {PICKUP_LOCATION.hours ? (
+              <AppText
+                style={{
+                  color: colors.accent,
+                  fontWeight: "700",
+                  fontSize: 13,
+                  marginTop: 8,
+                }}
+              >
+                🕘 {PICKUP_LOCATION.hours}
+              </AppText>
+            ) : null}
           </View>
 
           {/* Selector de fecha comprometida */}
@@ -1134,6 +1152,9 @@ export default function CheckoutScreen({ navigation }) {
                   <AppText style={{ color: colors.muted, marginBottom: 4 }}>
                     Precio unitario: {formatPrice(item.unit_price)}
                   </AppText>
+
+                  {/* PPUM — decreto 38/2024, art. 9° */}
+                  <UnitPrice product={item} priceSize={14} style={{ marginBottom: 4 }} />
 
                   <AppText
                     style={{

@@ -273,7 +273,7 @@ export default function WebHeader() {
                 Tu supermercado online
               </AppText>
               <AppText style={{ fontSize: 12, fontWeight: "600", color: colors.muted, lineHeight: 15, marginTop: 2 }}>
-                Compra desde donde estés · nosotros te lo llevamos
+                Compra desde donde estés · retira sin filas
               </AppText>
             </View>
           ) : null}

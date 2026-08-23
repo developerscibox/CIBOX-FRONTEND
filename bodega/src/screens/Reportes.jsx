@@ -15,8 +15,11 @@ const clp = (n) => "$" + Math.round(Number(n) || 0).toLocaleString("es-CL");
 const mm = (n) => { const v = Math.round(Number(n) || 0); return Math.abs(v) >= 1e6 ? "$" + (v / 1e6).toLocaleString("es-CL", { maximumFractionDigits: 1 }) + "M" : clp(v); };
 const num = (n) => (Number(n) || 0).toLocaleString("es-CL");
 const dec = (n) => (Number(n) || 0).toLocaleString("es-CL", { maximumFractionDigits: 1 });
-const dAgo = (n) => { const d = new Date(); d.setDate(d.getDate() - n); return d.toISOString().slice(0, 10); };
-const hoy = () => new Date().toISOString().slice(0, 10);
+// Zona horaria de Chile, igual que Dashboard.jsx y el backend: con UTC, los
+// reportes generados de tarde perdían las ventas del último día.
+const ymdCL = (d) => new Intl.DateTimeFormat("en-CA", { timeZone: "America/Santiago" }).format(d);
+const dAgo = (n) => { const d = new Date(); d.setDate(d.getDate() - n); return ymdCL(d); };
+const hoy = () => ymdCL(new Date());
 const sum = (arr, k) => (arr || []).reduce((a, x) => a + (Number(x[k]) || 0), 0);
 // meta del backend ("estimado a costo actual"): string directo u objeto con nota.
 const metaTxt = (m) => (!m ? null : typeof m === "string" ? m : m.nota || m.note || m.label || "Estimado a costo actual");
@@ -417,7 +420,13 @@ export default function Reportes() {
     doc.setFontSize(16); doc.setTextColor(40); doc.text(`${brand.name} — Reporte de gestión`, 14, 18);
     doc.setFontSize(10); doc.setTextColor(120); doc.text(periodoTxt, 14, 25);
     const opt = { theme: "grid", headStyles: { fillColor: MAGENTA }, styles: { fontSize: 9 }, margin: { left: 14, right: 14 } };
-    autoTable(doc, { ...opt, startY: 31, head: [["Indicador", "Valor"]], body: resumenRows().map(([l, v, f]) => [l, f === "pct" ? `${v ?? 0}%` : f === "num" ? num(v) : clp(v)]) });
+    // Los null del backend son "no hay dato", no cero. clp(null) daba "$0" y
+    // `${v ?? 0}%` daba "0%": el PDF que sale al contador o al banco terminaba
+    // afirmando "$0 de utilidad" y "0% de margen" como si fueran cifras
+    // medidas, justo lo que la pantalla evita mostrar.
+    const celda = (v, f) =>
+      v == null ? "Sin datos" : f === "pct" ? `${v}%` : f === "num" ? num(v) : clp(v);
+    autoTable(doc, { ...opt, startY: 31, head: [["Indicador", "Valor"]], body: resumenRows().map(([l, v, f]) => [l, celda(v, f)]) });
     autoTable(doc, { ...opt, head: [["Más vendidos", "Unid.", "Ingresos"]], body: productos.top.map((p) => [p.name, num(p.qty), clp(p.revenue)]) });
     autoTable(doc, { ...opt, head: [["Rentabilidad por producto", "Margen", "Utilidad"]], body: productos.margen.map((p) => [p.name, `${p.margenPct}%`, clp(p.utilidad)]) });
     autoTable(doc, { ...opt, head: [["Persona", "Preparados", "Prep. media (min)"]], body: (equipo?.preparacion || []).map((b) => [b.label, num(b.preparados), num(b.prep_prom_min)]) });

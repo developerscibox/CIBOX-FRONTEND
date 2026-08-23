@@ -12,7 +12,7 @@ export default function DespachoScreen() {
   return (
     <InfoPageLayout
       title="Despacho y retiro"
-      subtitle="Te llevamos tu compra a la puerta. También puedes retirarla en nuestra bodega si prefieres."
+      subtitle="Hoy retiras tu pedido en nuestra bodega, ya preparado y sin filas. El despacho a domicilio está en camino."
       icon={ICON}
     >
       {/* Retiro en bodega — el método disponible hoy */}

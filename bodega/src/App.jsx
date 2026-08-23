@@ -34,7 +34,7 @@ import Onboarding, { tourSeen } from "./screens/Onboarding.jsx";
 
 const TITLES = {
   gerencia: { title: "Centro de mando", sub: "Radiografía del negocio · ventas, equipo, productos y operación · datos reales" },
-  dashboard360: { title: "Dashboard Gerencial 360°", sub: "Resumen ejecutivo de la operación · maqueta demo" },
+  dashboard360: { title: "Dashboard Gerencial 360°", sub: "Resumen ejecutivo de la operación · datos reales" },
   dashboard: { title: "Resumen de operaciones", sub: "Estado operativo del día" },
   reportes: { title: "Reportes", sub: "Diario · semanal · mensual · trimestral · con exportación a CSV/Excel/PDF" },
   cobranza: { title: "Cobranza", sub: "Cuentas por cobrar · aging, a quién llamar y cheques por vencer" },
@@ -166,9 +166,14 @@ export default function App() {
     <div className="app">
       <Sidebar active={view} onNav={setView} pills={{ pick: porPreparar }} bump={[prepBump && "pick"].filter(Boolean)} can={can} role={effectiveRole} mods={modsEff} />
       <main className="main">
+        {/* TITLES[view] va con optional chaining: si alguna pantalla navega a
+            una clave que no existe, antes esto lanzaba TypeError durante el
+            render y, sin ErrorBoundary, React desmontaba el panel entero
+            dejándolo en blanco. El useEffect que corrige la vista corre DESPUÉS
+            del render, así que no alcanzaba a salvarlo. */}
         <Topbar
-          title={TITLES[view].title}
-          sub={TITLES[view].sub}
+          title={TITLES[view]?.title || "Cibox"}
+          sub={TITLES[view]?.sub}
           user={user}
           roleLabel={roleLabel}
           initials={initials}

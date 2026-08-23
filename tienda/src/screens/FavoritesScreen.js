@@ -13,6 +13,7 @@ import { getFavorites, removeFavorite } from "../services/favoriteService";
 import { showAppAlert } from "../utils/appAlerts";
 import useAuthStore from "../store/authStore";
 import AppText from "../components/AppText";
+import UnitPrice from "../components/UnitPrice";
 import { colors, radius, spacing, shadows } from "../constants/theme";
 import { boxTierOf, packSizeOf, unitPriceOf } from "../utils/boxPricing";
 import { getProductImage, productEmoji, productTint } from "../utils/productImage";
@@ -188,6 +189,8 @@ export default function FavoritesScreen({ navigation }) {
                     {boxTotal != null ? formatPrice(boxTotal) : "—"}
                     <AppText style={styles.priceUnit}> / caja</AppText>
                   </AppText>
+                  {/* PPUM — decreto 38/2024, art. 9° */}
+                  <UnitPrice product={product} priceSize={17} />
                   {boxQty > 1 ? (
                     <AppText style={styles.boxMeta}>Caja {boxQty} unidades</AppText>
                   ) : null}

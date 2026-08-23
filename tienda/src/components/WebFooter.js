@@ -78,7 +78,7 @@ export default function WebFooter() {
   const slots = useHomeSlots();
   const footerNote = cmsText(
     slots?.textos?.footer_note,
-    "Tu supermercado online. Compra desde donde estés: nosotros preparamos tu pedido y te lo llevamos.",
+    "Tu supermercado online. Compra desde donde estés: nosotros preparamos tu pedido y lo dejamos listo para que lo retires.",
   );
 
   return (
@@ -98,8 +98,14 @@ export default function WebFooter() {
       >
         {/* Marca */}
         <View style={{ flex: 1.4, minWidth: 240 }}>
+          {/* Va la versión blanca del logo, no la de color: el pie usa el degradado
+              verde de GRAD y sobre #4E9B27 el logo a color queda en 1.0:1 de
+              contraste — literalmente el mismo tono que el fondo, se ve como una
+              mancha fantasma. En blanco rinde entre 3.48:1 y 7.40:1 según el
+              punto del degradado. Mismo arte y mismo tamaño (795x1061), así que
+              el layout no cambia. */}
           <Image
-            source={require("../../assets/logo-cibox.png")}
+            source={require("../../assets/logo-cibox-blanco.png")}
             resizeMode="contain"
             style={{ width: 132, height: 170, marginBottom: 14, marginLeft: -4 }}
           />

@@ -26,6 +26,7 @@ import OrderSuccessScreen from "../screens/OrderSuccessScreen";
 import VendorProductsScreen from "../screens/VendorProductsScreen";
 import CreateProductScreen from "../screens/CreateProductScreen";
 import EditProductScreen from "../screens/EditProductScreen";
+import B2BProviderScreen from "../screens/B2BProviderScreen";
 import WebpayScreen from "../screens/WebpayScreen";
 import VerifyEmailScreen from "../screens/VerifyEmailScreen";
 import ResetPasswordScreen from "../screens/ResetPasswordScreen";
@@ -40,7 +41,6 @@ import BeneficiosScreen from "../screens/BeneficiosScreen";
 import DespachoScreen from "../screens/DespachoScreen";
 import BlogScreen from "../screens/BlogScreen";
 import StoresScreen from "../screens/StoresScreen";
-import B2BProviderScreen from "../screens/B2BProviderScreen";
 
 import brand from "../constants/brand";
 const Stack = createNativeStackNavigator();

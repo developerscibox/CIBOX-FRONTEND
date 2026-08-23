@@ -3,18 +3,19 @@ import { api, useLoad, usingMock } from "../api.js";
 import { t } from "../theme.js";
 import { useAuth } from "../auth.jsx";
 
-// Roles asignables (espejo de ROLES del backend).
-const ROLES = ["customer", "vendor", "admin", "manager", "vendedor", "cashier", "operator", "pantalla"];
+// Roles asignables. Espejo EXACTO de ROLES en backend/src/utils/constants.js:
+// la lista tenía tres de más ("vendedor", "cashier", "pantalla") con etiquetas
+// atractivas —Vendedor de sala, Cajera, Pantalla kiosko— que el backend no
+// conoce. Elegir cualquiera de esos devolvía 422 y rompía la lista de usuarios.
+// Si mañana se agregan de verdad, primero van al enum del backend.
+const ROLES = ["customer", "vendor", "admin", "manager", "operator"];
 
 const ROLE_LABEL = {
   customer: "Cliente",
   vendor: "Proveedor",
   admin: "Administrador",
   manager: "Gerente",
-  vendedor: "Vendedor de sala",
-  cashier: "Cajera",
   operator: "Bodeguero",
-  pantalla: "Pantalla (kiosko)",
 };
 
 // Color del .badge por rol.
