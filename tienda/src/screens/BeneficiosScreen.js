@@ -21,7 +21,7 @@ const BENEFITS = [
   {
     icon: "pricetags-outline",
     title: "Precios bajos todos los días",
-    desc: "Ofertas y liquidaciones permanentes en abarrotes, bebidas, lácteos, aseo y más.",
+    desc: "Ofertas y rebajas permanentes en abarrotes, bebidas, lácteos, aseo y más.",
   },
   {
     icon: "cash-outline",

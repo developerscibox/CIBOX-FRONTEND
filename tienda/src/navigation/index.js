@@ -5,6 +5,7 @@ import AppStack from "./AppStack";
 import StorePausedGate from "../components/StorePausedGate";
 import Toast from "../components/Toast";
 import WelcomeTour from "../components/WelcomeTour";
+import AvisoRelanzamiento from "../components/AvisoRelanzamiento";
 import { colors } from "../constants/theme";
 import { usePushNotifications } from "../hooks/usePushNotifications";
 
@@ -83,7 +84,12 @@ export default function RootNavigation() {
             va DENTRO del gate: no debe flotar sobre la página de mantención. */}
         <StorePausedGate>
           <AppStack />
+          {/* El aviso de relanzamiento va DESPUÉS del tour para quedar por
+              encima: mientras esté en pantalla, el tour se mantiene oculto (lo
+              consulta en su propio render). Dos ventanas apiladas al entrar
+              hacen que el cliente cierre todo sin leer ninguna. */}
           <WelcomeTour />
+          <AvisoRelanzamiento navigationRef={navigationRef} />
         </StorePausedGate>
         <Toast />
       </View>

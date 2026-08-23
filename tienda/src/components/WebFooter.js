@@ -124,7 +124,7 @@ export default function WebFooter() {
           <FooterLink label="Inicio" onPress={() => navigation.navigate("Inicio")} />
           <FooterLink label="Mi Despensa" onPress={() => navigation.navigate(token ? "PantryTab" : "Auth")} />
           <FooterLink label="Más Vendido" onPress={() => navigation.navigate("Products", { preset: "best_sellers" })} />
-          <FooterLink label="Liquidación" onPress={() => navigation.navigate("Products", { preset: "liquidation" })} />
+          <FooterLink label="Imperdibles de la semana" onPress={() => navigation.navigate("Products", { preset: "liquidation" })} />
           <FooterLink label="Beneficios" onPress={() => navigation.navigate("Beneficios")} />
           <FooterLink label="Blog" onPress={() => navigation.navigate("Blog")} />
           <FooterLink label="Contacto" onPress={() => navigation.navigate("Contact")} />

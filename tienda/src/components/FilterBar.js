@@ -191,39 +191,10 @@ export default function FilterBar({
           )}
         </Pressable>
 
-        {/* Toggle "Solo disponibles" — visible siempre, escritorio y móvil */}
-        <Pressable
-          onPress={() => onChangeInStock?.(!inStock)}
-          accessibilityRole="switch"
-          accessibilityState={{ checked: inStock }}
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            gap: 5,
-            paddingHorizontal: 14,
-            paddingVertical: 9,
-            borderRadius: 999,
-            borderWidth: 1.5,
-            borderColor: inStock ? colors.primary : colors.border,
-            backgroundColor: inStock ? `${colors.primary}12` : colors.surface,
-            flexShrink: 0,
-          }}
-        >
-          <Ionicons
-            name={inStock ? "checkmark-circle" : "ellipse-outline"}
-            size={16}
-            color={inStock ? colors.primary : colors.muted}
-          />
-          <AppText
-            style={{
-              fontSize: 13,
-              fontWeight: "700",
-              color: inStock ? colors.primary : colors.text,
-            }}
-          >
-            Solo disponibles
-          </AppText>
-        </Pressable>
+        {/* Aquí iba un interruptor "Solo disponibles". Se quitó porque la tienda
+            ya no lista productos sin stock en ninguna pantalla (ver
+            services/productService.js): el filtro estaría siempre activo y
+            apagarlo no cambiaba nada, así que solo confundía. */}
       </View>
 
       {/* ── Panel expandible: Precio + Orden ────────────────────────────────── */}

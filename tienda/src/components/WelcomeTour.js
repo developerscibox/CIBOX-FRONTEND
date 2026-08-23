@@ -3,6 +3,7 @@ import { Platform, Pressable, ScrollView, View } from "react-native";
 
 import AppText from "./AppText";
 import useOnboardingStore from "../store/onboardingStore";
+import useBienvenidaStore from "../store/bienvenidaStore";
 import { colors, radius, spacing } from "../constants/theme";
 
 import brand from "../constants/brand";
@@ -63,8 +64,14 @@ export default function WelcomeTour() {
     loadOnboarding();
   }, [loadOnboarding]);
 
+  // Mientras el aviso de relanzamiento esté en pantalla, el tour espera: si se
+  // abren los dos a la vez el cliente ve dos ventanas superpuestas al entrar.
+  const avisoVisto = useBienvenidaStore((state) => state.visto);
+  const avisoCargado = useBienvenidaStore((state) => state.cargado);
+  const avisoEnPantalla = avisoCargado && !avisoVisto;
+
   // Se muestra automáticamente la primera vez (si !seen) o cuando open=true.
-  const visible = open || !seen;
+  const visible = (open || !seen) && !avisoEnPantalla;
 
   // Reinicia al primer paso cada vez que se abre
   useEffect(() => {

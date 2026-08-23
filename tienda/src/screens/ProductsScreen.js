@@ -53,9 +53,13 @@ const PRESETS = {
     subtitle: "Los productos favoritos de Cibox, ordenados por popularidad.",
     sort: "popular",
   },
+  // El identificador `liquidation` se mantiene: es la llave con la que navegan
+  // el menú, el pie y la home, y viaja en la URL. Lo que cambió es lo que LEE el
+  // cliente: "liquidación" sugiere producto a punto de vencerse, y estos son
+  // productos normales con mejor precio.
   liquidation: {
-    title: "Zona de liquidación",
-    subtitle: "Productos con mejor precio por caja. Stock limitado.",
+    title: "Imperdibles de la semana",
+    subtitle: "Los productos con mejor precio esta semana. Stock limitado.",
     sort: "",
   },
 };

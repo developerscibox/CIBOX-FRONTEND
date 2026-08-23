@@ -59,7 +59,7 @@ const catIcon = (name = "") => {
 const FEATURES = [
   { id: "despensa", icon: require("../../assets/home/qa-mi-despensa.png"), title: "Mi despensa", desc: "Todo lo que necesitas en un solo lugar", screen: "PantryTab", requiresAuth: true },
   { id: "mas", icon: require("../../assets/home/qa-mas-vendido.png"), title: "Más vendido", desc: "Los productos favoritos de nuestros clientes", screen: "Products", params: { preset: "best_sellers" } },
-  { id: "liq", icon: require("../../assets/home/qa-liquidacion.png"), title: "Liquidación", desc: "Ofertas imperdibles por tiempo limitado", screen: "Products", params: { preset: "liquidation" } },
+  { id: "liq", icon: require("../../assets/home/qa-liquidacion.png"), title: "Imperdibles de la semana", desc: "Los mejores precios, renovados cada semana", screen: "Products", params: { preset: "liquidation" } },
   { id: "sigue", icon: require("../../assets/home/qa-sigue-tu-pedido.png"), title: "Sigue tu pedido", desc: "Rastrea tu compra en tiempo real", screen: "OrdersTab", requiresAuth: true },
   // Las dos apuntaban a "HowItWorks", dejando inalcanzables sus pantallas
   // dedicadas (registradas en navigation/AppStack.js) — en celular no había
@@ -466,7 +466,7 @@ function OffersBanner({ navigation, isWebDesktop }) {
     >
       <View pointerEvents="none" style={{ position: "absolute", right: -40, top: -40, width: 180, height: 180, borderRadius: 90, backgroundColor: "rgba(255,255,255,0.12)" }} />
       <View style={{ alignSelf: "flex-start", backgroundColor: colors.discount, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 4, marginBottom: 12 }}>
-        <AppText style={{ color: "#7a4d00", fontSize: 11, fontWeight: "900", letterSpacing: 0.5 }}>🔥 LIQUIDACIÓN</AppText>
+        <AppText style={{ color: "#7a4d00", fontSize: 11, fontWeight: "900", letterSpacing: 0.5 }}>🔥 OFERTA DE LA SEMANA</AppText>
       </View>
       <AppText style={{ color: "#fff", fontSize: isWebDesktop ? 30 : 23, fontWeight: "900", lineHeight: isWebDesktop ? 34 : 27 }}>
         Ofertas imperdibles{"\n"}¡Por tiempo limitado!
@@ -478,7 +478,7 @@ function OffersBanner({ navigation, isWebDesktop }) {
         onPress={() => navigation.navigate("Products", { preset: "liquidation" })}
         style={{ alignSelf: "flex-start", marginTop: 20, backgroundColor: "#fff", borderRadius: 12, paddingHorizontal: 22, paddingVertical: 12, flexDirection: "row", alignItems: "center", gap: 8 }}
       >
-        <AppText style={{ color: colors.primary, fontWeight: "900", fontSize: 14 }}>Ver liquidaciones</AppText>
+        <AppText style={{ color: colors.primary, fontWeight: "900", fontSize: 14 }}>Ver los imperdibles</AppText>
         <Ionicons name="arrow-forward" size={16} color={colors.primary} />
       </Pressable>
     </LinearGradient>
@@ -777,10 +777,10 @@ export default function HomeScreen({ navigation }) {
             {/* Ofertas imperdibles */}
             <OffersBanner navigation={navigation} isWebDesktop={isWebDesktop} />
 
-            {/* Zona de liquidación (productos reales con ahorro) */}
+            {/* Imperdibles de la semana (productos reales con ahorro) */}
             {!sectionsLoading && liquidation.length > 0 && (
               <View style={{ marginBottom: spacing.lg, backgroundColor: `${colors.discount}1A`, borderRadius: 22, borderWidth: 1, borderColor: `${colors.discount}55`, padding: spacing.md }}>
-                <SectionTitle title="Zona de liquidación" />
+                <SectionTitle title="Imperdibles de la semana" />
                 <ProductRowSection
                   title=""
                   products={liquidation}
