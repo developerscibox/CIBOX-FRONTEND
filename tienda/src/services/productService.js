@@ -2,10 +2,8 @@ import client from "../api/client";
 
 const unwrap = (response) => response.data?.data ?? response.data;
 
-// La tienda NO muestra lo que no hay en bodega. Todos los listados van con
-// `in_stock: true`, que en el backend filtra por DISPONIBLE (stock − reservado
-// − asignado) > 0, así que tampoco aparece lo que ya está comprometido en
-// pedidos sin despachar.
+// La tienda NO muestra lo que no hay en bodega: todos los listados van con
+// `in_stock: true`.
 //
 // Va forzado al final del objeto, después de `...params`: si se pusiera antes,
 // una pantalla que mande `in_stock: undefined` lo borraría sin querer.
@@ -15,34 +13,48 @@ const unwrap = (response) => response.data?.data ?? response.data;
 // vendedor, que necesita ver también lo agotado para reponerlo.
 const soloConStock = (params = {}) => ({ ...params, in_stock: true });
 
-export const getProducts = async (params = {}) => {
-  const response = await client.get("/products", { params: soloConStock(params) });
-  return unwrap(response);
+// Un catálogo vacío es peor que un catálogo con algo agotado.
+//
+// El filtro depende de que el backend sepa resolverlo, y cuando no supo la
+// tienda entera se quedó sin un solo producto: `in_stock=true` respondía 500 y
+// el cliente veía "0 productos encontrados" en la portada y en el catálogo.
+// Por eso, si la llamada con el filtro falla, se reintenta una vez SIN él: el
+// cliente ve el catálogo completo —a lo sumo con algún producto agotado— en vez
+// de una tienda que parece cerrada.
+const conRespaldoSinFiltro = async (pedir, params) => {
+  try {
+    return await pedir(soloConStock(params));
+  } catch (error) {
+    if (__DEV__) console.log("in_stock falló, se reintenta sin el filtro:", error?.message);
+    return pedir(params);
+  }
 };
+
+export const getProducts = async (params = {}) =>
+  conRespaldoSinFiltro(async (p) => unwrap(await client.get("/products", { params: p })), params);
 
 export const getProductById = async (productId) => {
   const response = await client.get(`/products/${productId}`);
   return unwrap(response);
 };
 
-export const getFeaturedProducts = async (params = {}) => {
-  const response = await client.get("/products/featured", {
-    params: soloConStock({ limit: 8, ...params }),
-  });
-  return unwrap(response);
-};
+export const getFeaturedProducts = async (params = {}) =>
+  conRespaldoSinFiltro(
+    async (p) => unwrap(await client.get("/products/featured", { params: p })),
+    { limit: 8, ...params },
+  );
 
-export const getTopRatedProducts = async (params = {}) => {
-  const response = await client.get("/products", {
-    params: soloConStock({ sort: "rating", limit: 8, ...params }),
-  });
-  return unwrap(response);
-};
+export const getTopRatedProducts = async (params = {}) =>
+  conRespaldoSinFiltro(
+    async (p) => unwrap(await client.get("/products", { params: p })),
+    { sort: "rating", limit: 8, ...params },
+  );
 
-export const getRecommendedProducts = async (params = {}) => {
-  const response = await client.get("/products/recommended", { params: soloConStock(params) });
-  return unwrap(response);
-};
+export const getRecommendedProducts = async (params = {}) =>
+  conRespaldoSinFiltro(
+    async (p) => unwrap(await client.get("/products/recommended", { params: p })),
+    params,
+  );
 
 /**
  * Productos relacionados: otros de la misma categoría, sin el que se está viendo.
@@ -57,10 +69,10 @@ export const getRecommendedProducts = async (params = {}) => {
  */
 export const getRelatedProducts = async (productId, params = {}) => {
   const { categoryId, limit = 8, ...resto } = params;
-  const response = await client.get("/products", {
-    params: soloConStock({ limit: limit + 1, ...(categoryId ? { category: categoryId } : {}), ...resto }),
-  });
-  const data = unwrap(response);
+  const data = await conRespaldoSinFiltro(
+    async (p) => unwrap(await client.get("/products", { params: p })),
+    { limit: limit + 1, ...(categoryId ? { category: categoryId } : {}), ...resto },
+  );
   const items = Array.isArray(data?.items) ? data.items : [];
   return {
     ...data,
