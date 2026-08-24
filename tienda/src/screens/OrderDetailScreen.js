@@ -21,6 +21,8 @@ import useAuthStore from "../store/authStore";
 import useCartStore from "../store/cartStore";
 import { showAppAlert } from "../utils/appAlerts";
 import { showToast } from "../store/toastStore";
+import { esAlcohol } from "../constants/alcohol";
+import { exigirMayoriaDeEdad } from "../store/edadStore";
 
 import brand from "../constants/brand";
 // ── Timeline ──────────────────────────────────────────────────────────────────
@@ -197,6 +199,16 @@ export default function OrderDetailScreen({ route, navigation }) {
     if (!token) { navigation.navigate("Auth"); return; }
     const items = Array.isArray(order?.items) ? order.items : [];
     if (!items.length) return;
+
+    // Ley 19.925: "Volver a pedir" también es un camino al carrito, y por acá
+    // la puerta de edad no se pedía nunca. Haber comprado alcohol una vez no
+    // autoriza el siguiente pedido: la declaración se hace por sesión.
+    if (items.some((it) => esAlcohol(it.product || { name: it.name })) &&
+        !(await exigirMayoriaDeEdad())) {
+      showToast("No podemos venderte alcohol si eres menor de 18 años");
+      return;
+    }
+
     setAddingAll(true);
     try {
       for (const item of items) {

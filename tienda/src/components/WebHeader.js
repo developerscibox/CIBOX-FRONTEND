@@ -23,7 +23,7 @@ const NAV_LINKS = [
   { label: "Inicio", screen: "Inicio" },
   { label: "Mi Despensa", screen: "PantryTab" },
   { label: "Más Vendido", screen: "Products", params: { preset: "best_sellers" } },
-  { label: "Liquidación", screen: "Products", params: { preset: "liquidation" } },
+  { label: "Imperdibles de la semana", screen: "Products", params: { preset: "liquidation" } },
   { label: "Beneficios", screen: "Beneficios" },
   { label: "Despacho", screen: "Despacho" },
   { label: "Blog", screen: "Blog" },
@@ -273,7 +273,7 @@ export default function WebHeader() {
                 Tu supermercado online
               </AppText>
               <AppText style={{ fontSize: 12, fontWeight: "600", color: colors.muted, lineHeight: 15, marginTop: 2 }}>
-                Compra desde donde estés · nosotros te lo llevamos
+                Compra desde donde estés · retira sin filas
               </AppText>
             </View>
           ) : null}

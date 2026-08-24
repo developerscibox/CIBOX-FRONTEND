@@ -18,6 +18,7 @@ import {
 import useCartStore from "../store/cartStore";
 import { showAppAlert } from "../utils/appAlerts";
 import AppText from "../components/AppText";
+import UnitPrice from "../components/UnitPrice";
 
 export default function CartScreen({ navigation }) {
   const [cart, setCart] = useState(null);
@@ -378,6 +379,10 @@ export default function CartScreen({ navigation }) {
                       ${formatPrice(item.unit_price)}
                     </AppText>
                   )}
+
+                  {/* PPUM — decreto 38/2024, art. 9°. Calculado sobre el precio
+                      realmente cobrado, no sobre el de lista. */}
+                  <UnitPrice product={item} priceSize={15} style={{ marginBottom: 4 }} />
 
                   <AppText
                     style={{

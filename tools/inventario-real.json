@@ -1,0 +1,282 @@
+[
+ {
+  "sku": "",
+  "name": "Detergente Bio Azul 3 L",
+  "stock": 4
+ },
+ {
+  "sku": "",
+  "name": "Detergente Bio Verde 3 L",
+  "stock": 4
+ },
+ {
+  "sku": "",
+  "name": "Papel higiénico Swan Triple Hoja 4 rollos 40 m",
+  "stock": 6
+ },
+ {
+  "sku": "",
+  "name": "Cif Crema Bio 500 ml",
+  "stock": 12
+ },
+ {
+  "sku": "",
+  "name": "Toalla de papel Swan Doble Hoja Azul 2 rollos 24 m",
+  "stock": 8
+ },
+ {
+  "sku": "",
+  "name": "Lavalozas Quix Aloe Vera 500 ml",
+  "stock": 15
+ },
+ {
+  "sku": "",
+  "name": "Cloro gel Brillex Tradicional 900 ml",
+  "stock": 10
+ },
+ {
+  "sku": "",
+  "name": "Cloro gel Higenix Floral 900 ml",
+  "stock": 10
+ },
+ {
+  "sku": "",
+  "name": "Lavalozas Fuzol Vinagre 700 ml",
+  "stock": 12
+ },
+ {
+  "sku": "",
+  "name": "Cloro gel Arcadia Tradicional 900 ml",
+  "stock": 12
+ },
+ {
+  "sku": "",
+  "name": "Jugo Jumex Piña 335 ml",
+  "stock": 24
+ },
+ {
+  "sku": "",
+  "name": "Jugo Guallarauco Naranja 1 L",
+  "stock": 6
+ },
+ {
+  "sku": "",
+  "name": "Agua mineral Liv con gas 3 L",
+  "stock": 4
+ },
+ {
+  "sku": "",
+  "name": "Agua mineral Live sin gas 3 L",
+  "stock": 8
+ },
+ {
+  "sku": "",
+  "name": "Néctar Watt's Piña 1.5 L",
+  "stock": 6
+ },
+ {
+  "sku": "",
+  "name": "Café Jacob Kronung 100 g",
+  "stock": 6
+ },
+ {
+  "sku": "",
+  "name": "Té Misol Negro 100 bolsitas",
+  "stock": 12
+ },
+ {
+  "sku": "18321",
+  "name": "Té Twinings English Breakfast 50 bolsitas",
+  "stock": 6
+ },
+ {
+  "sku": "",
+  "name": "Café Cruzeiro liofilizado 170 g",
+  "stock": 12
+ },
+ {
+  "sku": "",
+  "name": "Té Club puro Ceylán 100 bolsitas",
+  "stock": 10
+ },
+ {
+  "sku": "",
+  "name": "Jabón Suavelina Crema Humectante 750 ml",
+  "stock": 12
+ },
+ {
+  "sku": "",
+  "name": "Acondicionador Sedal Colágeno 340 ml",
+  "stock": 12
+ },
+ {
+  "sku": "",
+  "name": "Acondicionador Sedal Rizos Definidos 340 ml",
+  "stock": 12
+ },
+ {
+  "sku": "",
+  "name": "Crema Dental Pepsodent Anticaries",
+  "stock": 18
+ },
+ {
+  "sku": "",
+  "name": "Jabón Suavelina Humectante 750 ml",
+  "stock": 0
+ },
+ {
+  "sku": "",
+  "name": "Jabón Ballerina Violetas Silvestre 650 ml",
+  "stock": 12
+ },
+ {
+  "sku": "",
+  "name": "Fideos Spaghetti N5 Coliseo Speciale 400 g",
+  "stock": 25
+ },
+ {
+  "sku": "",
+  "name": "Aceite de Oliva Oh Live 500 ml",
+  "stock": 12
+ },
+ {
+  "sku": "",
+  "name": "Aceite de Oliva La Oliva 1 L",
+  "stock": 8
+ },
+ {
+  "sku": "15840",
+  "name": "Fideos Spaghetti N5 Carozzi 400 g",
+  "stock": 25
+ },
+ {
+  "sku": "18200",
+  "name": "Salsa de Tomate Italiana San Remo 200 g",
+  "stock": 24
+ },
+ {
+  "sku": "",
+  "name": "Sal Fina de Mesa Kult y Bulk 1 kg",
+  "stock": 10
+ },
+ {
+  "sku": "",
+  "name": "Garbanzos Sin Piel Misol 1 kg",
+  "stock": 10
+ },
+ {
+  "sku": "",
+  "name": "Mostaza Kraft 400 g",
+  "stock": 12
+ },
+ {
+  "sku": "",
+  "name": "Poroto Blanco Misol 1 kg",
+  "stock": 10
+ },
+ {
+  "sku": "",
+  "name": "Fideos Farfalle Coliseo Speciale 400 g",
+  "stock": 15
+ },
+ {
+  "sku": "",
+  "name": "Fideos Penne Rigate Tricolore Coliseo Speciale 400 g",
+  "stock": 15
+ },
+ {
+  "sku": "15848",
+  "name": "Fideos Tallarines N87 Carozzi 400 g",
+  "stock": 0
+ },
+ {
+  "sku": "",
+  "name": "Lentejas 6 mm Misol 1 kg",
+  "stock": 10
+ },
+ {
+  "sku": "",
+  "name": "Atún al Aceite Abuelo del Campo 140 g",
+  "stock": 24
+ },
+ {
+  "sku": "",
+  "name": "Arroz G2 Misol 1 kg",
+  "stock": 10
+ },
+ {
+  "sku": "",
+  "name": "Arroz G2 Gran Selección Tucapel 1 kg",
+  "stock": 10
+ },
+ {
+  "sku": "",
+  "name": "Salsa de Tomate Italiana Coliseo 200 g",
+  "stock": 36
+ },
+ {
+  "sku": "16272",
+  "name": "Ketchup Hellmanns Doypack 900 g",
+  "stock": 12
+ },
+ {
+  "sku": "13777",
+  "name": "Arroz G1 Miraflores 1 kg",
+  "stock": 20
+ },
+ {
+  "sku": "",
+  "name": "Azúcar Dorasol 900 g",
+  "stock": 10
+ },
+ {
+  "sku": "18231",
+  "name": "Salsa de Tomate Italiana Pomarola 200 g",
+  "stock": 24
+ },
+ {
+  "sku": "",
+  "name": "Mayonesa Kraft 789 g",
+  "stock": 12
+ },
+ {
+  "sku": "",
+  "name": "Atún al Agua Robinson Crusoe 140 g",
+  "stock": 48
+ },
+ {
+  "sku": "",
+  "name": "Sal Fina Lobos 1 kg",
+  "stock": 10
+ },
+ {
+  "sku": "",
+  "name": "Aceite Vegetal Los Silos 900 ml",
+  "stock": 12
+ },
+ {
+  "sku": "",
+  "name": "Galleta Gretel Chocolate 85 g",
+  "stock": 24
+ },
+ {
+  "sku": "",
+  "name": "Galleta Din Don 115 g",
+  "stock": 35
+ },
+ {
+  "sku": "",
+  "name": "Galleta Crackelet Tripack 255 g",
+  "stock": 14
+ },
+ {
+  "sku": "16372",
+  "name": "Leche sin lactosa semidescremada Colun 1 L",
+  "stock": 12
+ },
+ {
+  "sku": "16359",
+  "name": "Leche sin lactosa descremada Colun 1 L",
+  "stock": 12
+ }
+]

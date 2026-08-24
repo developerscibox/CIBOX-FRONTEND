@@ -60,6 +60,7 @@ function nextAction(order, can) {
   const st = order.status;
   const isCash = order.payment?.method === "cash_on_pickup";
   const isTransfer = order.payment?.method === "transfer";
+  const isPickup = order.delivery_method === "pickup";
   const paid = order.payment?.status === "approved";
   const canPrepare = can("orders.prepare");
   const canDeliver = can("orders.deliver");
@@ -82,7 +83,21 @@ function nextAction(order, can) {
   if (st === "preparing") return canPrepare ? { to: "ready", label: "Marcar lista" } : null;
   if (st === "ready") {
     if (isCash && !paid) return canDeliver ? { cash: true, label: "Cobrar y entregar" } : null;
+    // Un pedido con DESPACHO no puede saltar de "listo" a "entregado": el
+    // backend lo rechaza con 409 ("debe pasar por 'en camino' antes de
+    // entregarse"). El panel ofrecía igual "Marcar retirada" para todos, así
+    // que esos pedidos quedaban congelados en "listo" sin ninguna acción que
+    // funcionara. Y ojo: delivery_method tiene default "delivery" en el modelo,
+    // o sea que cae acá todo pedido que no marque retiro explícitamente.
+    if (!isPickup) {
+      return canDeliver ? { to: "shipped", label: "Marcar en camino", note: "Salió a reparto" } : null;
+    }
     return canDeliver ? { to: "delivered", label: "Marcar retirada", note: "Retirado en bodega" } : null;
+  }
+  // Antes devolvía null para "shipped": un pedido despachado tampoco tenía cómo
+  // marcarse entregado.
+  if (st === "shipped") {
+    return canDeliver ? { to: "delivered", label: "Marcar entregada", note: "Entregado al cliente" } : null;
   }
   return null;
 }

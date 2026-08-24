@@ -53,9 +53,13 @@ const PRESETS = {
     subtitle: "Los productos favoritos de Cibox, ordenados por popularidad.",
     sort: "popular",
   },
+  // El identificador `liquidation` se mantiene: es la llave con la que navegan
+  // el menú, el pie y la home, y viaja en la URL. Lo que cambió es lo que LEE el
+  // cliente: "liquidación" sugiere producto a punto de vencerse, y estos son
+  // productos normales con mejor precio.
   liquidation: {
-    title: "Zona de liquidación",
-    subtitle: "Productos con mejor precio por caja. Stock limitado.",
+    title: "Imperdibles de la semana",
+    subtitle: "Los productos con mejor precio esta semana. Stock limitado.",
     sort: "",
   },
 };
@@ -75,6 +79,8 @@ export default function ProductsScreen({ navigation, route }) {
   const initialPreset = PRESETS[route?.params?.preset] || null;
 
   const [products, setProducts] = useState([]);
+  // Total que reporta el backend (pagination.total), no lo cargado en pantalla.
+  const [totalResultados, setTotalResultados] = useState(null);
   const [loading, setLoading] = useState(true);
 
   const [preset, setPreset] = useState(route?.params?.preset || "");
@@ -149,6 +155,9 @@ export default function ProductsScreen({ navigation, route }) {
       }
 
       setProducts((prev) => (append ? [...prev, ...items] : items));
+      // En liquidación el filtrado es en cliente, así que el total del backend
+      // no aplica: ahí el número correcto es el de la lista ya filtrada.
+      setTotalResultados(isLiquidation ? items.length : (Number(pagination.total) || null));
       setPage(Number(pagination.page) || nextPage);
       // En liquidación todo el filtrado es client-side sobre una sola página:
       // no ofrecemos "cargar más" para no agregar 0 productos.
@@ -191,11 +200,11 @@ export default function ProductsScreen({ navigation, route }) {
 
     try {
       setAddingProductId(product._id);
-      // Cibox vende por caja: agrega N cajas (cajas elegidas × tamaño de caja).
+      // Venta por unidad: boxQtyOf() siempre devuelve 1 (ver utils/boxPricing.js).
       const n = Math.max(1, Number(cajas) || 1);
       await addItemToCart({ productId: product._id, quantity: boxQtyOf(product) * n });
       await loadCartSummary();
-      showToast(n > 1 ? `${n} cajas agregadas al carrito` : "Caja agregada al carrito");
+      showToast(n > 1 ? `${n} agregados al carrito` : "Agregado al carrito");
     } catch (error) {
       console.log(
         "ADD FROM CARD ERROR:",
@@ -287,13 +296,20 @@ export default function ProductsScreen({ navigation, route }) {
     }
   }, [route?.params?.category]);
 
+  // Sincroniza el preset con los params SIEMPRE, incluso cuando vienen sin él.
+  //
+  // ANTES solo actuaba si preset estaba definido. El buscador del header navega
+  // con navigate("Products", { search, category }), y React Navigation 7
+  // REEMPLAZA los params (no hace merge), así que preset desaparecía de la ruta
+  // pero el estado local se quedaba en "liquidation": la búsqueda se ejecutaba
+  // en modo liquidación —filtrando en cliente a solo productos con ahorro por
+  // caja— y devolvía cero resultados sin explicar por qué.
   useEffect(() => {
-    if (route?.params?.preset !== undefined) {
-      const p = route.params.preset || "";
-      setPreset(p);
-      const def = PRESETS[p];
-      if (def) setSort(def.sort || "");
-    }
+    const p = route?.params?.preset || "";
+    setPreset(p);
+    const def = PRESETS[p];
+    if (def) setSort(def.sort || "");
+    else if (!p) setSort("");
   }, [route?.params?.preset]);
 
   useEffect(() => {
@@ -440,8 +456,10 @@ export default function ProductsScreen({ navigation, route }) {
                 Resultados
               </AppText>
 
+              {/* El total real viene en pagination.total; products.length es
+                  solo lo que se alcanzó a cargar en pantalla (12 por página). */}
               <AppText style={{ color: colors.muted }}>
-                {products.length} producto(s) encontrados
+                {totalResultados ?? products.length} producto(s) encontrados
               </AppText>
             </View>
           </View>

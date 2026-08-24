@@ -61,6 +61,12 @@ const diaLabel = (iso) => {
   const p = String(iso || "").slice(0, 10).split("-");
   return p.length === 3 ? `${parseInt(p[2], 10)} ${MES_CORTO[(parseInt(p[1], 10) || 1) - 1]}` : String(iso || "");
 };
+// "2026-07-28" → "28 de julio" (para frases, no para ejes de gráfico)
+const MES_LARGO = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
+const fechaLarga = (iso) => {
+  const p = String(iso || "").slice(0, 10).split("-");
+  return p.length === 3 ? `${parseInt(p[2], 10)} de ${MES_LARGO[(parseInt(p[1], 10) || 1) - 1]}` : String(iso || "");
+};
 // Eje Y del gráfico de ventas ($ → 12M / 850k)
 const ejeMonto = (v) => (v >= 1e6 ? `${fmtDec(v / 1e6, v >= 1e7 ? 0 : 1)}M` : v >= 1e3 ? `${Math.round(v / 1e3)}k` : String(v));
 
@@ -105,7 +111,7 @@ function buildVM(d) {
     { label: "MARGEN BRUTO", valor: k.margenBrutoPct == null ? "—" : `${fmtDec(k.margenBrutoPct)}%`, ...conDelta(dMar), icono: "tag", color: "#4E9B27", spark: null, nav: "precios", navTitulo: "Precios y márgenes" },
     { label: "PEDIDOS INGRESADOS", valor: num(k.ingresados), ...conDelta(dIng), icono: "clipboard", color: "#83BA42", spark: k.sparkIngresados, nav: "pedidos", navTitulo: "Pedidos" },
     { label: "PEDIDOS EN PREPARACIÓN", valor: num(k.enPreparacion), delta: null, sub: "En picking ahora", icono: "package", color: "#4E9B27", spark: null, nav: "picking", navTitulo: "Picking" },
-    { label: "PEDIDOS LISTOS", valor: num(k.listos), delta: null, sub: "Listos para retiro", icono: "check", color: "#4E9B27", spark: null, nav: "retiro", navTitulo: "Retiro / Mostrador" },
+    { label: "PEDIDOS LISTOS", valor: num(k.listos), delta: null, sub: "Listos para retiro", icono: "check", color: "#4E9B27", spark: null, nav: "pedidos", navTitulo: "Retiro / Mostrador" },
     { label: "PEDIDOS ENTREGADOS", valor: num(k.entregados), ...conDelta(dEnt), icono: "truck", color: "#4E9B27", spark: k.sparkEntregados, nav: "pedidos", navTitulo: "Pedidos" },
   ];
 
@@ -125,10 +131,18 @@ function buildVM(d) {
   const step = Math.max(1, Math.ceil(labels.length / 6));
   const ticks = labels.filter((_, i) => i % step === 0);
   if (labels.length && ticks[ticks.length - 1] !== labels[labels.length - 1]) ticks.push(labels[labels.length - 1]);
+  // Mes en cero: un $0 pelado se lee como "el sistema no funciona". Decir desde
+  // cuándo no hay ventas convierte el vacío en información.
+  const mesVacio = !Number(vn.total);
   const ventas = {
     total: money(vn.total),
     delta: calcDelta(vn.total, vn.prevTotal),
     deltaSub: "vs mes anterior",
+    nota: mesVacio
+      ? vn.ultimaVenta
+        ? `Sin ventas este mes. La última fue el ${fechaLarga(vn.ultimaVenta)}.`
+        : "Todavía no hay ninguna venta registrada."
+      : null,
     serie,
     ticks,
     topProductos: (vn.topProductos || []).map((p) => ({ nombre: p.nombre, monto: money(p.monto) })),
@@ -145,7 +159,9 @@ function buildVM(d) {
     tiles: [
       { label: "Stock crítico", valor: num(inv.stockCritico), sub: "productos", tone: "pink", nav: "reposicion", navTitulo: "Reposición" },
       { label: "Sin stock", valor: num(inv.sinStock), sub: "productos", tone: "pink", nav: "reposicion", navTitulo: "Reposición" },
-      { label: "Días de cobertura promedio", valor: num(inv.coberturaDias), sub: "días", tone: "violet", nav: "inventario", navTitulo: "Inventario" },
+      // Sin cobertura estimable el backend manda null: el sub explica por qué en
+      // vez de dejar un "—" mudo al lado de la palabra "días".
+      { label: "Días de cobertura promedio", valor: num(inv.coberturaDias), sub: inv.coberturaDias == null ? "venta insuficiente para estimar" : "días", tone: "violet", nav: "inventario", navTitulo: "Inventario" },
       { label: "Rotación inventario (mes)", valor: inv.rotacionMes == null ? "—" : `${fmtDec(inv.rotacionMes)}x`, sub: "", tone: "violet", nav: "inventario", navTitulo: "Inventario" },
     ],
   };
@@ -462,7 +478,9 @@ function VentasCard({ ventas, onNav, className }) {
     <Card title="Ventas" action={<CardAction periodo="Este mes" onVer={onNav && (() => onNav("ventas"))} verTitulo="Ventas · Negocio" />} className={className}>
       <p className="text-[11px] text-slate-500">Ventas totales</p>
       <div className="text-2xl font-extrabold text-slate-800">{ventas.total}</div>
-      <DeltaLine delta={ventas.delta} sub={ventas.deltaSub} className="mb-1" />
+      {ventas.nota
+        ? <p className="mb-1 text-[11px] font-semibold text-slate-500">{ventas.nota}</p>
+        : <DeltaLine delta={ventas.delta} sub={ventas.deltaSub} className="mb-1" />}
 
       <div className="h-44">
         {ventas.serie.length ? (
@@ -664,7 +682,7 @@ function ProductividadCard({ tabs, onNav, className }) {
   return (
     <Card
       title={<>Productividad del equipo <span className="font-normal normal-case text-slate-400">(hoy)</span></>}
-      action={<CardAction onVer={onNav && (() => onNav("desempeno"))} verTitulo="Desempeño por áreas" />}
+      action={<CardAction onVer={onNav && (() => onNav("picking"))} verTitulo="Desempeño por áreas" />}
       className={className}
     >
       <div className="mb-3 flex w-fit gap-1 rounded-xl bg-slate-100 p-1">

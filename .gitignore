@@ -31,7 +31,8 @@ wms-snap.md
 **/*.zip
 
 # Material fuente de diseño (los assets finales viven en tienda/assets/)
-Baner/
+# Baner/ se versiona: son los artes master de diseño desde los que
+# tienda/scripts/ genera los derivados de la app.
 
 # Config local de Claude Code / herramientas
 .claude/

@@ -13,8 +13,16 @@ const mm = (n) => {
   return Math.abs(v) >= 1e6 ? "$" + (v / 1e6).toLocaleString("es-CL", { maximumFractionDigits: 1 }) + "M" : clp(v);
 };
 const num = (n) => (Number(n) || 0).toLocaleString("es-CL");
-const dAgo = (n) => { const d = new Date(); d.setDate(d.getDate() - n); return d.toISOString().slice(0, 10); };
-const hoy = () => new Date().toISOString().slice(0, 10);
+// null = no hay nada que medir (sin entregas en el periodo). Distinto de 0 min,
+// que sería un tiempo real de cero.
+const minutos = (n) => (n == null ? "Sin datos" : `${n} min`);
+// Fechas en zona horaria de Chile, igual que Dashboard.jsx y que el backend
+// (que agrupa con timezone: America/Santiago). Con toISOString —que es UTC—,
+// después de las 20:00 en Chile el rango pedía "mañana" y el reporte perdía
+// justo las horas de más venta del último día.
+const ymdCL = (d) => new Intl.DateTimeFormat("en-CA", { timeZone: "America/Santiago" }).format(d);
+const dAgo = (n) => { const d = new Date(); d.setDate(d.getDate() - n); return ymdCL(d); };
+const hoy = () => ymdCL(new Date());
 // Fecha en formato chileno dd/mm/aaaa a partir de un ISO (yyyy-mm-dd).
 const fmtCL = (iso) => { const s = String(iso).slice(0, 10).split("-"); return s.length === 3 ? `${s[2]}/${s[1]}/${s[0]}` : iso; };
 
@@ -346,17 +354,17 @@ export default function Gerencia({ onNav }) {
         <>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))", gap: 12, marginBottom: 14 }}>
             <Kpi label="Entregados" value={num(operacion.entregados)} onClick={ir("pedidos")} />
-            <Kpi label="Throughput" value={thr} onClick={ir("actividad")} />
-            <Kpi label="Tiempo total prom." value={`${operacion.tiempos.total} min`} onClick={ir("pedidos")} />
-            <Kpi label="Cuello de botella" value={operacion.cuello ? operacion.cuello.etapa : "Ninguno"} sub={operacion.cuello ? <span style={{ color: "var(--warn)", fontWeight: 600 }}>{operacion.cuello.minutos} min</span> : <span style={{ color: "var(--ok)", fontWeight: 600 }}>flujo al día</span>} onClick={ir("actividad")} />
+            <Kpi label="Throughput" value={thr} onClick={ir("pedidos")} />
+            <Kpi label="Tiempo total prom." value={minutos(operacion.tiempos.total)} sub={operacion.tiempos.total == null ? "sin entregas que medir" : null} onClick={ir("pedidos")} />
+            <Kpi label="Cuello de botella" value={operacion.cuello ? operacion.cuello.etapa : "Ninguno"} sub={operacion.cuello ? <span style={{ color: "var(--warn)", fontWeight: 600 }}>{operacion.cuello.minutos} min</span> : <span style={{ color: "var(--ok)", fontWeight: 600 }}>flujo al día</span>} onClick={ir("pedidos")} />
             <Kpi label="En cola ahora" value={num(operacion.en_cola_total)} sub={`${operacion.cola.paid} por preparar`} onClick={ir("picking")} />
           </div>
           <Card className={onNav ? "card-link" : ""} onClick={ir("pedidos")}><div style={{ fontWeight: 700, marginBottom: 12, display: "flex", justifyContent: "space-between", alignItems: "center" }}><span>Tiempo promedio por etapa (min)</span>{onNav ? <span style={{ color: "var(--muted)", opacity: 0.55, fontWeight: 700 }} title="Ver Pedidos">›</span> : null}</div>
             <HBars rows={[
-              { k: "Espera de pago", v: operacion.tiempos.espera_pago, txt: `${operacion.tiempos.espera_pago} min` },
-              { k: "Espera en cola", v: operacion.tiempos.espera_cola, txt: `${operacion.tiempos.espera_cola} min` },
-              { k: "Preparación", v: operacion.tiempos.preparacion, txt: `${operacion.tiempos.preparacion} min` },
-              { k: "Espera de entrega", v: operacion.tiempos.espera_entrega, txt: `${operacion.tiempos.espera_entrega} min` },
+              { k: "Espera de pago", v: operacion.tiempos.espera_pago || 0, txt: minutos(operacion.tiempos.espera_pago) },
+              { k: "Espera en cola", v: operacion.tiempos.espera_cola || 0, txt: minutos(operacion.tiempos.espera_cola) },
+              { k: "Preparación", v: operacion.tiempos.preparacion || 0, txt: minutos(operacion.tiempos.preparacion) },
+              { k: "Espera de entrega", v: operacion.tiempos.espera_entrega || 0, txt: minutos(operacion.tiempos.espera_entrega) },
             ]} />
           </Card>
 
@@ -507,7 +515,7 @@ export default function Gerencia({ onNav }) {
 
       {/* BITÁCORA — auditoría de acciones sensibles */}
       {tab === "Bitácora" && (
-        <TCard titulo="Bitácora de acciones sensibles" onClick={ir("autorizaciones")} irA="Autorizaciones">
+        <TCard titulo="Bitácora de acciones sensibles" onClick={ir("usuarios")} irA="Autorizaciones">
           <Tabla head={["Cuándo", "Quién", "Acción", "Sobre"]} aligns={["l", "l", "l", "l"]}
             empty={aud.loading ? "Cargando…" : "Sin registros aún. Aquí quedan los cambios de precio, de rol y de estado de usuarios."}
             rows={(aud.data?.items || []).map((a) => [

@@ -1,3 +1,10 @@
+# OBSOLETO — NO USAR. El generador vigente es generarPatronMarca.py (Pillow).
+# Este script produce un patrón corrupto: lee el WebP con el decodificador de
+# WPF/Windows, que descarta el canal alfa y devuelve solo RGB. Sin alfa, más
+# abajo lo reconstruye adivinando por brillo y termina rellenando el interior de
+# los íconos, que en el arte original son contornos huecos. Se conserva solo como
+# registro de la composición del mosaico, que el .py replica.
+#
 # Arma el mosaico de marca a partir de los íconos sueltos del arte original.
 #
 # El arte entregado no sirve tal cual como mosaico: trae un "smear" horizontal

@@ -40,10 +40,6 @@ const NEWS_ICON = require("../../assets/home/qa-news.png");
 // Arte del hero (1600x800, provisto por diseño): trae el logo de Cibox a la
 // izquierda y la caja de productos a la derecha.
 const BANNER_BG = require("../../assets/home/banner-hero.webp");
-// Franja del newsletter: el degradado de marca del arte entregado, ya sin el
-// ícono que venía incrustado (lo genera scripts/generarFranjaNewsletter.ps1).
-// El ícono lo dibuja el layout: así no se pisan entre sí ni con el título.
-const BANNER_NEWS = require("../../assets/home/banner-news.png");
 
 // Ícono por categoría (según el nombre) para "Categorías principales".
 const catIcon = (name = "") => {
@@ -63,10 +59,13 @@ const catIcon = (name = "") => {
 const FEATURES = [
   { id: "despensa", icon: require("../../assets/home/qa-mi-despensa.png"), title: "Mi despensa", desc: "Todo lo que necesitas en un solo lugar", screen: "PantryTab", requiresAuth: true },
   { id: "mas", icon: require("../../assets/home/qa-mas-vendido.png"), title: "Más vendido", desc: "Los productos favoritos de nuestros clientes", screen: "Products", params: { preset: "best_sellers" } },
-  { id: "liq", icon: require("../../assets/home/qa-liquidacion.png"), title: "Liquidación", desc: "Ofertas imperdibles por tiempo limitado", screen: "Products", params: { preset: "liquidation" } },
+  { id: "liq", icon: require("../../assets/home/qa-liquidacion.png"), title: "Imperdibles de la semana", desc: "Los mejores precios, renovados cada semana", screen: "Products", params: { preset: "liquidation" } },
   { id: "sigue", icon: require("../../assets/home/qa-sigue-tu-pedido.png"), title: "Sigue tu pedido", desc: "Rastrea tu compra en tiempo real", screen: "OrdersTab", requiresAuth: true },
-  { id: "benef", icon: require("../../assets/home/qa-beneficios.png"), title: "Beneficios", desc: "Descuentos y promos exclusivas para ti", screen: "HowItWorks" },
-  { id: "despacho", icon: require("../../assets/home/qa-despacho-pronto.png"), title: "Despacho pronto", desc: "Recibe tus productos rápido y seguro", screen: "HowItWorks" },
+  // Las dos apuntaban a "HowItWorks", dejando inalcanzables sus pantallas
+  // dedicadas (registradas en navigation/AppStack.js) — en celular no había
+  // ningún otro camino para llegar a ellas.
+  { id: "benef", icon: require("../../assets/home/qa-beneficios.png"), title: "Beneficios", desc: "Descuentos y promos exclusivas para ti", screen: "Beneficios" },
+  { id: "despacho", icon: require("../../assets/home/qa-despacho-pronto.png"), title: "Despacho pronto", desc: "Recibe tus productos rápido y seguro", screen: "Despacho" },
 ];
 
 // ─── % de ahorro por caja (caja vs unidad) ───────────────────────────────────────
@@ -85,7 +84,7 @@ const boxSavingsPct = (product) => {
 // ─── Hero principal ──────────────────────────────────────────────────────────────
 // `content` = slots.hero del CMS. Cada campo cae al texto/asset de fábrica si
 // no está configurado (una tienda recién instalada se ve idéntica a hoy).
-function Hero({ navigation, isWebDesktop, isWide, content }) {
+function Hero({ navigation, isWebDesktop, isWide, width, content }) {
   const title = cmsText(content?.title, `${brand.name}\n${brand.tagline}`);
   const subtitle = cmsText(
     content?.subtitle,
@@ -101,11 +100,51 @@ function Hero({ navigation, isWebDesktop, isWide, content }) {
   // En móvil el banner mide ~170px de alto y la bajada no cabe sin comerse el
   // tercio superior, que es donde va el logo impreso en el arte: ahí queda solo
   // el título y el botón.
+  //
+  // Ancho real del banner: el hero vive dentro de ScreenContainer, que centra el
+  // contenido con `maxWidth` 1180 (ver el render de esta pantalla) y lo separa
+  // `spacing.md` por lado.
+  const anchoBanner = Math.max(1, Math.min(width, 1180) - spacing.md * 2);
+  const esMovil = !isWide && !isWebDesktop;
+
+  // El tramo móvil NO puede ser de tamaño fijo. El banner es 2:1, así que su alto
+  // es `anchoBanner / 2` y se achica con la pantalla, pero las tipografías eran
+  // constantes (17/21): en un Android de 360px el banner queda de 328x164, el
+  // bloque de texto mide 84,5px y arranca al 40,5% del alto — dentro mismo de la
+  // franja donde el arte trae impreso el logo de Cibox (del 11,4% al 41,2% del
+  // alto). Con un título de 3 líneas cargado desde el panel el choque llegaba
+  // hasta el iPhone (33,1% en 390px).
+  //
+  // Ahora todo se deriva de `anchoBanner`, con 328px como referencia. El bloque
+  // está anclado a `bottom: 8%` y para no pisar el logo tiene que arrancar bajo
+  // el 45% del alto (41,2% del logo + margen), o sea:
+  //   alto del bloque ≤ (0,55 − 0,08)·alto = 0,47·(anchoBanner/2) = 0,235·anchoBanner
+  // Bloque = 2·tituloAlto + (hueco + 4) + botón, y botón = pad + su línea más
+  // alta (por eso el tramo móvil fija `ctaAlto`: sin lineHeight explícito la
+  // altura del botón depende de la métrica de Poppins y el cálculo no cierra).
+  // Medido para pantallas de 320/360/390/430px: 66,5 / 73,8 / 80,0 / 88,2px
+  // contra topes de 67,7 / 77,1 / 84,1 / 93,5 → el bloque arranca entre el 45,8%
+  // y el 47,7% del alto, siempre bajo el logo. Los pisos (13px de título, 10px
+  // de CTA) son el mínimo legible; para que no se los coma un título largo del
+  // CMS, en móvil el título se corta en 2 líneas.
+  const escM = anchoBanner / 328;
+  const ent = (min, v, max) => Math.max(min, Math.min(v, max));
+  const tituloM = ent(13, 15 * escM, 20);
+  const ctaM = ent(10, 11 * escM, 15);
+
   const t = isWide
     ? { titulo: 40, tituloAlto: 45, bajada: 16, bajadaAlto: 22, cta: 15, pad: 24, hueco: 14 }
     : isWebDesktop
       ? { titulo: 28, tituloAlto: 32, bajada: 13, bajadaAlto: 18, cta: 14, pad: 20, hueco: 10 }
-      : { titulo: 17, tituloAlto: 21, bajada: 0, cta: 12, pad: 14, hueco: 7 };
+      : {
+          titulo: tituloM,
+          tituloAlto: tituloM * 1.22,
+          bajada: 0,
+          cta: ctaM,
+          ctaAlto: ctaM * 1.4,
+          pad: ent(11, 12 * escM, 20),
+          hueco: ent(4, 5 * escM, 12),
+        };
 
   return (
     <View
@@ -136,7 +175,10 @@ function Hero({ navigation, isWebDesktop, isWide, content }) {
       {/* Anclado abajo a la izquierda: el logo del arte ocupa el tercio
           superior izquierdo, así que el texto crece hacia arriba sin taparlo. */}
       <View style={{ position: "absolute", left: "6%", right: isWebDesktop ? "48%" : "30%", bottom: "8%" }}>
-        <AppText style={{ color: "#fff", fontSize: t.titulo, fontWeight: "900", lineHeight: t.tituloAlto }}>
+        <AppText
+          numberOfLines={esMovil ? 2 : undefined}
+          style={{ color: "#fff", fontSize: t.titulo, fontWeight: "900", lineHeight: t.tituloAlto }}
+        >
           {title}
         </AppText>
         {t.bajada > 0 && (
@@ -151,7 +193,7 @@ function Hero({ navigation, isWebDesktop, isWide, content }) {
           onPress={() => navigation.navigate("Products")}
           style={{ alignSelf: "flex-start", marginTop: t.hueco + 4, backgroundColor: "#fff", borderRadius: 14, paddingHorizontal: t.pad, paddingVertical: t.pad * 0.5, flexDirection: "row", alignItems: "center", gap: 8, ...shadows.card }}
         >
-          <AppText style={{ color: colors.primary, fontWeight: "900", fontSize: t.cta }}>{cta}</AppText>
+          <AppText style={{ color: colors.primary, fontWeight: "900", fontSize: t.cta, lineHeight: t.ctaAlto }}>{cta}</AppText>
           <Ionicons name="arrow-forward" size={t.cta + 2} color={colors.primary} />
         </Pressable>
       </View>
@@ -249,7 +291,11 @@ function PromoBanner({ banner, navigation, isWebDesktop }) {
         <ImageBackground
           source={{ uri: image }}
           resizeMode="cover"
-          imageStyle={{ borderRadius: 22 }}
+          // width/height explícitos: sin ellos react-native-web le da al <img>
+          // el tamaño intrínseco del archivo y la imagen se dibuja a su medida
+          // real en vez de llenar el contenedor (el mismo fallo que dejaba la
+          // franja del newsletter como una barra de 24px).
+          imageStyle={{ borderRadius: 22, width: "100%", height: "100%" }}
           style={{
             borderRadius: 22,
             overflow: "hidden",
@@ -331,25 +377,42 @@ function Newsletter({ title, subtitle, isWebDesktop }) {
           autoCapitalize="none"
           style={{ flex: 1, backgroundColor: "#fff", borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontSize: 14, color: colors.text }}
         />
-        <Pressable onPress={submit} style={{ backgroundColor: colors.accent, borderRadius: 12, paddingHorizontal: 18, justifyContent: "center" }}>
-          <AppText style={{ color: "#fff", fontWeight: "900", fontSize: 14 }}>Suscribirme</AppText>
+        {/* Amarillo de marca: sobre la franja verde el verde de `accent` rendía
+            1,49:1 y el botón se perdía en el fondo. El texto va oscuro porque
+            blanco sobre amarillo queda en 1,7:1. */}
+        <Pressable onPress={submit} style={{ backgroundColor: colors.discount, borderRadius: 12, paddingHorizontal: 18, justifyContent: "center" }}>
+          <AppText style={{ color: colors.text, fontWeight: "900", fontSize: 14 }}>Suscribirme</AppText>
         </Pressable>
       </View>
     </>
   );
 
-  // Ya sin el ícono incrustado, la franja es un degradado horizontal puro: se
-  // estira a cualquier alto sin deformar nada, así que sirve igual en desktop
-  // que en el bloque vertical de móvil.
+  // La franja va dibujada, no como imagen. Antes era un PNG de 1435x24 puesto
+  // como ImageBackground con resizeMode "stretch", y react-native-web le daba al
+  // <img> su tamaño intrínseco: se pintaba una barra de 24px de alto y 1435 de
+  // ancho arriba del bloque en vez de cubrirlo, así que el texto blanco caía
+  // sobre el fondo claro de la página y quedaba ilegible (es el mismo problema
+  // que BrandBackdrop resuelve fijando width/height). Como el arte era un
+  // degradado horizontal puro —cada columna de color constante— un
+  // LinearGradient lo reproduce exacto, cubre siempre el bloque completo y de
+  // paso saca del bundle un archivo que además traía cuatro rayas de 1px.
+  //
+  // El degradado original iba de lima (#A2D15B) a verde (#559534) y dejaba el
+  // texto blanco en 1,85:1. Este mantiene el verde de marca plano bajo el texto
+  // hasta el 55% del ancho —donde el título y la bajada terminan en los dos
+  // layouts, porque en móvil se centran y en desktop se alinean a la izquierda—
+  // y recién ahí abre hacia el verde claro, detrás del campo de correo. Sobre
+  // #3E7D1E el blanco rinde 5,05:1: pasa el 4,5:1 que exige la bajada.
   return (
-    <ImageBackground
-      source={BANNER_NEWS}
-      resizeMode="stretch"
-      imageStyle={{ borderRadius: 22 }}
-      style={{ ...layout, overflow: "hidden" }}
+    <LinearGradient
+      colors={["#3E7D1E", "#3E7D1E", "#4E9B27"]}
+      locations={[0, 0.55, 1]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 0 }}
+      style={{ ...layout, borderRadius: 22, overflow: "hidden" }}
     >
       {contenido}
-    </ImageBackground>
+    </LinearGradient>
   );
 }
 
@@ -403,7 +466,7 @@ function OffersBanner({ navigation, isWebDesktop }) {
     >
       <View pointerEvents="none" style={{ position: "absolute", right: -40, top: -40, width: 180, height: 180, borderRadius: 90, backgroundColor: "rgba(255,255,255,0.12)" }} />
       <View style={{ alignSelf: "flex-start", backgroundColor: colors.discount, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 4, marginBottom: 12 }}>
-        <AppText style={{ color: "#7a4d00", fontSize: 11, fontWeight: "900", letterSpacing: 0.5 }}>🔥 LIQUIDACIÓN</AppText>
+        <AppText style={{ color: "#7a4d00", fontSize: 11, fontWeight: "900", letterSpacing: 0.5 }}>🔥 OFERTA DE LA SEMANA</AppText>
       </View>
       <AppText style={{ color: "#fff", fontSize: isWebDesktop ? 30 : 23, fontWeight: "900", lineHeight: isWebDesktop ? 34 : 27 }}>
         Ofertas imperdibles{"\n"}¡Por tiempo limitado!
@@ -415,7 +478,7 @@ function OffersBanner({ navigation, isWebDesktop }) {
         onPress={() => navigation.navigate("Products", { preset: "liquidation" })}
         style={{ alignSelf: "flex-start", marginTop: 20, backgroundColor: "#fff", borderRadius: 12, paddingHorizontal: 22, paddingVertical: 12, flexDirection: "row", alignItems: "center", gap: 8 }}
       >
-        <AppText style={{ color: colors.primary, fontWeight: "900", fontSize: 14 }}>Ver liquidaciones</AppText>
+        <AppText style={{ color: colors.primary, fontWeight: "900", fontSize: 14 }}>Ver los imperdibles</AppText>
         <Ionicons name="arrow-forward" size={16} color={colors.primary} />
       </Pressable>
     </LinearGradient>
@@ -546,7 +609,7 @@ export default function HomeScreen({ navigation }) {
       const n = Math.max(1, Number(cajas) || 1);
       await addItemToCart({ productId: product._id, quantity: boxQtyOf(product) * n });
       await loadCartSummary();
-      showToast(n > 1 ? `${n} cajas agregadas al carrito` : "Caja agregada al carrito");
+      showToast(n > 1 ? `${n} agregados al carrito` : "Agregado al carrito");
     } catch (error) {
       Alert.alert("Error", error?.response?.data?.message || "No se pudo agregar al carrito");
     } finally {
@@ -663,7 +726,7 @@ export default function HomeScreen({ navigation }) {
             )}
 
             {/* Hero */}
-            <Hero navigation={navigation} isWebDesktop={isWebDesktop} isWide={isWide} content={slots?.hero} />
+            <Hero navigation={navigation} isWebDesktop={isWebDesktop} isWide={isWide} width={width} content={slots?.hero} />
 
             {/* Banners secundarios 1-3 (CMS, opcionales) */}
             <PromoBanners slots={slots} navigation={navigation} isWebDesktop={isWebDesktop} />
@@ -714,10 +777,10 @@ export default function HomeScreen({ navigation }) {
             {/* Ofertas imperdibles */}
             <OffersBanner navigation={navigation} isWebDesktop={isWebDesktop} />
 
-            {/* Zona de liquidación (productos reales con ahorro) */}
+            {/* Imperdibles de la semana (productos reales con ahorro) */}
             {!sectionsLoading && liquidation.length > 0 && (
               <View style={{ marginBottom: spacing.lg, backgroundColor: `${colors.discount}1A`, borderRadius: 22, borderWidth: 1, borderColor: `${colors.discount}55`, padding: spacing.md }}>
-                <SectionTitle title="Zona de liquidación" />
+                <SectionTitle title="Imperdibles de la semana" />
                 <ProductRowSection
                   title=""
                   products={liquidation}

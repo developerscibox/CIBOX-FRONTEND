@@ -3,40 +3,45 @@ import { Platform, Pressable, ScrollView, View } from "react-native";
 
 import AppText from "./AppText";
 import useOnboardingStore from "../store/onboardingStore";
+import useBienvenidaStore from "../store/bienvenidaStore";
 import { colors, radius, spacing } from "../constants/theme";
 
 import brand from "../constants/brand";
 // Pasos del tour de bienvenida (texto tal cual, en español).
 const SLIDES = [
+  // El tour describía el Cibox mayorista de antes ("solo por caja", "el pago es
+  // presencial"), que ya no es lo que hace el sistema: se vende por unidad y la
+  // transferencia se paga por adelantado. Un tour que miente en el primer minuto
+  // hace que el cliente desconfíe del resto.
   {
     emoji: "👋",
     title: `Bienvenido a ${brand.name}`,
-    body: `Somos un supermercado 100% online: eliges tus productos, nosotros preparamos el pedido y te lo despachamos. En 1 minuto te mostramos cómo funciona. Puedes saltarlo cuando quieras.`,
+    body: `Somos un supermercado 100% online: eliges tus productos y nosotros preparamos tu pedido. En 1 minuto te mostramos cómo funciona. Puedes saltarlo cuando quieras.`,
   },
   {
     emoji: "📦",
-    title: "Aquí se vende por caja",
-    body: "Las compras son POR CAJA, no por unidad suelta. El precio que ves es POR UNIDAD; el total de la caja = precio por unidad × unidades de la caja. Mientras más rinde la caja, más ahorras.",
+    title: "Compra por unidad, ahorra por pack",
+    body: "Puedes llevar una sola unidad si quieres. Algunos productos además tienen un pack con descuento: al llegar a esa cantidad, el precio por unidad baja solo. El pack es un beneficio, no un mínimo de compra.",
   },
   {
     emoji: "🏬",
-    title: "Solo retiro en bodega",
-    body: "Hoy retiras tu pedido GRATIS en nuestra bodega. El despacho a domicilio viene pronto. En el carrito eliges el día de retiro.",
+    title: "Retiro en bodega",
+    body: "Hoy retiras tu pedido GRATIS en nuestra bodega y eliges el día en el carrito. El despacho a domicilio viene pronto.",
   },
   {
     emoji: "🔎",
     title: "Busca y filtra",
-    body: 'Usa el buscador por nombre o marca, y entra a "Ver catálogo" para filtrar por categoría, marca, precio o ver solo lo disponible. Toca un producto para ver el detalle de la caja.',
+    body: 'Usa el buscador por nombre o marca, y entra a "Ver catálogo" para filtrar por categoría, marca, precio o ver solo lo disponible. Toca un producto para ver su detalle.',
   },
   {
     emoji: "🛒",
-    title: "Agrega cajas al carrito",
-    body: "Toca el botón de agregar para sumar una caja (puedes elegir cuántas). Verás el contador en la bolsa, arriba a la derecha. Para comprar, inicia sesión.",
+    title: "Agrega al carrito",
+    body: "Toca el botón de agregar para sumar el producto (puedes elegir cuántos). Verás el contador en la bolsa, arriba a la derecha.",
   },
   {
     emoji: "💵",
-    title: "Elige el día y paga al retirar",
-    body: "En el checkout eliges el DÍA de retiro y cómo pagar: transferencia o efectivo al retirar. El pago es presencial. Aceptas los términos y confirmas la compra.",
+    title: "Elige el día y cómo pagar",
+    body: "En el checkout eliges el DÍA de retiro y cómo pagar: por transferencia antes de que preparemos tu pedido, o en efectivo al retirarlo. Aceptas los términos y confirmas la compra.",
   },
   {
     emoji: "📋",
@@ -59,8 +64,14 @@ export default function WelcomeTour() {
     loadOnboarding();
   }, [loadOnboarding]);
 
+  // Mientras el aviso de relanzamiento esté en pantalla, el tour espera: si se
+  // abren los dos a la vez el cliente ve dos ventanas superpuestas al entrar.
+  const avisoVisto = useBienvenidaStore((state) => state.visto);
+  const avisoCargado = useBienvenidaStore((state) => state.cargado);
+  const avisoEnPantalla = avisoCargado && !avisoVisto;
+
   // Se muestra automáticamente la primera vez (si !seen) o cuando open=true.
-  const visible = open || !seen;
+  const visible = (open || !seen) && !avisoEnPantalla;
 
   // Reinicia al primer paso cada vez que se abre
   useEffect(() => {

@@ -3,6 +3,7 @@ import { Alert, Image, Platform, Pressable, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { colors, radius, shadows, spacing } from "../constants/theme";
 import AppText from "./AppText";
+import UnitPrice from "./UnitPrice";
 import { getProductImage, productEmoji, productTint } from "../utils/productImage";
 import useAuthStore from "../store/authStore";
 import { addFavorite, removeFavorite } from "../services/favoriteService";
@@ -65,15 +66,30 @@ export default function ProductCard({
   const perUnit = boxQty ? boxUnitPrice : null; // c/u dentro de la caja
   const unitPrice = unitTier?.price ?? null;
   const boxLabel = boxTier?.label || (boxQty ? `Caja de ${boxQty} un` : "Por caja");
+  // Un tramo por cantidad puede ser dos cosas distintas y la ficha tiene que
+  // mostrarlas distinto: un PACK CERRADO que se vende junto (el precio grande es
+  // el del pack) o un DESCUENTO POR VOLUMEN sobre el producto suelto (el precio
+  // grande sigue siendo el de una unidad, y llevar más solo la abarata).
+  // El rótulo del tramo lo distingue: "pack de N" contra "N o más"
+  // (ver backend catalogo/precio.js).
+  const esPackCerrado =
+    !!boxQty && /^pack|^caja/i.test(String(boxTier?.label || "")) ;
+  const esVolumen = !!boxQty && !esPackCerrado;
   const boxSavingsPct =
     unitPrice && boxUnitPrice && boxQty && unitPrice > boxUnitPrice
       ? Math.round((1 - boxUnitPrice / unitPrice) * 100)
       : 0;
   const hasPackTier = !!boxQty;
 
-  // Cantidad por caja para guardar en despensa (cae a 1 si no hay pack tier).
-  const boxQtyOf = (p) =>
-    boxQty && boxQty > 1 ? boxQty : p?.box_quantity || 1;
+  // Cantidad a guardar en Mi Despensa: 1, igual que agregar al carrito.
+  //
+  // ANTES devolvía boxQty (el tamaño del pack) cuando el producto tenía uno, así
+  // que "Guardar en despensa" de un producto con pack de 6 guardaba 6 unidades
+  // sin decirlo, y de ahí pasaban 6 al carrito en "Recomprar todo". El pack es
+  // un descuento por cantidad, no un mínimo de compra: ver utils/boxPricing.js,
+  // cuyo boxQtyOf global ya devuelve 1 siempre. Esta copia local se había
+  // quedado con la regla mayorista vieja.
+  const pantryQtyOf = () => 1;
 
   // Guardar rápido en Mi Despensa. Autocontenido: no depende de props nuevas.
   const handleSaveToPantry = async () => {
@@ -86,7 +102,7 @@ export default function ProductCard({
       setSavingPantry(true);
       await addItemToPantry({
         productId: product?._id,
-        quantity: boxQtyOf(product),
+        quantity: pantryQtyOf(),
       });
       showToast("Guardado en Mi Despensa");
     } catch (e) {
@@ -229,7 +245,7 @@ export default function ProductCard({
             {hasPackTier ? (
               <View style={chipStyle(colors.primary)}>
                 <AppText style={{ color: "#fff", fontSize: 11, fontWeight: "800" }}>
-                  Venta por caja
+                  {esPackCerrado ? "Venta por caja" : `Ahorra desde ${boxQty}`}
                 </AppText>
               </View>
             ) : null}
@@ -249,7 +265,7 @@ export default function ProductCard({
             {hasPackTier && (
               <View style={chipStyle(colors.primary)}>
                 <AppText style={{ color: "#fff", fontSize: 10, fontWeight: "800" }}>
-                  Por caja
+                  {esPackCerrado ? "Por caja" : `${boxQty}+`}
                 </AppText>
               </View>
             )}
@@ -291,7 +307,7 @@ export default function ProductCard({
             <AppText
               style={{ fontSize: priceSize, fontWeight: "900", color: colors.text }}
             >
-              {formatPrice(boxTotal)}
+              {formatPrice(esVolumen ? unitPrice : boxTotal)}
             </AppText>
             <AppText
               style={{
@@ -300,15 +316,18 @@ export default function ProductCard({
                 fontWeight: "800",
               }}
             >
-              {boxQty ? "/ caja" : "/ un"}
+              {esPackCerrado ? "/ caja" : "/ un"}
             </AppText>
           </View>
+
+          {/* PPUM (decreto 38/2024, art. 9°): junto al precio, mismo campo visual. */}
+          <UnitPrice product={product} unitPrice={esVolumen ? unitPrice : boxUnitPrice} priceSize={priceSize} />
 
           <AppText
             style={{ fontSize: mini ? 10 : 12, color: colors.muted, marginTop: 1 }}
           >
-            {boxLabel}
-            {perUnit ? ` · ≈ ${formatPrice(perUnit)} c/u` : ""}
+            {esVolumen ? `${boxQty} o más · ${formatPrice(perUnit)} c/u` : boxLabel}
+            {!esVolumen && perUnit ? ` · ≈ ${formatPrice(perUnit)} c/u` : ""}
           </AppText>
 
           {boxSavingsPct >= 3 && (
@@ -320,7 +339,7 @@ export default function ProductCard({
                 marginTop: 2,
               }}
             >
-              Ahorra {boxSavingsPct}% por caja
+              Ahorra {boxSavingsPct}% {esVolumen ? `llevando ${boxQty} o más` : "por caja"}
             </AppText>
           )}
         </View>
@@ -431,12 +450,16 @@ export default function ProductCard({
 
         <Pressable
           onPress={async () => {
-            // Cibox vende SOLO por caja. Si el producto no tiene formato de
-            // caja configurado, no se agrega por unidad: dirigimos al detalle.
-            if (!hasPackTier) {
-              onPress?.();
-              return;
-            }
+            // Agrega siempre, tenga o no formato de caja.
+            //
+            // ANTES: si el producto no tenía tramo de pack, el botón no agregaba
+            // nada y solo navegaba al detalle. Era una regla de cuando Cibox
+            // vendía solo por caja; al pasar a venta por unidad (ver
+            // utils/boxPricing.js, que documenta el cambio) quedó viva y dejó el
+            // botón muerto en TODO el catálogo: los 763 productos tienen un solo
+            // tramo min_qty:1, así que hasPackTier era false en todos. De paso
+            // volvía código muerto la puerta de edad de alcohol, que vive dentro
+            // de los handleAddFromCard de las pantallas.
             try {
               await onAddToCart?.(product, cajas);
               setCajas(1); // resetea el selector tras agregar exitoso
@@ -446,7 +469,7 @@ export default function ProductCard({
           }}
           disabled={adding}
           style={{
-            backgroundColor: hasPackTier ? colors.primary : colors.muted,
+            backgroundColor: colors.primary,
             height: mini ? 34 : 42,
             borderRadius: 12,
             alignItems: "center",

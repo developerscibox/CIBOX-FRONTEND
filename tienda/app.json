@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Cibox",
-    "slug": "cibox-app-js",
+    "slug": "cibox-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -10,24 +10,34 @@
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#E6007E"
+      "backgroundColor": "#3E7D1E"
     },
     "scheme": "cibox",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "cl.cibox.app"
     },
     "android": {
       "package": "com.cibox.app",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#E6007E"
+        "backgroundColor": "#3E7D1E"
       },
       "edgeToEdgeEnabled": true
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "plugins": ["expo-font"],
+    "plugins": [
+      "expo-font",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#3E7D1E"
+        }
+      ]
+    ],
     "extra": {
       "eas": {
         "projectId": "2cd33dc1-3ac6-47c5-a492-4fec8572d82b"

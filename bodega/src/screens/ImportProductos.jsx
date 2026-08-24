@@ -17,8 +17,11 @@ const CAMPOS = [
   "sale_unit", "content_value", "content_unit",
   "price", "iva_afecto", "pack_size", "pack_price",
   "cost_price", "stock_inicial", "min_stock", "target_stock", "description",
+  // Precio por unidad de medida (decreto 38/2024). Opcionales: solo hacen falta
+  // cuando el contenido del envase no alcanza para calcularlo.
+  "drained_value", "pieces_per_pack", "length_per_piece_m", "bulk", "ppum_exempt_reason",
 ];
-const NUMERICOS = new Set(["price", "pack_size", "pack_price", "content_value", "cost_price", "stock_inicial", "min_stock", "target_stock"]);
+const NUMERICOS = new Set(["price", "pack_size", "pack_price", "content_value", "cost_price", "stock_inicial", "min_stock", "target_stock", "drained_value", "pieces_per_pack", "length_per_piece_m"]);
 
 const EJEMPLOS = [
   { sku: "CIB-001", barcode: "7801000000017", name: "Aceite vegetal 900ml", brand: "Los Silos", category_name: "Abarrotes", subcategory_name: "Aceites", sale_unit: "unidad", content_value: 900, content_unit: "ml", price: 1449, iva_afecto: "si", pack_size: 12, pack_price: 15480, cost_price: 980, stock_inicial: 120, min_stock: 24, target_stock: 48, description: "Aceite vegetal maravilla 900ml" },
@@ -67,6 +70,15 @@ function validarLocal(row) {
     if (row.pack_price >= row.price * row.pack_size) return "El pack debe costar menos que las unidades sueltas.";
   }
   if (!row.sku && !row.barcode && !(row.price > 0)) return "Fila sin sku ni barcode (se crearía): requiere price mayor que 0.";
+  // Decreto 38/2024: sin contenido y unidad no se puede calcular el precio por
+  // unidad de medida, y el backend rechaza publicar el producto. La única salida
+  // es declarar explícitamente la excepción del art. 8°.
+  const creaProducto = !row.sku && !row.barcode;
+  const declaraContenido = row.content_value > 0 && String(row.content_unit || "").trim();
+  const esGranel = String(row.bulk || "").toLowerCase() === "si" || row.bulk === true;
+  if (creaProducto && !declaraContenido && !esGranel && !row.ppum_exempt_reason) {
+    return "Faltan content_value y content_unit: sin eso no hay precio por unidad de medida (decreto 38/2024). Usa ppum_exempt_reason si de verdad está exceptuado.";
+  }
   return "";
 }
 

@@ -48,8 +48,17 @@ export const esAlcohol = (producto) => {
   const todas = Array.isArray(producto.categories) ? producto.categories : [];
   if (todas.some((c) => SUBCATEGORIAS_CON_ALCOHOL.includes(normalizar(c?.name)))) return true;
 
-  // 2. Red de seguridad por nombre.
-  return PALABRAS_ALCOHOL.some((p) => nombre.includes(p));
+  // 2. Red de seguridad por nombre, en LÍMITES DE PALABRA.
+  //
+  // Con includes() suelto, "vino" hacía match dentro de "vinagre", "champa"
+  // dentro de "galletas champaña" y "ron " dentro de "pimiento morrón " — se
+  // abría la puerta de edad al comprar galletas y pimientos. Se ancla cada
+  // palabra entre no-letras para que solo calce como palabra completa; las
+  // entradas que ya traían espacio final ("ron ", "gin ") se normalizan.
+  return PALABRAS_ALCOHOL.some((p) => {
+    const palabra = p.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    return new RegExp(`(^|[^a-z0-9])${palabra}([^a-z0-9]|$)`, "i").test(nombre);
+  });
 };
 
 /** ¿Esta categoría o subcategoría es de alcohol? (para bloquear el listado) */

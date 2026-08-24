@@ -12,9 +12,13 @@ import {
 } from "react-native";
 import { checkoutPantry, getPantry } from "../services/pantryService";
 import { addItemToCart } from "../services/cartService";
+import { esAlcohol } from "../constants/alcohol";
+import { exigirMayoriaDeEdad } from "../store/edadStore";
 import useAuthStore from "../store/authStore";
 import { showAppAlert } from "../utils/appAlerts";
 import { showToast } from "../store/toastStore";
+import { boxTierOf, unitPriceOf } from "../utils/boxPricing";
+import UnitPrice from "../components/UnitPrice";
 import { colors, spacing, radius, shadows } from "../constants/theme";
 import AppText from "../components/AppText";
 
@@ -54,11 +58,19 @@ export default function PantryScreen({ navigation }) {
   }, [token]);
 
   // Agregar un solo producto al carrito (POST /cart/items).
-  const handleMove = async (productId) => {
+  const handleMove = async (productId, product = null) => {
     if (!productId) return;
     if (!token) {
       showAppAlert("Inicia sesión", "Debes iniciar sesión para usar tu despensa");
       navigation.navigate("Auth");
+      return;
+    }
+
+    // Ley 19.925: la declaración de mayoría de edad va en TODOS los caminos al
+    // carrito, no solo en la ficha del producto. Por acá se podía comprar
+    // alcohol sin que la puerta apareciera nunca.
+    if (product && esAlcohol(product) && !(await exigirMayoriaDeEdad())) {
+      showToast("No podemos venderte alcohol si eres menor de 18 años");
       return;
     }
 
@@ -87,6 +99,17 @@ export default function PantryScreen({ navigation }) {
       return;
     }
     if (!(pantry?.items || []).length) return;
+
+    // Si la despensa trae aunque sea un producto con alcohol, hay que declarar
+    // la mayoría de edad antes de armar el carrito completo (Ley 19.925).
+    const llevaAlcohol = (pantry?.items || []).some((it) =>
+      esAlcohol(it.product || { name: it.name }),
+    );
+    if (llevaAlcohol && !(await exigirMayoriaDeEdad())) {
+      showToast("No podemos venderte alcohol si eres menor de 18 años");
+      return;
+    }
+
     try {
       setMovingAll(true);
       await checkoutPantry();
@@ -445,13 +468,21 @@ export default function PantryScreen({ navigation }) {
                     : "Precio por caja: —"}
                 </AppText>
 
+                {/* PPUM — decreto 38/2024, art. 9° */}
+                <UnitPrice
+                  product={product}
+                  unitPrice={boxTierOf(product)?.price ?? unitPriceOf(product)}
+                  priceSize={14}
+                  style={{ marginBottom: 2 }}
+                />
+
                 <AppText style={{ color: colors.muted, fontSize: 12.5, marginBottom: spacing.sm }}>
                   Cantidad: {item.quantity}
                   {freqDays ? ` · cada ${freqDays} días` : ""}
                 </AppText>
 
                 <Pressable
-                  onPress={() => handleMove(productId)}
+                  onPress={() => handleMove(productId, product)}
                   disabled={isMoving}
                   style={{
                     backgroundColor: isMoving ? colors.muted : colors.primary,
