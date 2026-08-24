@@ -17,7 +17,7 @@
       "supportsTablet": true
     },
     "android": {
-      "package": "cl.cibox.app",
+      "package": "com.cibox.app",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#E6007E"
@@ -27,9 +27,7 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "plugins": [
-      "expo-font"
-    ],
+    "plugins": ["expo-font"],
     "extra": {
       "eas": {
         "projectId": "2cd33dc1-3ac6-47c5-a492-4fec8572d82b"
