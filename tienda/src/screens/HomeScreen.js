@@ -40,6 +40,8 @@ const NEWS_ICON = require("../../assets/home/qa-news.png");
 // Arte del hero (1600x800, provisto por diseño): trae el logo de Cibox a la
 // izquierda y la caja de productos a la derecha.
 const BANNER_BG = require("../../assets/home/banner-hero.webp");
+// Arte del bloque de ofertas: verde de marca con una persona y una caja Cibox.
+const BANNER_OFERTAS = require("../../assets/home/banner-ofertas.webp");
 
 // Ícono por categoría (según el nombre) para "Categorías principales".
 const catIcon = (name = "") => {
@@ -85,13 +87,16 @@ const boxSavingsPct = (product) => {
 // `content` = slots.hero del CMS. Cada campo cae al texto/asset de fábrica si
 // no está configurado (una tienda recién instalada se ve idéntica a hoy).
 function Hero({ navigation, isWebDesktop, isWide, width, content }) {
-  const title = cmsText(content?.title, `${brand.name}\n${brand.tagline}`);
-  const subtitle = cmsText(
-    content?.subtitle,
-    "Haz tu compra del supermercado desde donde estés. Nosotros la preparamos y te la llevamos.",
-  );
+  // Sin texto por defecto, A PROPÓSITO: el arte del hero trae su propio titular
+  // impreso ("Tu despensa mensual directo a tu puerta"). Si además se dibujara
+  // el título de la marca encima, quedarían dos titulares pisados sobre la misma
+  // esquina. El texto solo aparece si el administrador lo escribe en el panel,
+  // que es el caso de un arte SIN el texto quemado.
+  const title = cmsText(content?.title, "");
+  const subtitle = cmsText(content?.subtitle, "");
   const cta = cmsText(content?.cta, "Ver ofertas");
   const remoteImage = cmsText(content?.image_url, "");
+  const hayTexto = !!title || !!subtitle;
 
   // El arte va completo, en su proporción 2:1: con `cover` sobre un contenedor
   // más alto se recortaban los costados y se perdía el logo impreso a la
@@ -162,26 +167,31 @@ function Hero({ navigation, isWebDesktop, isWide, width, content }) {
         resizeMode="cover"
         style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, width: "100%", height: "100%" }}
       />
-      {/* Velo de marca sobre la mitad izquierda: da contraste al texto sin
-          apagar la caja de productos de la derecha. El logo impreso queda
-          debajo, y como es blanco sobre verde se sigue leyendo. */}
-      <LinearGradient
-        colors={["rgba(38,79,18,0.92)", "rgba(38,79,18,0.66)", "rgba(38,79,18,0)"]}
-        locations={[0, 0.4, 0.75]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 0 }}
-        style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}
-      />
+      {/* Velo de marca sobre la mitad izquierda: da contraste al texto SIN
+          apagar la caja de productos de la derecha. Va solo cuando el panel
+          define un título: sobre un arte que ya trae el suyo impreso, este velo
+          lo único que hace es ensuciarlo. */}
+      {hayTexto && (
+        <LinearGradient
+          colors={["rgba(38,79,18,0.92)", "rgba(38,79,18,0.66)", "rgba(38,79,18,0)"]}
+          locations={[0, 0.4, 0.75]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}
+        />
+      )}
       {/* Anclado abajo a la izquierda: el logo del arte ocupa el tercio
           superior izquierdo, así que el texto crece hacia arriba sin taparlo. */}
       <View style={{ position: "absolute", left: "6%", right: isWebDesktop ? "48%" : "30%", bottom: "8%" }}>
-        <AppText
-          numberOfLines={esMovil ? 2 : undefined}
-          style={{ color: "#fff", fontSize: t.titulo, fontWeight: "900", lineHeight: t.tituloAlto }}
-        >
-          {title}
-        </AppText>
-        {t.bajada > 0 && (
+        {!!title && (
+          <AppText
+            numberOfLines={esMovil ? 2 : undefined}
+            style={{ color: "#fff", fontSize: t.titulo, fontWeight: "900", lineHeight: t.tituloAlto }}
+          >
+            {title}
+          </AppText>
+        )}
+        {t.bajada > 0 && !!subtitle && (
           <AppText
             numberOfLines={2}
             style={{ color: "rgba(255,255,255,0.94)", fontSize: t.bajada, marginTop: t.hueco, lineHeight: t.bajadaAlto }}
@@ -456,24 +466,61 @@ function TrustBar({ isWebDesktop }) {
 }
 
 // ─── Banner "Ofertas imperdibles" ────────────────────────────────────────────────
+// Sobre el arte de diseño: fondo verde con una persona sosteniendo una caja de
+// Cibox a la derecha, y la mitad izquierda libre justamente para el texto. El
+// arte estuvo en el repo sin usarse: el bloque se dibujaba con un degradado.
 function OffersBanner({ navigation, isWebDesktop }) {
   return (
-    <LinearGradient
-      colors={GRAD}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      style={{ borderRadius: 22, overflow: "hidden", marginBottom: spacing.lg, padding: isWebDesktop ? 36 : 24 }}
+    <ImageBackground
+      source={BANNER_OFERTAS}
+      resizeMode="cover"
+      // width/height explícitos: sin ellos react-native-web le da al <img> su
+      // tamaño intrínseco y la imagen se dibuja a su medida real en vez de
+      // llenar el bloque.
+      imageStyle={{ borderRadius: 22, width: "100%", height: "100%" }}
+      style={{
+        borderRadius: 22,
+        overflow: "hidden",
+        marginBottom: spacing.lg,
+        padding: isWebDesktop ? 36 : 24,
+        // Respaldo del mismo verde del arte, por si la imagen aún no cargó.
+        backgroundColor: "#7AB73F",
+      }}
     >
-      <View pointerEvents="none" style={{ position: "absolute", right: -40, top: -40, width: 180, height: 180, borderRadius: 90, backgroundColor: "rgba(255,255,255,0.12)" }} />
       <View style={{ alignSelf: "flex-start", backgroundColor: colors.discount, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 4, marginBottom: 12 }}>
         <AppText style={{ color: "#7a4d00", fontSize: 11, fontWeight: "900", letterSpacing: 0.5 }}>🔥 OFERTA DE LA SEMANA</AppText>
       </View>
-      <AppText style={{ color: "#fff", fontSize: isWebDesktop ? 30 : 23, fontWeight: "900", lineHeight: isWebDesktop ? 34 : 27 }}>
-        Ofertas imperdibles{"\n"}¡Por tiempo limitado!
-      </AppText>
-      <AppText style={{ color: "rgba(255,255,255,0.92)", fontSize: 14, marginTop: 10, maxWidth: 520 }}>
-        Aprovecha nuestros descuentos exclusivos en productos seleccionados.
-      </AppText>
+      {/* El texto se queda en la mitad izquierda: la persona con la caja ocupa
+          el tercio derecho del arte y taparla con letras arruina la foto. */}
+      <View style={{ maxWidth: isWebDesktop ? "62%" : "78%" }}>
+        <AppText
+          style={{
+            color: "#fff",
+            fontSize: isWebDesktop ? 30 : 23,
+            fontWeight: "900",
+            lineHeight: isWebDesktop ? 34 : 27,
+            // El arte es verde claro y el texto blanco: sin sombra el titular
+            // pierde definición sobre las zonas más claras del degradado.
+            textShadowColor: "rgba(20,50,10,0.45)",
+            textShadowOffset: { width: 0, height: 1 },
+            textShadowRadius: 6,
+          }}
+        >
+          Ofertas imperdibles{"\n"}¡Por tiempo limitado!
+        </AppText>
+        <AppText
+          style={{
+            color: "#fff",
+            fontSize: 14,
+            marginTop: 10,
+            textShadowColor: "rgba(20,50,10,0.45)",
+            textShadowOffset: { width: 0, height: 1 },
+            textShadowRadius: 5,
+          }}
+        >
+          Aprovecha nuestros descuentos exclusivos en productos seleccionados.
+        </AppText>
+      </View>
       <Pressable
         onPress={() => navigation.navigate("Products", { preset: "liquidation" })}
         style={{ alignSelf: "flex-start", marginTop: 20, backgroundColor: "#fff", borderRadius: 12, paddingHorizontal: 22, paddingVertical: 12, flexDirection: "row", alignItems: "center", gap: 8 }}
@@ -481,7 +528,7 @@ function OffersBanner({ navigation, isWebDesktop }) {
         <AppText style={{ color: colors.primary, fontWeight: "900", fontSize: 14 }}>Ver los imperdibles</AppText>
         <Ionicons name="arrow-forward" size={16} color={colors.primary} />
       </Pressable>
-    </LinearGradient>
+    </ImageBackground>
   );
 }
 

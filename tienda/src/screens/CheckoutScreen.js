@@ -112,11 +112,6 @@ const PICKUP_LOCATION = {
 
 const PAYMENT_OPTIONS = [
   {
-    value: "webpay",
-    title: "Webpay",
-    desc: "Paga con tarjeta de débito, crédito o prepago a través de Webpay.",
-  },
-  {
     value: "transfer",
     title: "Transferencia bancaria",
     desc: "Al confirmar te mostramos los datos bancarios (también te llegan al correo).",
