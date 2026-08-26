@@ -64,8 +64,18 @@ export const NAV_MODS = Object.fromEntries(NAV.map((n) => [n.key, n.mod]));
 // Vistas ocultas del MENÚ sin borrarlas del código. Para restaurar una, basta
 // sacar su key de este set.
 export const HIDDEN_NAV = new Set([
-  "documentos", // SII no operativo aún
+  // Pantallas que hoy no tienen de qué alimentarse. NO están borradas: sacar la
+  // key de este set las devuelve al menú tal como estaban. Se ocultan porque un
+  // panel lleno de secciones vacías hace dudar de las que sí tienen datos.
+  "documentos",    // el SII está en modo simulado: sin certificado ni RUT cargados
   "conteo",
+  "dashboard360",  // repite lo que ya muestra el Centro de mando
+  "cobranza",      // no hay cuentas por cobrar: se paga al comprar
+  "clientes",      // no hay crédito a clientes
+  "fefo",          // ningún producto tiene fecha de vencimiento cargada
+  "lotes",         // no hay lotes: el stock entró por conteo, no por recepción
+  "reposicion",    // se alimenta de min_stock y ningún producto lo tiene definido
+  "devoluciones",  // la tienda no tiene por dónde crear una devolución todavía
 ]);
 
 // Alcance por rol: operaciones ve SOLO sus pantallas. Los roles ausentes aquí

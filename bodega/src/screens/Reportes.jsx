@@ -164,7 +164,7 @@ function InfRanking() {
   const items = (r.data?.items || []).map((it, i) => ({ pos: i + 1, ...it }));
   const cols = [
     { k: "pos", label: "#", right: true },
-    { k: "nombre", label: { producto: "Producto", cliente: "Cliente" }[by], bold: true },
+    { k: "label", label: { producto: "Producto", cliente: "Cliente" }[by], bold: true },
     { k: "total", label: "Vendido $", fmt: "clp", right: true, bold: true },
     { k: "unidades", label: "Unidades", fmt: "num", right: true },
     { k: "pedidos", label: "Pedidos", fmt: "num", right: true },
@@ -186,7 +186,8 @@ function InfRanking() {
 function InfLibroVentas() {
   const [month, setMonth] = useState(hoy().slice(0, 7));
   const r = useLoad(() => api.rLibroVentas(month), null, [month]);
-  const items = r.data?.items || [];
+  // El backend responde { meta, rows, totales } — la clave es `rows`.
+  const items = r.data?.rows || r.data?.items || [];
   const t = r.data?.totales || {};
   const cols = [
     { k: "fecha", label: "Fecha", fmt: "date" },
@@ -214,18 +215,15 @@ function InfValorizacion() {
   const d = r.data;
   const t = d?.totales || {};
   const cat = d?.por_categoria || [];
-  const sec = d?.por_sector || [];
   const colsCat = dynCols(cat);
-  const colsSec = dynCols(sec);
   const exportar = () => {
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([
       [`${brand.name} — Valorización de inventario`], ["Estimada a costo actual (precio de costo vigente)"], [],
       ["Valor a costo", t.valor_costo ?? ""], ["Valor a precio venta", t.valor_venta ?? ""],
-      ["SKUs con stock", t.skus ?? ""], ["SKUs sin costo", t.sin_costo ?? ""],
+      ["SKUs con stock", t.skus ?? ""], ["SKUs sin costo", t.skus_sin_costo ?? ""],
     ]), "Totales");
     if (cat.length) XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([colsCat.map((c) => c.label), ...cat.map((it) => colsCat.map((c) => it[c.k] ?? ""))]), "Por categoría");
-    if (sec.length) XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([colsSec.map((c) => c.label), ...sec.map((it) => colsSec.map((c) => it[c.k] ?? ""))]), "Por sector");
     XLSX.writeFile(wb, `${brand.name}-Valorizacion-${hoy()}.xlsx`);
   };
   return (
@@ -238,11 +236,10 @@ function InfValorizacion() {
         <Kpi label="Valor a costo" value={d ? mm(t.valor_costo) : "…"} />
         <Kpi label="Valor a precio venta" value={d ? mm(t.valor_venta) : "…"} />
         <Kpi label="SKUs con stock" value={d ? num(t.skus) : "…"} />
-        <Kpi label="SKUs sin costo" value={d ? num(t.sin_costo) : "…"} sub="no entran a la valorización" />
+        <Kpi label="SKUs sin costo" value={d ? num(t.skus_sin_costo) : "…"} sub="no entran a la valorización" />
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(320px,1fr))", gap: 12 }}>
         <TablaInf nombre="Por categoría" cols={colsCat} items={cat} tot={dynTot(cat, colsCat)} loading={r.loading} error={r.error} sinExcel />
-        <TablaInf nombre="Por sector" cols={colsSec} items={sec} tot={dynTot(sec, colsSec)} loading={r.loading} error={r.error} sinExcel />
       </div>
     </div>
   );
@@ -277,7 +274,8 @@ function InfKardex() {
   const [from, setFrom] = useState(dAgo(29));
   const [to, setTo] = useState(hoy());
   const r = useLoad(() => api.rKardexValorizado({ from, to, limit: 300 }), null, [from, to]);
-  const items = r.data?.items || [];
+  // El backend responde { meta, rows, totales } — la clave es `rows`.
+  const items = r.data?.rows || r.data?.items || [];
   const t = r.data?.totales || {};
   const cols = [
     { k: "fecha", label: "Fecha", fmt: "datetime" },
@@ -304,7 +302,8 @@ function InfMargen() {
   const [from, setFrom] = useState(dAgo(29));
   const [to, setTo] = useState(hoy());
   const r = useLoad(() => api.rMargen({ from, to }), null, [from, to]);
-  const items = r.data?.items || [];
+  // El backend responde { meta, rows, totales } — la clave es `rows`.
+  const items = r.data?.rows || r.data?.items || [];
   const t = r.data?.totales || {};
   const cols = [
     { k: "producto", label: "Producto", bold: true },
