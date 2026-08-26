@@ -62,10 +62,14 @@ export default function Ajustes() {
       setDone(null);
       return;
     }
-    // "ajuste" corrige el inventario (conteo, error de carga) y puede ir en
-    // cualquier dirección; "merma" es pérdida real y siempre resta.
-    const delta = tipo === "ingreso" ? Math.abs(qtyNum) : -Math.abs(qtyNum);
-    const movType = tipo === "ingreso" ? "recepcion" : tipo === "merma" ? "merma" : "ajuste";
+    // Una corrección de inventario puede ir en las dos direcciones: al contar
+    // aparecen tanto unidades de menos como de más. Antes el comentario decía
+    // eso mismo pero el código mandaba SIEMPRE en negativo, así que sumar lo que
+    // sobraba en el estante era imposible desde el panel.
+    const suma = tipo === "ingreso" || tipo === "ajuste_mas";
+    const delta = suma ? Math.abs(qtyNum) : -Math.abs(qtyNum);
+    const movType =
+      tipo === "ingreso" ? "recepcion" : tipo === "merma" ? "merma" : "ajuste";
     setBusy(true);
     setError(null);
     setDone(null);
@@ -146,7 +150,8 @@ export default function Ajustes() {
           <label>Tipo de ajuste</label>
           <select value={tipo} onChange={(e) => setTipo(e.target.value)}>
             <option value="ingreso">+ Entrada · recepción, conteo a favor</option>
-            <option value="ajuste">− Ajuste · corrección de inventario, error de carga</option>
+            <option value="ajuste_mas">+ Ajuste · sobra stock respecto del sistema</option>
+            <option value="ajuste">− Ajuste · falta stock respecto del sistema</option>
             <option value="merma">− Merma · rotura, vencimiento, robo</option>
           </select>
         </div>
