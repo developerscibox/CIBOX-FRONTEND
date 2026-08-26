@@ -68,7 +68,6 @@ export const HIDDEN_NAV = new Set([
   // key de este set las devuelve al menú tal como estaban. Se ocultan porque un
   // panel lleno de secciones vacías hace dudar de las que sí tienen datos.
   "documentos",    // el SII está en modo simulado: sin certificado ni RUT cargados
-  "dashboard360",  // repite lo que ya muestra el Centro de mando
   "cobranza",      // no hay cuentas por cobrar: se paga al comprar
   "clientes",      // no hay crédito a clientes
   "fefo",          // ningún producto tiene fecha de vencimiento cargada
