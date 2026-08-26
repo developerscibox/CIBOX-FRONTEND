@@ -76,30 +76,15 @@ export const HIDDEN_NAV = new Set([
   "devoluciones",  // la tienda no tiene por dónde crear una devolución todavía
 ]);
 
-// Alcance por rol: operaciones ve SOLO sus pantallas. Los roles ausentes aquí
-// (admin) ven todo el menú permitido.
-export const ROLE_SCOPE = {
-  operator: new Set([
-    "picking", "pedidos", "recepcion", "reposicion", "conteo", "fefo",
-    "inventario", "lotes", "ajustes", "kardex", "consulta-precios",
-  ]),
-  // Gerente/dueño: consola EJECUTIVA. Ve el negocio y supervisa; el admin
-  // (superusuario) no tiene scope → ve todo el panel.
-  manager: new Set([
-    "gerencia", "dashboard360", "reportes", "ventas", "cobranza", "clientes",
-    "pedidos", "calendario", "devoluciones",
-    "productos", "precios", "consulta-precios", "contenido", "inventario", "lotes", "kardex", "fefo",
-    "reposicion", "conteo", "ajustes", "recepcion", "usuarios",
-  ]),
-};
+// Ya no hay alcance por rol: el equipo que entra al panel es chico y todos
+// necesitan ver todo. Lo que sigue mandando es el PERMISO de cada vista
+// (`can(n.perm)`), que el backend valida igual en cada llamada — el menú nunca
+// fue la barrera de seguridad, solo la de orden.
 
-export function Sidebar({ active, onNav, pills = {}, bump = null, can = () => true, role = null, mods = null }) {
-  const scope = ROLE_SCOPE[String(role || "").toLowerCase()];
+export function Sidebar({ active, onNav, pills = {}, bump = null, can = () => true, mods = null }) {
   // `mods` = módulos comerciales contratados (GET /config/modules). null → todos.
   const modOn = (n) => !mods || !n.mod || mods.includes(n.mod);
-  const items = NAV.filter(
-    (n) => !HIDDEN_NAV.has(n.key) && can(n.perm) && (!scope || scope.has(n.key)) && modOn(n),
-  );
+  const items = NAV.filter((n) => !HIDDEN_NAV.has(n.key) && can(n.perm) && modOn(n));
 
   // Agrupar por área preservando el orden de NAV.
   const groups = [];
@@ -164,10 +149,7 @@ export function Sidebar({ active, onNav, pills = {}, bump = null, can = () => tr
   );
 }
 
-export function Topbar({
-  title, sub, user, roleLabel, initials = "CB", onLogout, onTour,
-  canSwitchView = false, viewAs = null, onViewAs, previewRoles = [],
-}) {
+export function Topbar({ title, sub, user, roleLabel, initials = "CB", onLogout }) {
   return (
     <div className="topbar">
       <div>
@@ -176,37 +158,6 @@ export function Topbar({
       </div>
       <div className="spacer" />
       <div className="user">
-        {canSwitchView ? (
-          <select
-            value={viewAs || ""}
-            onChange={(e) => onViewAs && onViewAs(e.target.value || null)}
-            title="Ver el panel como otro rol (solo previsualización; tus permisos reales no cambian)"
-            style={{
-              marginRight: 8, border: "1px solid var(--border)",
-              background: viewAs ? "var(--magenta)" : "#fff", color: viewAs ? "#fff" : "var(--magenta)",
-              borderRadius: 10, padding: "8px 10px", fontSize: 13, fontWeight: 600, cursor: "pointer",
-            }}
-          >
-            <option value="">Ver como… (mi vista)</option>
-            {previewRoles.map((r) => (
-              <option key={r.role} value={r.role}>Ver como: {r.label}</option>
-            ))}
-          </select>
-        ) : null}
-        {onTour ? (
-          <button
-            onClick={onTour}
-            title="Ver el tutorial"
-            className="tb-secondary"
-            style={{
-              marginRight: 4, border: "1px solid var(--border)", background: "#fff",
-              borderRadius: 10, padding: "8px 12px", fontSize: 13, fontWeight: 600,
-              color: "var(--magenta)", cursor: "pointer",
-            }}
-          >
-            Tutorial
-          </button>
-        ) : null}
         <div className="tb-userinfo" style={{ textAlign: "right" }}>
           <div style={{ fontWeight: 700, fontSize: 14 }}>{user?.name || "Usuario"}</div>
           <div style={{ fontSize: 12, color: "var(--muted)" }}>{roleLabel || "Operaciones"}</div>

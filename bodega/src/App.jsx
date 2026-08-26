@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Sidebar, Topbar, NAV_PERMS, NAV_MODS, NAV } from "./ui.jsx";
 import { api, useLoad, usingMock, streamUrl } from "./api.js";
-import { useAuth, HOME_BY_ROLE, PREVIEW_ROLES } from "./auth.jsx";
+import { useAuth, HOME_BY_ROLE } from "./auth.jsx";
 import Login from "./screens/Login.jsx";
 import { ORDERS_TO_PREPARE } from "./data.js";
 import Dashboard from "./screens/Dashboard.jsx";
@@ -71,7 +71,7 @@ const SCAN_OWN_VIEWS = new Set([
 const VIEW_ORDER = NAV.map((n) => n.key);
 
 export default function App() {
-  const { user, can, logout, roleLabel, initials, effectiveRole, viewAs, setViewAs, canSwitchView, previewLabel } = useAuth();
+  const { user, can, logout, roleLabel, initials } = useAuth();
   const [view, setView] = useState("dashboard");
   const [tourOpen, setTourOpen] = useState(false);
   // Aterrizaje por rol una sola vez por sesión: cada rol cae en su cola.
@@ -85,8 +85,7 @@ export default function App() {
   }, [user]);
   // "Ver como": al previsualizar un rol, aterriza en la home de ese rol.
   useEffect(() => {
-    if (viewAs) setView(HOME_BY_ROLE[viewAs] || "dashboard");
-  }, [viewAs]);
+  }, []);
   // Notificación de trabajo pendiente: pedidos por preparar = paid (recién
   // vendidos, por TOMAR) + preparing (en proceso). Auto-refresca cada 20s para
   // avisar (casi) en tiempo real cuando entra una venta nueva.
@@ -164,7 +163,7 @@ export default function App() {
 
   return (
     <div className="app">
-      <Sidebar active={view} onNav={setView} pills={{ pick: porPreparar }} bump={[prepBump && "pick"].filter(Boolean)} can={can} role={effectiveRole} mods={modsEff} />
+      <Sidebar active={view} onNav={setView} pills={{ pick: porPreparar }} bump={[prepBump && "pick"].filter(Boolean)} can={can} mods={modsEff} />
       <main className="main">
         {/* TITLES[view] va con optional chaining: si alguna pantalla navega a
             una clave que no existe, antes esto lanzaba TypeError durante el
@@ -178,24 +177,8 @@ export default function App() {
           roleLabel={roleLabel}
           initials={initials}
           onLogout={logout}
-          onTour={() => setTourOpen(true)}
-          canSwitchView={canSwitchView}
-          viewAs={viewAs}
-          onViewAs={setViewAs}
-          previewRoles={PREVIEW_ROLES}
         />
         <div className="content">
-          {viewAs ? (
-            <div className="banner-mock" style={{ background: "#e9f3da", color: "#3B7A1D", display: "flex", alignItems: "center", gap: 10 }}>
-              <span>Estás viendo el panel <b>como {previewLabel}</b> (previsualización; tus permisos reales no cambian).</span>
-              <button
-                onClick={() => setViewAs(null)}
-                style={{ border: "1px solid var(--magenta)", background: "#fff", color: "var(--magenta)", borderRadius: 8, padding: "4px 10px", fontWeight: 700, cursor: "pointer" }}
-              >
-                Volver a mi vista
-              </button>
-            </div>
-          ) : null}
           {usingMock ? (
             <div className="banner-mock">
               🟡 Modo demostración — datos de ejemplo. Configura <b>VITE_API_URL</b> para conectarlo al backend real.
