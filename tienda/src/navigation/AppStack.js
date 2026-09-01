@@ -55,6 +55,39 @@ function withWebLayout(Component) {
   };
 }
 
+function VolverHeaderButton() {
+  const navigation = useNavigation();
+
+  // React Navigation solo dibuja la flecha de volver cuando hay una pantalla
+  // debajo en la pila. Al entrar por un enlace directo —que es como llega
+  // cualquiera desde WhatsApp o un buscador— el catálogo es la PRIMERA pantalla:
+  // no hay flecha, y como estas vistas viven fuera del navegador de pestañas
+  // tampoco hay barra inferior. El cliente quedaba encerrado, sin más salida que
+  // el botón atrás del navegador, que lo saca del sitio.
+  // Se dibujan las dos salidas desde aquí porque definir `headerLeft` desactiva
+  // la flecha que el navegador pone solo: si esta función devolviera null en el
+  // caso normal, la pantalla se quedaría sin ninguna.
+  const puedeVolver = navigation.canGoBack();
+
+  return (
+    <Pressable
+      onPress={() => (puedeVolver ? navigation.goBack() : navigation.navigate("MainTabs"))}
+      accessibilityRole="button"
+      accessibilityLabel={puedeVolver ? "Volver" : "Ir al inicio"}
+      style={{
+        width: 38,
+        height: 38,
+        borderRadius: 19,
+        justifyContent: "center",
+        alignItems: "center",
+        marginLeft: 4,
+      }}
+    >
+      <Ionicons name={puedeVolver ? "chevron-back" : "home-outline"} size={24} color={colors.text} />
+    </Pressable>
+  );
+}
+
 function CartHeaderButton() {
   const navigation = useNavigation();
   const { cartCount } = useCartStore();
@@ -113,6 +146,7 @@ export default function AppStack() {
         headerShadowVisible: false,
         headerTitleStyle: { fontWeight: "800" },
         headerRight: () => (!isWebDesktop ? <CartHeaderButton /> : null),
+        headerLeft: () => (!isWebDesktop ? <VolverHeaderButton /> : undefined),
       }}
     >
       {isWebDesktop ? (
