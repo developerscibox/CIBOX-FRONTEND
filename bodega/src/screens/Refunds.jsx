@@ -81,7 +81,7 @@ export default function Refunds() {
       <div className="card" style={{ marginBottom: 0 }}>
         <div className="card-h">
           <h2>Devoluciones</h2>
-          <span className="badge" style={{ background: "#e9f3da", color: "#6B8F4E" }}>{res.loading ? "…" : `${items.length}`}</span>
+          <span className="badge" style={{ background: "#E6F0F5", color: "#006996" }}>{res.loading ? "…" : `${items.length}`}</span>
         </div>
         <table>
           <thead>

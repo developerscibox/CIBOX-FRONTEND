@@ -292,7 +292,7 @@ export default function Pedidos() {
         <div className="card" style={{ marginBottom: 0 }}>
           <div className="card-h">
             <h2>Pedidos</h2>
-            <span className="badge" style={{ background: "#e9f3da", color: "var(--magenta-d)" }}>
+            <span className="badge" style={{ background: "#E6F0F5", color: "var(--magenta-d)" }}>
               {ord.loading ? "…" : `${total} pedidos`}
             </span>
           </div>
@@ -555,7 +555,7 @@ function OrderDetail({ order, busy, can, onClose, onChange, onPay, onDelete, onA
                         <span
                           key={b.batch_id || j}
                           title="Lote consumido (trazabilidad)"
-                          style={{ fontSize: 11.5, fontWeight: 600, color: "var(--magenta-d)", background: "#e9f3da", borderRadius: 999, padding: "2px 8px" }}
+                          style={{ fontSize: 11.5, fontWeight: 600, color: "var(--magenta-d)", background: "#E6F0F5", borderRadius: 999, padding: "2px 8px" }}
                         >
                           Lote {b.lot_code || "s/código"} · {b.qty} u
                         </span>

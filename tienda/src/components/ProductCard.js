@@ -4,7 +4,10 @@ import { Ionicons } from "@expo/vector-icons";
 import { colors, radius, shadows, spacing } from "../constants/theme";
 import AppText from "./AppText";
 import UnitPrice from "./UnitPrice";
-import { getProductImage, productEmoji, productTint } from "../utils/productImage";
+// productTint ya no se usa: teñía el fondo del placeholder según la categoría y
+// era la causa de que en una misma fila unas tarjetas se vieran verdosas y otras
+// azuladas. Todas comparten ahora el mismo gris muy suave (colors.background).
+import { getProductImage, productEmoji } from "../utils/productImage";
 import useAuthStore from "../store/authStore";
 import { addFavorite, removeFavorite } from "../services/favoriteService";
 import { addItemToPantry } from "../services/pantryService";
@@ -133,13 +136,46 @@ export default function ProductCard({
   const priceSize = mini ? 15 : compact ? 18 : 20;
   const cardPadding = mini ? spacing.sm : spacing.md;
 
+  // ── Alturas reservadas ──────────────────────────────────────────────────────
+  // Todas las tarjetas de una fila deben medir lo mismo y el botón "Agregar"
+  // quedar siempre a la misma altura. Antes cada zona crecía según el contenido
+  // (badge sí / badge no, nombre de una o dos líneas) y las filas quedaban en
+  // escalera. Ahora las zonas de arriba tienen altura FIJA y el sobrante se lo
+  // come el espaciador que hay antes del pie.
+  const badgeRowHeight = mini ? 22 : 30; // se reserva exista badge o no
+  const titleLineHeight = mini ? 18 : 22;
+  const titleBlockHeight = titleLineHeight * 2; // siempre dos líneas de nombre
+  // Franja del precio anterior. Se reserva SIEMPRE, tenga descuento o no: si
+  // solo apareciera en las rebajadas, las tarjetas de una misma fila volverían
+  // a quedar en escalera, que es justo lo que arregla el bloque de arriba.
+  const comparePriceHeight = mini ? 16 : 19;
+
+  // Precio anterior (punto 08 del manual: "precio actual y precio anterior").
+  // El dato es por unidad; para el precio de caja hay que multiplicarlo por las
+  // unidades que trae, o el tachado quedaría comparando caja contra unidad.
+  const precioVigente = esVolumen ? unitPrice : boxTotal;
+  const comparaUnidad = Number(product?.compare_price || 0);
+  const comparaTotal = esVolumen ? comparaUnidad : comparaUnidad * (boxQty || 1);
+  const hayDescuento =
+    comparaUnidad > 0 && precioVigente > 0 && comparaTotal > precioVigente;
+  const descuentoPct = hayDescuento
+    ? Math.round((1 - precioVigente / comparaTotal) * 100)
+    : 0;
+
   const chipStyle = (backgroundColor) => ({
     backgroundColor,
     paddingHorizontal: mini ? 6 : 10,
-    paddingVertical: mini ? 3 : 6,
+    paddingVertical: mini ? 3 : 5,
     borderRadius: 999,
     marginRight: 6,
-    marginBottom: 6,
+    // sin marginBottom: la fila de badges ya no envuelve, tiene altura fija
+    //
+    // flexShrink deja que los badges se APRIETEN si no caben los dos. En la
+    // grilla de 6 columnas la tarjeta mide ~200px y "Venta por caja" + "Cibox+"
+    // se pasan del ancho; como la fila no envuelve y recorta, el segundo badge
+    // aparecía cortado por la mitad. Encogiendo, el texto se corta con puntos
+    // suspensivos (numberOfLines={1}) y el badge se sigue viendo entero.
+    flexShrink: 1,
   });
 
   return (
@@ -148,25 +184,39 @@ export default function ProductCard({
         // overflow:hidden FUERZA a Chrome a re-pintar el fondo blanco en TODA la
         // caja (capa de composición propia). Sin esto, con el flex anidado del
         // carrusel el fondo se pintaba corto y "Ver detalle/Guardar" quedaba sobre
-        // el rosado, aunque la caja sí incluyera el footer. Alto por contenido.
+        // el rosado, aunque la caja sí incluyera el footer.
         width: "100%",
         overflow: "hidden",
+        // flexGrow con base automática: la tarjeta parte midiendo su contenido
+        // (así la fila calcula bien su alto) y luego se estira hasta el alto de
+        // la fila. NO se usa `flex: 1` porque eso pone flexBasis en 0 y, dentro
+        // de un contenedor de alto automático, Yoga colapsa la tarjeta a cero.
+        flexGrow: 1,
+        flexBasis: "auto",
+        // Colores base idénticos en TODAS las tarjetas: blanco, borde de marca,
+        // radio 12 y la misma sombra (Manual de Diseño Digital, punto de tarjetas).
         backgroundColor: colors.surface,
         borderWidth: 1,
-        borderColor: "#ececec",
-        borderRadius: radius.xl,
+        borderColor: colors.border,
+        borderRadius: 12,
         padding: cardPadding,
         ...shadows.card,
       }}
     >
-      <Pressable onPress={onPress}>
-        {/* Imagen */}
+      {/* El bloque pinchable crece con la tarjeta: así el hueco que queda cuando
+          esta tarjeta tiene menos texto que su vecina sigue abriendo el detalle
+          y no se convierte en una zona muerta. */}
+      <Pressable onPress={onPress} style={{ flexGrow: 1 }}>
+        {/* Imagen — alto FIJO por modo, con imagen o sin ella */}
         <View
           style={{
             width: "100%",
             height: imageHeight,
             borderRadius: radius.lg,
-            backgroundColor: imageUrl ? "#f7f7f7" : productTint(product),
+            // Mismo gris muy suave para todos los productos: haya foto o no, el
+            // recuadro se ve igual. El tinte por categoría era lo que pintaba
+            // unas tarjetas verdosas y otras azuladas dentro de la misma fila.
+            backgroundColor: colors.background,
             overflow: "hidden",
             alignItems: "center",
             justifyContent: "center",
@@ -193,12 +243,14 @@ export default function ProductCard({
               </AppText>
               <AppText
                 numberOfLines={2}
+                weight="semiBold"
                 style={{
-                  color: colors.text,
+                  // Antes era colors.text al 70% de opacidad; el gris medio de
+                  // marca da el mismo peso visual y un contraste medible
+                  // (5,42:1 sobre el gris del recuadro).
+                  color: colors.muted,
                   fontSize: mini ? 11 : 13,
-                  fontWeight: "800",
                   textAlign: "center",
-                  opacity: 0.7,
                 }}
               >
                 {product?.name || product?.category?.name || brand.name}
@@ -231,27 +283,35 @@ export default function ProductCard({
           </Pressable>
         </View>
 
-        {/* Chips — ocultos en mini para ahorrar espacio */}
+        {/* Zona de badges — se dibuja SIEMPRE, tenga o no badges el producto.
+            Es la clave para que la tarjeta con promoción y la que no la tiene
+            midan igual. La fila no envuelve (los badges son cortos) para que su
+            altura no dependa de cuántos haya. */}
         {!mini && (
           <View
             style={{
               flexDirection: "row",
-              flexWrap: "wrap",
-              alignItems: "flex-start",
-              minHeight: 34,
+              flexWrap: "nowrap",
+              alignItems: "center",
+              height: badgeRowHeight,
+              overflow: "hidden",
               marginBottom: 8,
             }}
           >
             {hasPackTier ? (
-              <View style={chipStyle(colors.primary)}>
-                <AppText style={{ color: "#fff", fontSize: 11, fontWeight: "800" }}>
+              // Lima = color de ACCIÓN de la marca, con texto oscuro encima
+              // (sobre lima el blanco rinde 1,9:1 y no pasa AA).
+              <View style={chipStyle(colors.accent)}>
+                <AppText numberOfLines={1} weight="bold" style={{ color: colors.accentText, fontSize: 11 }}>
                   {esPackCerrado ? "Venta por caja" : `Ahorra desde ${boxQty}`}
                 </AppText>
               </View>
             ) : null}
             {ciboxPlusEnabled ? (
-              <View style={chipStyle("#6d28d9")}>
-                <AppText style={{ color: "#fff", fontSize: 11, fontWeight: "800" }}>
+              // Cibox+ va en azul de marca y no en lima: dos badges lima pegados
+              // se leerían como uno solo, y el azul es la base de la identidad.
+              <View style={chipStyle(colors.primary)}>
+                <AppText numberOfLines={1} weight="bold" style={{ color: colors.primaryText, fontSize: 11 }}>
                   Cibox+
                 </AppText>
               </View>
@@ -259,19 +319,28 @@ export default function ProductCard({
           </View>
         )}
 
-        {/* Chips mini — solo íconos */}
-        {mini && (hasPackTier || ciboxPlusEnabled) && (
-          <View style={{ flexDirection: "row", marginBottom: 6, gap: 4 }}>
+        {/* Chips mini — misma reserva de altura, textos abreviados */}
+        {mini && (
+          <View
+            style={{
+              flexDirection: "row",
+              flexWrap: "nowrap",
+              alignItems: "center",
+              height: badgeRowHeight,
+              overflow: "hidden",
+              marginBottom: 6,
+            }}
+          >
             {hasPackTier && (
-              <View style={chipStyle(colors.primary)}>
-                <AppText style={{ color: "#fff", fontSize: 10, fontWeight: "800" }}>
+              <View style={chipStyle(colors.accent)}>
+                <AppText numberOfLines={1} weight="bold" style={{ color: colors.accentText, fontSize: 10 }}>
                   {esPackCerrado ? "Por caja" : `${boxQty}+`}
                 </AppText>
               </View>
             )}
             {ciboxPlusEnabled && (
-              <View style={chipStyle("#6d28d9")}>
-                <AppText style={{ color: "#fff", fontSize: 10, fontWeight: "800" }}>
+              <View style={chipStyle(colors.primary)}>
+                <AppText numberOfLines={1} weight="bold" style={{ color: colors.primaryText, fontSize: 10 }}>
                   Cibox+
                 </AppText>
               </View>
@@ -279,15 +348,16 @@ export default function ProductCard({
           </View>
         )}
 
-        {/* Nombre */}
-        <View style={{ marginBottom: 6 }}>
+        {/* Nombre — alto reservado para DOS líneas siempre, aunque el nombre
+            ocupe una. Si no, la tarjeta de nombre corto subía todo lo de abajo. */}
+        <View style={{ height: titleBlockHeight, marginBottom: 6 }}>
           <AppText
             numberOfLines={2}
+            weight="bold"
             style={{
               fontSize: titleSize,
-              fontWeight: "800",
               color: colors.text,
-              lineHeight: mini ? 18 : 22,
+              lineHeight: titleLineHeight,
             }}
           >
             {product?.name || "Producto"}
@@ -296,6 +366,32 @@ export default function ProductCard({
 
         {/* Precio por caja */}
         <View style={{ marginBottom: 4 }}>
+          {/* Precio anterior tachado + cuánto se rebaja. La franja existe
+              siempre para que todas las tarjetas midan igual; cuando no hay
+              descuento se queda vacía. */}
+          <View style={{ height: comparePriceHeight, flexDirection: "row", alignItems: "center", gap: 6 }}>
+            {hayDescuento && (
+              <>
+                <AppText
+                  numberOfLines={1}
+                  style={{
+                    fontSize: mini ? 11 : 13,
+                    color: colors.muted,
+                    textDecorationLine: "line-through",
+                  }}
+                >
+                  {formatPrice(comparaTotal)}
+                </AppText>
+                {/* El descuento es lo que hay que mirar: lima de acento con
+                    texto oscuro encima, el mismo patrón que la ficha. */}
+                <View style={chipStyle(colors.accent)}>
+                  <AppText weight="bold" style={{ color: colors.accentText, fontSize: mini ? 10 : 11 }}>
+                    -{descuentoPct}%
+                  </AppText>
+                </View>
+              </>
+            )}
+          </View>
           <View
             style={{
               flexDirection: "row",
@@ -305,15 +401,18 @@ export default function ProductCard({
             }}
           >
             <AppText
-              style={{ fontSize: priceSize, fontWeight: "900", color: colors.text }}
+              weight="bold"
+              style={{ fontSize: priceSize, color: colors.text }}
             >
               {formatPrice(esVolumen ? unitPrice : boxTotal)}
             </AppText>
             <AppText
+              weight="semiBold"
               style={{
+                // El sufijo iba en lima sobre blanco: 1,68:1, ilegible. El lima
+                // es color de RELLENO (botón, badge), no de texto sobre blanco.
                 fontSize: mini ? 11 : 13,
-                color: colors.accent,
-                fontWeight: "800",
+                color: colors.muted,
               }}
             >
               {esPackCerrado ? "/ caja" : "/ un"}
@@ -332,10 +431,10 @@ export default function ProductCard({
 
           {boxSavingsPct >= 3 && (
             <AppText
+              weight="semiBold"
               style={{
                 fontSize: mini ? 10 : 12,
                 color: colors.success,
-                fontWeight: "800",
                 marginTop: 2,
               }}
             >
@@ -358,7 +457,11 @@ export default function ProductCard({
         {!mini && (
           <View style={{ marginBottom: 14 }}>
             {hasReviews ? (
-              <AppText style={{ color: colors.muted, fontSize: 12, fontWeight: "600" }}>
+              /* Aquí quedaba un fontWeight "600" suelto sobre la familia
+                 regular: solo está cargada Inter_400Regular, así que el
+                 navegador la engordaba él mismo (negrita sintética, de bordes
+                 sucios). Pasa al prop de AppText como el resto del archivo. */
+              <AppText weight="semiBold" style={{ color: colors.muted, fontSize: 12 }}>
                 {averageRating.toFixed(1)} · {reviewsCount} reseñas
               </AppText>
             ) : (
@@ -370,14 +473,23 @@ export default function ProductCard({
         )}
       </Pressable>
 
+      {/* Espaciador: se come la diferencia de alto entre una tarjeta y otra
+          (nombre corto, sin PPUM, sin ahorro...) y deja el pie pegado abajo.
+          Sin él, el botón "Agregar" quedaba a distinta altura en cada tarjeta y
+          la fila se veía en escalera. */}
+      <View style={{ flexGrow: 1, minHeight: mini ? 4 : 6 }} />
+
       {/* Botones — fondo blanco PROPIO que sangra a los bordes de la card. Así,
           aunque el fondo del root se pintara corto en el carrusel, este bloque
           (stepper + agregar caja + Ver detalle/Guardar) SIEMPRE queda sobre
-          blanco. El overflow:hidden + radius del root le redondea las esquinas. */}
+          blanco. El overflow:hidden + radius del root le redondea las esquinas.
+          Va al final del eje, después del espaciador: el botón "Agregar" queda
+          SIEMPRE a la misma distancia del borde inferior en todas las tarjetas.
+          El selector de cajas, cuando existe, crece hacia arriba y no lo mueve. */}
       <View
         style={{
           borderTopWidth: 1,
-          borderTopColor: "#eeeeee",
+          borderTopColor: colors.border,
           paddingTop: mini ? 8 : 12,
           gap: mini ? 6 : 10,
           backgroundColor: colors.surface,
@@ -406,20 +518,20 @@ export default function ProductCard({
                 height: 34,
                 borderRadius: 17,
                 borderWidth: 1,
-                borderColor: "#e0e0e0",
+                borderColor: colors.border,
                 alignItems: "center",
                 justifyContent: "center",
                 backgroundColor: colors.surface,
               }}
             >
-              <AppText style={{ fontSize: 20, fontWeight: "800", color: colors.text }}>
+              <AppText weight="bold" style={{ fontSize: 20, color: colors.text }}>
                 −
               </AppText>
             </Pressable>
             <AppText
+              weight="bold"
               style={{
                 fontSize: 16,
-                fontWeight: "900",
                 color: colors.text,
                 minWidth: 24,
                 textAlign: "center",
@@ -435,13 +547,13 @@ export default function ProductCard({
                 height: 34,
                 borderRadius: 17,
                 borderWidth: 1,
-                borderColor: "#e0e0e0",
+                borderColor: colors.border,
                 alignItems: "center",
                 justifyContent: "center",
                 backgroundColor: colors.surface,
               }}
             >
-              <AppText style={{ fontSize: 20, fontWeight: "800", color: colors.text }}>
+              <AppText weight="bold" style={{ fontSize: 20, color: colors.text }}>
                 +
               </AppText>
             </Pressable>
@@ -469,15 +581,22 @@ export default function ProductCard({
           }}
           disabled={adding}
           style={{
-            backgroundColor: colors.primary,
+            // Botón principal = lima, el color de ACCIÓN de la marca, con texto
+            // oscuro encima (accentText). Mientras agrega NO se baja la opacidad:
+            // al 70% el par texto/fondo caía a 4,29:1 y dejaba de cumplir AA; se
+            // cambia al lima claro (accentLight), que es el tono de resalte del
+            // manual y mantiene 11,7:1.
+            backgroundColor: adding ? colors.accentLight : colors.accent,
             height: mini ? 34 : 42,
             borderRadius: 12,
             alignItems: "center",
             justifyContent: "center",
-            opacity: adding ? 0.7 : 1,
           }}
         >
-          <AppText style={{ color: "#fff", fontSize: mini ? 12 : 14, fontWeight: "700" }}>
+          <AppText
+            weight="bold"
+            style={{ color: colors.accentText, fontSize: mini ? 12 : 14 }}
+          >
             {adding
               ? "Agregando..."
               : cajas > 1
@@ -505,11 +624,20 @@ export default function ProductCard({
                 flexDirection: "row",
                 alignItems: "center",
                 gap: 5,
-                opacity: savingPantry ? 0.6 : 1,
               }}
             >
-              <Ionicons name="bookmark-outline" size={16} color={colors.primary} />
-              <AppText style={{ color: colors.primary, fontSize: 13, fontWeight: "800" }}>
+              {/* Mientras guarda se cambia el COLOR en vez de bajar la opacidad:
+                  el azul al 60% sobre blanco caía a 3,48:1 y no cumplía AA; el
+                  gris medio de marca marca igual el estado y rinde 5,87:1. */}
+              <Ionicons
+                name="bookmark-outline"
+                size={16}
+                color={savingPantry ? colors.muted : colors.primary}
+              />
+              <AppText
+                weight="semiBold"
+                style={{ color: savingPantry ? colors.muted : colors.primary, fontSize: 13 }}
+              >
                 {savingPantry ? "Guardando..." : "Guardar en despensa"}
               </AppText>
             </Pressable>

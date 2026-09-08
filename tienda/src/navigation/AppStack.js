@@ -8,7 +8,7 @@ import AuthStack from "./AuthStack";
 import WebLayout from "../layout/WebLayout";
 import useAuthStore from "../store/authStore";
 import useCartStore from "../store/cartStore";
-import { colors } from "../constants/theme";
+import { colors, typography } from "../constants/theme";
 import AppText from "../components/AppText";
 
 import HomeScreen from "../screens/HomeScreen";
@@ -144,7 +144,8 @@ export default function AppStack() {
     <Stack.Navigator
       screenOptions={{
         headerShadowVisible: false,
-        headerTitleStyle: { fontWeight: "800" },
+        // Cap. 04: Montserrat Bold en los titulos de cabecera.
+        headerTitleStyle: { fontFamily: typography.bold },
         headerRight: () => (!isWebDesktop ? <CartHeaderButton /> : null),
         headerLeft: () => (!isWebDesktop ? <VolverHeaderButton /> : undefined),
       }}

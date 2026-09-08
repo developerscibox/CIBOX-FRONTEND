@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
-import { Animated, View } from "react-native";
-import { colors, radius } from "../constants/theme";
+import { Animated, View, useWindowDimensions } from "react-native";
+import { colors, radius, spacing } from "../constants/theme";
 
 /**
  * Bloque base animado con efecto shimmer (pulso de opacidad).
@@ -38,28 +38,42 @@ function SkeletonBlock({ width = "100%", height = 16, borderRadius = radius.sm, 
 /**
  * Skeleton de una tarjeta de producto (cuadrada con título y precio).
  */
-export function ProductCardSkeleton({ compact = false }) {
-  const imgH = compact ? 130 : 180;
+export function ProductCardSkeleton({ compact = false, mini = false }) {
+  // Las medidas son LAS MISMAS que las de ProductCard: mismo padding, mismo
+  // radio de 12, misma altura de imagen y las mismas franjas reservadas para
+  // badge y nombre. Si el esqueleto no calza con la tarjeta que lo reemplaza,
+  // al terminar de cargar el catálogo entero da un salto de forma.
+  const imgH = mini ? 120 : compact ? 180 : 220;
+  const cardPadding = mini ? spacing.sm : spacing.md;
+  const badgeRowHeight = mini ? 22 : 30;
+  const titleBlockHeight = (mini ? 18 : 22) * 2;
+
   return (
     <View style={{
       backgroundColor: colors.surface,
-      borderRadius: radius.lg,
+      borderRadius: 12,
       borderWidth: 1,
       borderColor: colors.border,
-      overflow: "hidden",
+      padding: cardPadding,
       flex: 1,
     }}>
       {/* Imagen */}
-      <SkeletonBlock height={imgH} borderRadius={0} />
-      <View style={{ padding: 12, gap: 8 }}>
-        {/* Nombre */}
-        <SkeletonBlock height={13} width="80%" />
-        <SkeletonBlock height={11} width="55%" />
-        {/* Precio */}
-        <SkeletonBlock height={18} width="40%" style={{ marginTop: 4 }} />
-        {/* Botón */}
-        <SkeletonBlock height={36} borderRadius={radius.md} style={{ marginTop: 4 }} />
+      <SkeletonBlock height={imgH} borderRadius={radius.lg} />
+      {/* Franja de badges: se reserva siempre, haya badge o no */}
+      <View style={{ height: badgeRowHeight, justifyContent: "center", marginTop: 8 }}>
+        <SkeletonBlock height={mini ? 16 : 20} width="45%" borderRadius={999} />
       </View>
+      {/* Nombre: siempre dos líneas */}
+      <View style={{ height: titleBlockHeight, justifyContent: "space-between", marginBottom: 6 }}>
+        <SkeletonBlock height={mini ? 11 : 13} width="92%" />
+        <SkeletonBlock height={mini ? 11 : 13} width="64%" />
+      </View>
+      {/* Precio */}
+      <SkeletonBlock height={mini ? 16 : 20} width="45%" />
+      {/* El hueco elástico, igual que en la tarjeta, empuja el botón abajo */}
+      <View style={{ flexGrow: 1, minHeight: mini ? 4 : 6 }} />
+      {/* Botón */}
+      <SkeletonBlock height={mini ? 34 : 42} borderRadius={12} style={{ marginTop: 8 }} />
     </View>
   );
 }
@@ -91,11 +105,19 @@ export function ProductsGridSkeleton({ columns = 2, count = 6 }) {
  * Skeleton para una fila horizontal de productos (HomeScreen).
  */
 export function ProductRowSkeleton({ count = 4 }) {
+  // Mismo corte y mismos anchos que ProductRowSection (160 en móvil, 260 desde
+  // 800px), y el mismo par compact/mini que le pasa a cada ProductCard. Con el
+  // ancho fijo de 160 de antes, en escritorio el esqueleto salía a dos tercios
+  // de la tarjeta y la fila se reacomodaba entera al cargar.
+  const { width } = useWindowDimensions();
+  const isSmallScreen = width < 800;
+  const cardWidth = isSmallScreen ? 160 : 260;
+
   return (
     <View style={{ flexDirection: "row", gap: 12, paddingHorizontal: 16, paddingBottom: 8 }}>
       {Array.from({ length: count }).map((_, i) => (
-        <View key={i} style={{ width: 160 }}>
-          <ProductCardSkeleton />
+        <View key={i} style={{ width: cardWidth }}>
+          <ProductCardSkeleton compact={!isSmallScreen} mini={isSmallScreen} />
         </View>
       ))}
     </View>

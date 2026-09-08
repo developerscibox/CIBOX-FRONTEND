@@ -22,7 +22,7 @@ const DOC_STATUS = {
   rejected: { label: "Rechazado", bg: "#fee2e2", text: "#b91c1c", color: "#dc2626" },
   voided: { label: "Anulado", bg: "#f3f4f6", text: "#374151", color: "#6b7280" },
 };
-const TYPE_COLOR = { boleta: "#4E9B27", factura: "#2E6116", nota_credito: "#C3E062" };
+const TYPE_COLOR = { boleta: "#004568", factura: "#003D49", nota_credito: "#B6D900" };
 const TYPE_LABEL = { boleta: "Boleta", factura: "Factura", nota_credito: "Nota de crédito" };
 const typeLabel = (ty) => TYPE_LABEL[ty] || ty;
 
@@ -46,7 +46,7 @@ function Donut({ segments, size = 132, stroke = 20, centerTop, centerBottom }) {
   return (
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
       <g transform={`rotate(-90 ${size / 2} ${size / 2})`}>
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#eef4e7" strokeWidth={stroke} />
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#EEF1F4" strokeWidth={stroke} />
         {segments.map((s, i) => {
           const v = Number(s.value) || 0;
           const len = (v / total) * c;
@@ -91,7 +91,7 @@ function HBars({ items }) {
               <span style={{ fontWeight: 600, color: t.text }}>{it.label}</span>
               <span style={{ color: t.muted, fontWeight: 600 }}>{it.display ?? v}</span>
             </div>
-            <div style={{ height: 10, background: "#eef4e7", borderRadius: 6, overflow: "hidden" }}>
+            <div style={{ height: 10, background: "#EEF1F4", borderRadius: 6, overflow: "hidden" }}>
               <div style={{ height: "100%", width: `${(v / max) * 100}%`, background: it.color || t.magenta, borderRadius: 6, minWidth: v > 0 ? 4 : 0 }} />
             </div>
           </div>
@@ -168,13 +168,13 @@ export default function Documentos() {
     const html = `<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Documentos SII · ${brand.name}</title>
     <style>
       *{box-sizing:border-box} body{font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#2a1022;margin:0;padding:28px}
-      .hd{display:flex;align-items:center;gap:14px;border-bottom:3px solid #4E9B27;padding-bottom:14px;margin-bottom:18px}
+      .hd{display:flex;align-items:center;gap:14px;border-bottom:3px solid #004568;padding-bottom:14px;margin-bottom:18px}
       .hd img{height:42px} .hd h1{font-size:20px;margin:0} .hd .sub{color:#8a6e80;font-size:12px;margin-top:2px}
       .kpis{display:flex;gap:14px;margin-bottom:18px;flex-wrap:wrap}
       .kpi{border:1px solid #ecdbe6;border-radius:12px;padding:12px 16px;flex:1;min-width:140px}
       .kpi .v{font-size:20px;font-weight:800} .kpi .l{font-size:11px;color:#8a6e80;margin-top:2px}
       table{width:100%;border-collapse:collapse;font-size:12.5px} th,td{text-align:left;padding:8px 10px;border-bottom:1px solid #ecdbe6}
-      th{background:#f2f7ec;color:#2E6116;font-size:11px;text-transform:uppercase;letter-spacing:.5px}
+      th{background:#f2f7ec;color:#003D49;font-size:11px;text-transform:uppercase;letter-spacing:.5px}
       td.r,th.r{text-align:right} td.b{font-weight:700}
       .ft{margin-top:20px;color:#8a6e80;font-size:11px;text-align:center}
       @media print{body{padding:0}}
@@ -204,7 +204,7 @@ export default function Documentos() {
 
       {/* ── Dashboard ─────────────────────────────────────────────────────── */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 14, marginBottom: 16 }}>
-        <Kpi ic="🧾" bg="#e9f3da" value={res.loading ? "…" : agg.totals.count.toLocaleString("es-CL")} label="Documentos emitidos" />
+        <Kpi ic="🧾" bg="#E6F0F5" value={res.loading ? "…" : agg.totals.count.toLocaleString("es-CL")} label="Documentos emitidos" />
         <Kpi ic="💰" bg="#fde7f1" value={res.loading ? "…" : clp(agg.totals.total)} label="Total facturado" />
         <Kpi ic="📊" bg="#ede9fe" value={res.loading ? "…" : clp(agg.totals.neto)} label="Neto" />
         <Kpi ic="🏛️" bg="#dbeafe" value={res.loading ? "…" : clp(agg.totals.iva)} label="IVA" />
@@ -255,7 +255,7 @@ export default function Documentos() {
       <div className="card" style={{ marginBottom: 0 }}>
         <div className="card-h">
           <h2>Documentos tributarios</h2>
-          <span className="badge" style={{ background: "#e9f3da", color: "#6B8F4E" }}>{res.loading ? "…" : `${items.length}`}</span>
+          <span className="badge" style={{ background: "#E6F0F5", color: "#006996" }}>{res.loading ? "…" : `${items.length}`}</span>
         </div>
         <table>
           <thead>

@@ -345,14 +345,14 @@ export default function ProductsScreen({ navigation, route }) {
 
   if (loading && !products.length) {
     return (
-      <ScreenContainer maxWidth={1320} padded={false}>
+      <ScreenContainer maxWidth={1200} padded={false}>
         <ProductsGridSkeleton columns={numColumns} count={numColumns * 3} />
       </ScreenContainer>
     );
   }
 
   return (
-    <ScreenContainer maxWidth={1320} padded={false}>
+    <ScreenContainer maxWidth={1200} padded={false}>
       <FlatList
         key={numColumns}
         data={products}

@@ -1,8 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
   Image,
+  Modal,
+  PanResponder,
   Platform,
   Pressable,
   ScrollView,
@@ -41,6 +43,25 @@ import { boxTierOf } from "../utils/boxPricing";
 import AppText from "../components/AppText";
 import UnitPrice from "../components/UnitPrice";
 
+// ── Visor de imágenes ────────────────────────────────────────────────────────
+// Las fotos de envase traen el gramaje y los ingredientes en letra chica: al
+// tamaño de la ficha no se leen. Por eso la foto se puede abrir a pantalla
+// completa y ampliar.
+const ZOOM_MAX = 3; // 3x alcanza para leer una etiqueta de 100 g
+const ZOOM_STEP = 0.5;
+
+// Alto del bloque de controles de abajo, que es el más alto de los dos: margen
+// 16 + píldora de escala 50 + hueco 10 + pista 28 + margen 16 = 120. Como la
+// foto va centrada hay que reservar lo mismo arriba y abajo, así que el
+// escenario cede 2 × este valor.
+const ZOOM_CHROME = 120;
+
+// Fondo del visor: el navy de marca (#003D49) casi opaco. Oscuro para que mande
+// la foto, pero de la familia azul y no un negro genérico.
+const ZOOM_BACKDROP = "rgba(0, 61, 73, 0.96)";
+
+const absoluteFill = { position: "absolute", top: 0, right: 0, bottom: 0, left: 0 };
+
 export default function ProductDetailScreen({ route, navigation }) {
   const { productId } = route.params;
   const { token } = useAuthStore();
@@ -72,6 +93,16 @@ export default function ProductDetailScreen({ route, navigation }) {
   const [selectedQuantity, setSelectedQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(null);
 
+  // Visor a pantalla completa: guardamos desde qué foto se abrió para que el
+  // visor arranque en la que el cliente tocó, no siempre en la primera.
+  const [zoomVisible, setZoomVisible] = useState(false);
+  const [zoomIndex, setZoomIndex] = useState(0);
+
+  const openZoom = (index) => {
+    setZoomIndex(Math.max(0, index || 0));
+    setZoomVisible(true);
+  };
+
   const { loadCartSummary } = useCartStore();
 
   const cardStyle = {
@@ -84,7 +115,8 @@ export default function ProductDetailScreen({ route, navigation }) {
 
   const inputStyle = {
     borderWidth: 1,
-    borderColor: "#dcdcdc",
+    // El gris suelto se reemplaza por el borde de la paleta.
+    borderColor: colors.border,
     borderRadius: radius.md,
     padding: 12,
     backgroundColor: colors.surface,
@@ -471,6 +503,36 @@ export default function ProductDetailScreen({ route, navigation }) {
     </View>
   );
 
+  // Pista de "se puede ampliar": sin ella nadie adivina que la foto es tocable.
+  // Chip lima porque es una acción, con texto oscuro encima (el blanco sobre
+  // lima rinde 1,9:1).
+  const renderZoomHint = (label) => (
+    <View
+      pointerEvents="none"
+      style={{
+        position: "absolute",
+        right: spacing.sm,
+        bottom: spacing.sm,
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 6,
+        backgroundColor: colors.accent,
+        borderRadius: 999,
+        paddingHorizontal: label ? 12 : 8,
+        paddingVertical: 8,
+      }}
+    >
+      <Ionicons name="search" size={16} color={colors.accentText} />
+      {label ? (
+        <AppText
+          style={{ fontSize: 13, fontWeight: "800", color: colors.accentText }}
+        >
+          {label}
+        </AppText>
+      ) : null}
+    </View>
+  );
+
   if (loading) {
     return (
       <ScreenContainer maxWidth={1200}>
@@ -523,7 +585,8 @@ export default function ProductDetailScreen({ route, navigation }) {
           style={{
             fontSize: 22,
             fontWeight: "800",
-            color: colors.text,
+            // Titulares en azul Cibox (manual, punto 03).
+            color: colors.primary,
             marginBottom: 10,
           }}
         >
@@ -565,7 +628,7 @@ export default function ProductDetailScreen({ route, navigation }) {
                   width: 72,
                   height: 72,
                   borderRadius: radius.md,
-                  backgroundColor: "#fff",
+                  backgroundColor: colors.surface,
                   borderWidth: 1,
                   borderColor: colors.border,
                   overflow: "hidden",
@@ -638,7 +701,8 @@ export default function ProductDetailScreen({ route, navigation }) {
         style={{
           fontSize: isWebDesktop  ? 30 : 28,
           fontWeight: "800",
-          color: colors.text,
+          // El nombre es el titular de la ficha: azul Cibox.
+          color: colors.primary,
           marginBottom: 8,
         }}
       >
@@ -664,21 +728,32 @@ export default function ProductDetailScreen({ route, navigation }) {
                 </AppText>
               </View>
             )}
-            <View style={{ flexDirection: "row", alignItems: "baseline", gap: 8 }}>
-              <AppText style={{ fontSize: 32, fontWeight: "900", color: colors.text }}>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+              {/* El precio va en azul y no en lima: el lima sobre blanco rinde
+                  1,9:1 y no se lee. El lima entra como fondo del chip. */}
+              <AppText style={{ fontSize: 32, fontWeight: "900", color: colors.primary }}>
                 ${cajaTotal ? cajaTotal.toLocaleString("es-CL") : "—"}
               </AppText>
-              <AppText style={{ fontSize: 14, color: colors.accent, fontWeight: "800" }}>
-                {isCaja ? "/ caja" : "/ un"}
-              </AppText>
+              <View style={{
+                backgroundColor: colors.primaryDark,
+                borderRadius: 999,
+                paddingHorizontal: 10,
+                paddingVertical: 4,
+              }}>
+                <AppText style={{ fontSize: 13, color: colors.primaryText, fontWeight: "800" }}>
+                  {isCaja ? "por caja" : "por unidad"}
+                </AppText>
+              </View>
               {hasCmp && (
+                // El descuento es lo que hay que mirar: va en lima, el color de
+                // acento de la marca, con texto oscuro encima.
                 <View style={{
-                  backgroundColor: "#dcfce7",
+                  backgroundColor: colors.discount,
                   borderRadius: 999,
                   paddingHorizontal: 10,
                   paddingVertical: 4,
                 }}>
-                  <AppText style={{ fontSize: 13, fontWeight: "800", color: "#16a34a" }}>
+                  <AppText style={{ fontSize: 13, fontWeight: "800", color: colors.accentText }}>
                     -{pct}%
                   </AppText>
                 </View>
@@ -698,13 +773,15 @@ export default function ProductDetailScreen({ route, navigation }) {
                 alignItems: "center",
                 gap: 6,
                 marginTop: 6,
-                backgroundColor: "#f0fdf4",
+                // Lima rebajado: resalta el ahorro sin convertirse en un fondo
+                // extenso de lima puro, que el manual reserva para acentos.
+                backgroundColor: colors.primaryLight,
                 borderRadius: 8,
                 paddingHorizontal: 10,
                 paddingVertical: 6,
                 alignSelf: "flex-start",
               }}>
-                <AppText style={{ fontSize: 13, fontWeight: "800", color: "#16a34a" }}>
+                <AppText style={{ fontSize: 13, fontWeight: "800", color: colors.accentText }}>
                   Ahorras ${savedCaja.toLocaleString("es-CL")} vs supermercado por caja
                 </AppText>
               </View>
@@ -723,7 +800,9 @@ export default function ProductDetailScreen({ route, navigation }) {
         {(product?.reviews_count ?? 0) > 0 ? (
           <View
             style={{
-              backgroundColor: "#111",
+              // Los distintivos pasan a la familia azul: negro, teal y violeta
+              // eran restos de la identidad anterior.
+              backgroundColor: colors.primary,
               paddingHorizontal: 10,
               paddingVertical: 6,
               borderRadius: 999,
@@ -731,7 +810,7 @@ export default function ProductDetailScreen({ route, navigation }) {
               marginBottom: 8,
             }}
           >
-            <AppText style={{ color: "#fff", fontSize: 12, fontWeight: "700" }}>
+            <AppText style={{ color: colors.primaryText, fontSize: 12, fontWeight: "700" }}>
               ⭐ {(product?.average_rating ?? 0).toFixed(1)} ·{" "}
               {product?.reviews_count} reseñas
             </AppText>
@@ -741,7 +820,7 @@ export default function ProductDetailScreen({ route, navigation }) {
         {(product?.pricing?.tiers?.length || 0) > 1 ? (
           <View
             style={{
-              backgroundColor: "#0f766e",
+              backgroundColor: colors.primaryMid,
               paddingHorizontal: 10,
               paddingVertical: 6,
               borderRadius: 999,
@@ -749,7 +828,7 @@ export default function ProductDetailScreen({ route, navigation }) {
               marginBottom: 8,
             }}
           >
-            <AppText style={{ color: "#fff", fontSize: 12, fontWeight: "700" }}>
+            <AppText style={{ color: colors.primaryText, fontSize: 12, fontWeight: "700" }}>
               Pack disponible
             </AppText>
           </View>
@@ -758,7 +837,7 @@ export default function ProductDetailScreen({ route, navigation }) {
         {product?.cibox_plus?.enabled ? (
           <View
             style={{
-              backgroundColor: "#7c3aed",
+              backgroundColor: colors.primaryDark,
               paddingHorizontal: 10,
               paddingVertical: 6,
               borderRadius: 999,
@@ -766,7 +845,7 @@ export default function ProductDetailScreen({ route, navigation }) {
               marginBottom: 8,
             }}
           >
-            <AppText style={{ color: "#fff", fontSize: 12, fontWeight: "700" }}>
+            <AppText style={{ color: colors.primaryText, fontSize: 12, fontWeight: "700" }}>
               Beneficio Cibox+
             </AppText>
           </View>
@@ -783,7 +862,7 @@ export default function ProductDetailScreen({ route, navigation }) {
               marginBottom: 8,
             }}
           >
-            <AppText style={{ color: "#fff", fontSize: 12, fontWeight: "700" }}>
+            <AppText style={{ color: colors.primaryText, fontSize: 12, fontWeight: "700" }}>
               Caja Cibox
             </AppText>
           </View>
@@ -807,7 +886,7 @@ export default function ProductDetailScreen({ route, navigation }) {
           <AppText
             style={{
               fontWeight: "700",
-              color: colors.text,
+              color: colors.primary,
               marginBottom: 12,
               fontSize: 16,
             }}
@@ -841,7 +920,10 @@ export default function ProductDetailScreen({ route, navigation }) {
                   width: 42,
                   height: 42,
                   borderRadius: 21,
-                  backgroundColor: "#f0f0f0",
+                  // Fondo de la paleta y signo azul: antes era gris sobre gris.
+                  backgroundColor: colors.background,
+                  borderWidth: 1,
+                  borderColor: colors.border,
                   justifyContent: "center",
                   alignItems: "center",
                   marginRight: 12,
@@ -851,7 +933,7 @@ export default function ProductDetailScreen({ route, navigation }) {
                   style={{
                     fontSize: 18,
                     fontWeight: "800",
-                    color: colors.text,
+                    color: colors.primary,
                   }}
                 >
                   -
@@ -877,7 +959,9 @@ export default function ProductDetailScreen({ route, navigation }) {
                   width: 42,
                   height: 42,
                   borderRadius: 21,
-                  backgroundColor: "#f0f0f0",
+                  backgroundColor: colors.background,
+                  borderWidth: 1,
+                  borderColor: colors.border,
                   justifyContent: "center",
                   alignItems: "center",
                 }}
@@ -886,7 +970,7 @@ export default function ProductDetailScreen({ route, navigation }) {
                   style={{
                     fontSize: 18,
                     fontWeight: "800",
-                    color: colors.text,
+                    color: colors.primary,
                   }}
                 >
                   +
@@ -914,13 +998,13 @@ export default function ProductDetailScreen({ route, navigation }) {
               borderColor: colors.border,
               borderRadius: radius.md,
               padding: 12,
-              backgroundColor: "#fafafa",
+              backgroundColor: colors.background,
               marginBottom: 14,
             }}
           >
             <AppText
               style={{
-                color: colors.text,
+                color: colors.primary,
                 fontWeight: "700",
                 marginBottom: 8,
               }}
@@ -969,7 +1053,7 @@ export default function ProductDetailScreen({ route, navigation }) {
               <View
                 style={{
                   flexDirection: "row",
-                  backgroundColor: "#f5f5f5",
+                  backgroundColor: colors.background,
                   paddingVertical: 10,
                   paddingHorizontal: 12,
                 }}
@@ -1050,12 +1134,14 @@ export default function ProductDetailScreen({ route, navigation }) {
                   setSelectedQuantity(cajas * newStep);
                 }}
                 style={{
-                  borderWidth: 1,
-                  borderColor: isSelected ? colors.text : colors.border,
+                  borderWidth: isSelected ? 2 : 1,
+                  // El tramo elegido se marca con azul de marca y un velo del
+                  // mismo azul al 6%, en vez del gris neutro anterior.
+                  borderColor: isSelected ? colors.primary : colors.border,
                   borderRadius: radius.md,
                   padding: 12,
                   marginBottom: 10,
-                  backgroundColor: isSelected ? "#f5f5f5" : colors.surface,
+                  backgroundColor: isSelected ? `${colors.primary}0F` : colors.surface,
                 }}
               >
                 <View
@@ -1162,14 +1248,19 @@ export default function ProductDetailScreen({ route, navigation }) {
                 style={{ marginBottom: 16 }}
               >
                 {product.images.map((url, index) => (
-                  <View
+                  // Cada foto abre el visor en su propia posición: si el cliente
+                  // desliza hasta la tercera, amplía la tercera.
+                  <Pressable
                     key={`${url}-${index}`}
+                    onPress={() => openZoom(index)}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Ampliar la imagen ${index + 1} del producto`}
                     style={{
                       width: 260,
                       height: 260,
                       marginRight: 10,
                       borderRadius: radius.md,
-                      backgroundColor: "#fff",
+                      backgroundColor: colors.surface,
                       overflow: "hidden",
                       alignItems: "center",
                       justifyContent: "center",
@@ -1180,17 +1271,21 @@ export default function ProductDetailScreen({ route, navigation }) {
                       style={{ width: "100%", height: "100%" }}
                       resizeMode="contain"
                     />
-                  </View>
+                    {renderZoomHint()}
+                  </Pressable>
                 ))}
               </ScrollView>
             ) : product?.thumbnail ? (
-              <View
+              <Pressable
+                onPress={() => openZoom(0)}
+                accessibilityRole="button"
+                accessibilityLabel="Ampliar la imagen del producto"
                 style={{
                   width: "100%",
                   height: 260,
                   marginBottom: 16,
                   borderRadius: radius.md,
-                  backgroundColor: "#fff",
+                  backgroundColor: colors.surface,
                   overflow: "hidden",
                   alignItems: "center",
                   justifyContent: "center",
@@ -1201,7 +1296,8 @@ export default function ProductDetailScreen({ route, navigation }) {
                   style={{ width: "100%", height: "100%" }}
                   resizeMode="contain"
                 />
-              </View>
+                {renderZoomHint()}
+              </Pressable>
             ) : null}
 
             {renderPurchaseCard()}
@@ -1209,7 +1305,7 @@ export default function ProductDetailScreen({ route, navigation }) {
             <AppText
               style={{
                 fontWeight: "700",
-                color: colors.text,
+                color: colors.primary,
                 marginTop: 18,
                 marginBottom: 8,
                 fontSize: 16,
@@ -1218,10 +1314,13 @@ export default function ProductDetailScreen({ route, navigation }) {
               Descripción
             </AppText>
 
+            {/* Sin fontSize caía a los 14px por defecto de AppText; el cap. 13
+                pide 16 como mínimo en cuerpo, y esto es la descripción. */}
             <AppText
               style={{
+                fontSize: 16,
                 color: colors.muted,
-                lineHeight: 22,
+                lineHeight: 24,
                 marginBottom: 20,
               }}
             >
@@ -1238,7 +1337,7 @@ export default function ProductDetailScreen({ route, navigation }) {
               style={{
                 fontSize: 20,
                 fontWeight: "800",
-                color: colors.text,
+                color: colors.primary,
                 marginBottom: 14,
               }}
             >
@@ -1327,7 +1426,7 @@ export default function ProductDetailScreen({ route, navigation }) {
               style={{
                 fontSize: 20,
                 fontWeight: "800",
-                color: colors.text,
+                color: colors.primary,
                 marginBottom: 14,
               }}
             >
@@ -1396,12 +1495,19 @@ export default function ProductDetailScreen({ route, navigation }) {
             )}
           </View>
         </ScrollView>
+
+        <ZoomViewer
+          visible={zoomVisible}
+          images={imageList}
+          startIndex={zoomIndex}
+          onClose={() => setZoomVisible(false)}
+        />
       </ScreenContainer>
     );
   }
 
   return (
-    <ScreenContainer maxWidth={1280}>
+    <ScreenContainer maxWidth={1200}>
       <ScrollView contentContainerStyle={{ paddingBottom: spacing.xl }}>
         {renderBreadcrumb()}
         <View
@@ -1434,11 +1540,12 @@ export default function ProductDetailScreen({ route, navigation }) {
                           height: 88,
                           marginBottom: 10,
                           borderRadius: radius.md,
-                          borderWidth: 1,
+                          // La miniatura activa se marca con borde azul grueso.
+                          borderWidth: isActive ? 2 : 1,
                           borderColor: isActive
                             ? colors.primary
                             : colors.border,
-                          backgroundColor: "#fff",
+                          backgroundColor: colors.surface,
                           overflow: "hidden",
                           alignItems: "center",
                           justifyContent: "center",
@@ -1454,28 +1561,42 @@ export default function ProductDetailScreen({ route, navigation }) {
                   })}
                 </View>
 
-                <View
+                {/* La foto grande abre el visor. Con ratón el cursor cambia a
+                    lupa para que se note que es tocable. */}
+                <Pressable
+                  onPress={() =>
+                    openZoom(Math.max(0, imageList.indexOf(selectedImage)))
+                  }
+                  disabled={!selectedImage}
+                  accessibilityRole="button"
+                  accessibilityLabel="Ampliar la imagen del producto"
                   style={{
                     flex: 1,
                     minHeight: 520,
                     borderRadius: radius.lg,
-                    backgroundColor: "#fff",
+                    backgroundColor: colors.surface,
                     borderWidth: 1,
                     borderColor: colors.border,
                     overflow: "hidden",
                     alignItems: "center",
                     justifyContent: "center",
                     padding: spacing.lg,
+                    ...(Platform.OS === "web" && selectedImage
+                      ? { cursor: "zoom-in" }
+                      : null),
                   }}
                 >
                   {selectedImage ? (
-                    <Image
-                      source={{ uri: selectedImage }}
-                      style={{ width: "100%", height: 480 }}
-                      resizeMode="contain"
-                    />
+                    <>
+                      <Image
+                        source={{ uri: selectedImage }}
+                        style={{ width: "100%", height: 480 }}
+                        resizeMode="contain"
+                      />
+                      {renderZoomHint("Ampliar")}
+                    </>
                   ) : null}
-                </View>
+                </Pressable>
               </View>
             </View>
 
@@ -1486,7 +1607,7 @@ export default function ProductDetailScreen({ route, navigation }) {
                 style={{
                   fontSize: 22,
                   fontWeight: "800",
-                  color: colors.text,
+                  color: colors.primary,
                   marginBottom: 12,
                 }}
               >
@@ -1517,7 +1638,7 @@ export default function ProductDetailScreen({ route, navigation }) {
                 style={{
                   fontSize: 22,
                   fontWeight: "800",
-                  color: colors.text,
+                  color: colors.primary,
                   marginBottom: 14,
                 }}
               >
@@ -1606,7 +1727,7 @@ export default function ProductDetailScreen({ route, navigation }) {
                 style={{
                   fontSize: 22,
                   fontWeight: "800",
-                  color: colors.text,
+                  color: colors.primary,
                   marginBottom: 14,
                 }}
               >
@@ -1677,6 +1798,518 @@ export default function ProductDetailScreen({ route, navigation }) {
           )}
         </View>
       </ScrollView>
+
+      <ZoomViewer
+        visible={zoomVisible}
+        images={imageList}
+        startIndex={zoomIndex}
+        onClose={() => setZoomVisible(false)}
+      />
     </ScreenContainer>
+  );
+}
+
+/**
+ * Visor de imágenes a pantalla completa.
+ *
+ * Vive en este archivo y no en `components/` porque hoy solo lo usa la ficha; si
+ * otra pantalla lo necesita, se extrae entonces.
+ *
+ * Cómo se maneja:
+ *  - Un toque (o clic) sobre la foto amplía a 2x en el punto tocado; otro toque
+ *    vuelve a 1x. Se usa toque simple y no doble toque porque es más
+ *    descubrible y se comporta igual con el dedo que con el ratón.
+ *  - Arrastrar mueve la foto cuando está ampliada (PanResponder funciona en web
+ *    porque react-native-web implementa el sistema de responder con eventos de
+ *    puntero: sirve para dedo y para ratón sin código aparte).
+ *  - Pinza de dos dedos en móvil y rueda del ratón en web.
+ *  - Los botones +/- están igual: son el camino evidente y el accesible.
+ *  - Cierra con la X, tocando el fondo y con Escape en web.
+ */
+function ZoomViewer({ visible, images, startIndex, onClose }) {
+  const { width, height } = useWindowDimensions();
+  const compact = width < 768;
+
+  const [index, setIndex] = useState(0);
+  const [scale, setScale] = useState(1);
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
+
+  // Los gestos leen refs y no estado: el PanResponder se crea una sola vez y sus
+  // callbacks se quedarían con los valores del primer render.
+  const scaleRef = useRef(1);
+  const offsetRef = useRef({ x: 0, y: 0 });
+  const panStartRef = useRef({ x: 0, y: 0 });
+  const pinchRef = useRef(null);
+  const stageRef = useRef({ w: 0, h: 0 });
+  const indexRef = useRef(0);
+  const rootRef = useRef(null);
+  const closeRef = useRef(onClose);
+  closeRef.current = onClose;
+
+  const total = Array.isArray(images) ? images.length : 0;
+
+  // El escenario ocupa todo salvo la barra de arriba (botón + margen) y los
+  // controles de abajo (píldora + pista + margen): la foto sale lo más grande
+  // que quepa sin que nada se pise. Se reserva el mismo alto arriba y abajo
+  // porque la foto va centrada; con los 184/196 de antes no alcanzaba y la
+  // pista de abajo caía sobre la foto en cuanto la foto era vertical.
+  const stageWidth = Math.max(200, width - spacing.md * 2);
+  const stageHeight = Math.max(200, height - ZOOM_CHROME * 2);
+  stageRef.current = { w: stageWidth, h: stageHeight };
+
+  const applyZoom = (nextRaw, focal) => {
+    const { w, h } = stageRef.current;
+    const previous = scaleRef.current;
+    const next = Math.min(
+      ZOOM_MAX,
+      Math.max(1, Math.round((Number(nextRaw) || 1) * 100) / 100),
+    );
+
+    let x = offsetRef.current.x;
+    let y = offsetRef.current.y;
+
+    if (next === 1) {
+      x = 0;
+      y = 0;
+    } else if (focal) {
+      // `transform` escala respecto del centro y después traslada, así que para
+      // llevar al centro un punto que está a `d` del centro hace falta -escala*d.
+      x = -next * focal.dx;
+      y = -next * focal.dy;
+    } else if (previous > 0) {
+      // Al cambiar de escala se conserva lo que se estaba mirando.
+      const factor = next / previous;
+      x *= factor;
+      y *= factor;
+    }
+
+    // Nunca se despega la foto del marco: el borde no puede entrar al encuadre.
+    const maxX = ((next - 1) * w) / 2;
+    const maxY = ((next - 1) * h) / 2;
+    x = Math.min(maxX, Math.max(-maxX, x));
+    y = Math.min(maxY, Math.max(-maxY, y));
+
+    scaleRef.current = next;
+    offsetRef.current = { x, y };
+    setScale(next);
+    setOffset({ x, y });
+  };
+
+  const resetZoom = () => {
+    scaleRef.current = 1;
+    offsetRef.current = { x: 0, y: 0 };
+    setScale(1);
+    setOffset({ x: 0, y: 0 });
+  };
+
+  const goTo = (nextIndex) => {
+    if (total < 2) return;
+    const wrapped = ((nextIndex % total) + total) % total;
+    indexRef.current = wrapped;
+    setIndex(wrapped);
+    // Cambiar de foto vuelve a 1x: quedarse ampliado en otra imagen desorienta.
+    resetZoom();
+  };
+
+  const responder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: () => true,
+      onPanResponderGrant: () => {
+        panStartRef.current = { ...offsetRef.current };
+        pinchRef.current = null;
+      },
+      onPanResponderMove: (event, gesture) => {
+        const touches = event?.nativeEvent?.touches || [];
+
+        // Pinza: la escala sigue la razón entre la distancia actual y la inicial.
+        if (touches.length === 2) {
+          const dx = touches[0].pageX - touches[1].pageX;
+          const dy = touches[0].pageY - touches[1].pageY;
+          const distance = Math.sqrt(dx * dx + dy * dy) || 1;
+
+          if (!pinchRef.current) {
+            pinchRef.current = { distance, scale: scaleRef.current };
+          } else {
+            applyZoom(
+              (pinchRef.current.scale * distance) / pinchRef.current.distance,
+            );
+          }
+          return;
+        }
+
+        if (scaleRef.current <= 1) return;
+
+        const { w, h } = stageRef.current;
+        const maxX = ((scaleRef.current - 1) * w) / 2;
+        const maxY = ((scaleRef.current - 1) * h) / 2;
+        const x = Math.min(
+          maxX,
+          Math.max(-maxX, panStartRef.current.x + gesture.dx),
+        );
+        const y = Math.min(
+          maxY,
+          Math.max(-maxY, panStartRef.current.y + gesture.dy),
+        );
+
+        offsetRef.current = { x, y };
+        setOffset({ x, y });
+      },
+      onPanResponderRelease: (event, gesture) => {
+        if (pinchRef.current) {
+          pinchRef.current = null;
+          return;
+        }
+
+        // Si hubo arrastre no fue un toque: no se toca el zoom.
+        if (Math.abs(gesture.dx) > 6 || Math.abs(gesture.dy) > 6) return;
+
+        if (scaleRef.current > 1) {
+          applyZoom(1);
+          return;
+        }
+
+        // `locationX` sirve solo estando en 1x, que es cuando la imagen ocupa el
+        // escenario sin transformar; a partir de ahí las coordenadas coinciden.
+        const { w, h } = stageRef.current;
+        const lx = event?.nativeEvent?.locationX;
+        const ly = event?.nativeEvent?.locationY;
+        const focal =
+          typeof lx === "number" && typeof ly === "number"
+            ? { dx: lx - w / 2, dy: ly - h / 2 }
+            : null;
+
+        applyZoom(2, focal);
+      },
+      onPanResponderTerminationRequest: () => false,
+    }),
+  ).current;
+
+  // Cada apertura arranca limpia y en la foto que el cliente tocó.
+  useEffect(() => {
+    if (!visible) return;
+    const start = Math.min(Math.max(0, startIndex || 0), Math.max(0, total - 1));
+    indexRef.current = start;
+    setIndex(start);
+    resetZoom();
+  }, [visible, startIndex, total]);
+
+  // Teclado en web: Escape cierra, las flechas cambian de foto y +/- amplían.
+  useEffect(() => {
+    if (!visible || Platform.OS !== "web" || typeof window === "undefined") {
+      return undefined;
+    }
+
+    const onKeyDown = (event) => {
+      if (event.key === "Escape") {
+        closeRef.current?.();
+      } else if (event.key === "ArrowRight") {
+        goTo(indexRef.current + 1);
+      } else if (event.key === "ArrowLeft") {
+        goTo(indexRef.current - 1);
+      } else if (event.key === "+" || event.key === "=") {
+        applyZoom(scaleRef.current + ZOOM_STEP);
+      } else if (event.key === "-" || event.key === "_") {
+        applyZoom(scaleRef.current - ZOOM_STEP);
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [visible, total]);
+
+  // Con el visor abierto la página de atrás no se mueve.
+  useEffect(() => {
+    if (!visible || Platform.OS !== "web" || typeof document === "undefined") {
+      return undefined;
+    }
+
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, [visible]);
+
+  // Rueda del ratón: amplía y, de paso, corta el scroll que se podría filtrar a
+  // la página de atrás. Se engancha al nodo porque react-native-web no expone
+  // `onWheel` como prop de View.
+  useEffect(() => {
+    if (!visible || Platform.OS !== "web") return undefined;
+
+    const node = rootRef.current;
+    if (!node || typeof node.addEventListener !== "function") return undefined;
+
+    const onWheel = (event) => {
+      event.preventDefault();
+      const step = event.deltaY > 0 ? -ZOOM_STEP / 2 : ZOOM_STEP / 2;
+      applyZoom(scaleRef.current + step);
+    };
+
+    node.addEventListener("wheel", onWheel, { passive: false });
+    return () => node.removeEventListener("wheel", onWheel);
+  }, [visible]);
+
+  if (!total) return null;
+
+  const source = images[Math.min(index, total - 1)];
+  const hasMany = total > 1;
+  const button = compact ? 42 : 48;
+
+  // Los controles van en navy sólido: sobre el fondo del visor el blanco encima
+  // rinde 11,9:1, y una píldora translúcida no garantizaría contraste.
+  const controlStyle = {
+    width: button,
+    height: button,
+    borderRadius: button / 2,
+    backgroundColor: colors.primaryDark,
+    alignItems: "center",
+    justifyContent: "center",
+  };
+
+  return (
+    <Modal
+      visible={visible}
+      transparent
+      animationType="fade"
+      onRequestClose={onClose}
+      supportedOrientations={["portrait", "landscape"]}
+    >
+      <View ref={rootRef} style={{ flex: 1, backgroundColor: ZOOM_BACKDROP }}>
+        {/* Fondo: tocar fuera de la foto cierra el visor. */}
+        <Pressable
+          style={absoluteFill}
+          onPress={onClose}
+          accessibilityRole="button"
+          accessibilityLabel="Cerrar el visor de imágenes"
+        />
+
+        <View
+          pointerEvents="box-none"
+          style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
+        >
+          <View
+            {...responder.panHandlers}
+            style={{
+              width: stageWidth,
+              height: stageHeight,
+              overflow: "hidden",
+              alignItems: "center",
+              justifyContent: "center",
+              ...(Platform.OS === "web"
+                ? { cursor: scale > 1 ? "grab" : "zoom-in" }
+                : null),
+            }}
+          >
+            <Image
+              source={{ uri: source }}
+              resizeMode="contain"
+              style={{
+                width: "100%",
+                height: "100%",
+                transform: [
+                  { translateX: offset.x },
+                  { translateY: offset.y },
+                  { scale },
+                ],
+              }}
+            />
+          </View>
+        </View>
+
+        {/* Barra superior: contador y cierre. */}
+        <View
+          pointerEvents="box-none"
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: spacing.md,
+            gap: spacing.sm,
+          }}
+        >
+          {hasMany ? (
+            <View
+              style={{
+                backgroundColor: colors.primaryDark,
+                borderRadius: 999,
+                paddingHorizontal: 12,
+                paddingVertical: 6,
+              }}
+            >
+              <AppText
+                style={{
+                  color: colors.primaryText,
+                  fontSize: 13,
+                  fontWeight: "700",
+                }}
+              >
+                {index + 1} / {total}
+              </AppText>
+            </View>
+          ) : (
+            <View />
+          )}
+
+          {/* El cierre va en lima: es la acción, y encima del lima el texto y el
+              icono van oscuros (el blanco rendiría 1,9:1). */}
+          <Pressable
+            onPress={onClose}
+            accessibilityRole="button"
+            accessibilityLabel="Cerrar"
+            style={{
+              ...controlStyle,
+              backgroundColor: colors.accent,
+            }}
+          >
+            <Ionicons
+              name="close"
+              size={compact ? 22 : 26}
+              color={colors.accentText}
+            />
+          </Pressable>
+        </View>
+
+        {/* Flechas para pasar de foto sin salir del visor. */}
+        {hasMany ? (
+          <View
+            pointerEvents="box-none"
+            style={{
+              ...absoluteFill,
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
+              paddingHorizontal: spacing.xs,
+            }}
+          >
+            <Pressable
+              onPress={() => goTo(index - 1)}
+              accessibilityRole="button"
+              accessibilityLabel="Imagen anterior"
+              style={controlStyle}
+            >
+              <Ionicons
+                name="chevron-back"
+                size={compact ? 22 : 26}
+                color={colors.primaryText}
+              />
+            </Pressable>
+
+            <Pressable
+              onPress={() => goTo(index + 1)}
+              accessibilityRole="button"
+              accessibilityLabel="Imagen siguiente"
+              style={controlStyle}
+            >
+              <Ionicons
+                name="chevron-forward"
+                size={compact ? 22 : 26}
+                color={colors.primaryText}
+              />
+            </Pressable>
+          </View>
+        ) : null}
+
+        {/* Controles de escala + la pista de qué se puede hacer. */}
+        <View
+          pointerEvents="box-none"
+          style={{
+            position: "absolute",
+            left: 0,
+            right: 0,
+            bottom: 0,
+            alignItems: "center",
+            padding: spacing.md,
+            gap: spacing.sm,
+          }}
+        >
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              backgroundColor: colors.primaryDark,
+              borderRadius: 999,
+              paddingHorizontal: 6,
+              paddingVertical: 6,
+              gap: 4,
+            }}
+          >
+            <Pressable
+              onPress={() => applyZoom(scale - ZOOM_STEP)}
+              disabled={scale <= 1}
+              accessibilityRole="button"
+              accessibilityLabel="Reducir"
+              style={{
+                width: 38,
+                height: 38,
+                borderRadius: 19,
+                alignItems: "center",
+                justifyContent: "center",
+                opacity: scale <= 1 ? 0.4 : 1,
+              }}
+            >
+              <Ionicons name="remove" size={20} color={colors.primaryText} />
+            </Pressable>
+
+            <AppText
+              style={{
+                color: colors.primaryText,
+                fontSize: 13,
+                fontWeight: "700",
+                minWidth: 52,
+                textAlign: "center",
+              }}
+            >
+              {Math.round(scale * 100)} %
+            </AppText>
+
+            <Pressable
+              onPress={() => applyZoom(scale + ZOOM_STEP)}
+              disabled={scale >= ZOOM_MAX}
+              accessibilityRole="button"
+              accessibilityLabel="Ampliar"
+              style={{
+                width: 38,
+                height: 38,
+                borderRadius: 19,
+                alignItems: "center",
+                justifyContent: "center",
+                opacity: scale >= ZOOM_MAX ? 0.4 : 1,
+              }}
+            >
+              <Ionicons name="add" size={20} color={colors.primaryText} />
+            </Pressable>
+          </View>
+
+          {/* La pista va sobre navy sólido igual que el contador: iba en blanco
+              suelto y, si la foto es vertical y llega hasta abajo, el blanco
+              sobre una etiqueta clara no se lee. Sobre navy rinde 11,9:1. */}
+          <View
+            style={{
+              backgroundColor: colors.primaryDark,
+              borderRadius: 999,
+              paddingHorizontal: 12,
+              paddingVertical: 6,
+            }}
+          >
+            <AppText
+              style={{
+                color: colors.primaryText,
+                fontSize: 12,
+                textAlign: "center",
+              }}
+            >
+              {scale > 1
+                ? "Arrastra para recorrer la imagen"
+                : "Toca la imagen para ampliarla"}
+            </AppText>
+          </View>
+        </View>
+      </View>
+    </Modal>
   );
 }

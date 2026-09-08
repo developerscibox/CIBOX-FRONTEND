@@ -54,8 +54,8 @@ const fecha = (ymd) => {
 
 const inp = { padding: "9px 10px", fontSize: 14, borderRadius: 8, border: "1px solid #d9d2dc", width: "100%", boxSizing: "border-box" };
 const lbl = { fontSize: 11.5, fontWeight: 600, color: "var(--muted)", textTransform: "uppercase", letterSpacing: ".04em", marginBottom: 4 };
-const btnP = { background: "var(--magenta, #4E9B27)", color: "#fff", border: "none", borderRadius: 10, padding: "10px 16px", fontWeight: 700, fontSize: 14, cursor: "pointer" };
-const btnG = { background: "#fff", color: "var(--magenta-d, #3B7A1D)", border: "1px solid #d9d2dc", borderRadius: 10, padding: "9px 14px", fontWeight: 700, fontSize: 13, cursor: "pointer" };
+const btnP = { background: "var(--magenta, #004568)", color: "#fff", border: "none", borderRadius: 10, padding: "10px 16px", fontWeight: 700, fontSize: 14, cursor: "pointer" };
+const btnG = { background: "#fff", color: "var(--magenta-d, #003D49)", border: "1px solid #d9d2dc", borderRadius: 10, padding: "9px 14px", fontWeight: 700, fontSize: 13, cursor: "pointer" };
 const noAplica = <span style={{ color: "var(--muted)", fontSize: 12.5 }}>no aplica</span>;
 
 function Sem({ s, size = 13 }) {

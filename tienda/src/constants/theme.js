@@ -7,30 +7,51 @@
  * social, giro, contacto, dirección) está en `constants/brand.js` y se hidrata
  * desde el backend.
  *
- * Identidad: verde Cibox con lima para fondos destacados y amarillo para los
- * badges de descuento.
+ * IDENTIDAD (Manual de Diseño Digital cibox.cl v1.0): azules como base —
+ * confianza— y verde lima como acento —energía y frescura—. El lima se usa SOLO
+ * en acentos, llamadas a la acción y estados; nunca como fondo extenso.
  */
 export const colors = {
-  background: "#f7f8f5",
-  surface: "#ffffff",
-  text: "#111811",
-  muted: "#5f6b5f",
-  border: "#e3e8e0",
-  primary: "#4E9B27",      // verde Cibox — botones y CTA
-  primaryLight: "#C3E062", // lima — fondos destacados
-  accent: "#3B7A1D",       // verde profundo — precios, énfasis
-  primaryText: "#ffffff",
-  danger: "#b00020",
-  success: "#16794a",
-  discount: "#F7B81C",     // amarillo — badges de oferta/descuento
+  // ── Base ───────────────────────────────────────────────────────────────────
+  background: "#F5F6F7",   // gris muy claro — fondo de la tienda
+  surface: "#FFFFFF",
+  text: "#17202A",         // gris oscuro — texto principal
+  muted: "#5A6672",        // gris medio — texto secundario
+  border: "#E2E6EA",
+
+  // ── Azules de marca ────────────────────────────────────────────────────────
+  primary: "#004568",      // azul Cibox — barra de navegación, titulares
+  primaryMid: "#006996",   // azul medio — enlaces y estados sobre azul
+  primaryDark: "#003D49",  // azul navy — pies de página y fondos profundos
+  primaryText: "#FFFFFF",
+
+  // ── Acento lima ────────────────────────────────────────────────────────────
+  // El lima es el color de ACCIÓN: botones, precios y badges. Sobre él el texto
+  // va oscuro, nunca blanco: #17202A sobre #B6D900 rinde 9,6:1 y el blanco 1,9:1.
+  accent: "#B6D900",       // verde lima Cibox
+  accentLight: "#D2E51A",  // verde amarillo — resaltados y hover
+  accentText: "#17202A",   // el texto que va ENCIMA del lima
+
+  // Se conserva el nombre `primaryLight` porque lo usan varias pantallas para
+  // fondos suaves de icono; ahora apunta al lima rebajado.
+  primaryLight: "#E8F29A",
+
+  danger: "#C0322B",
+  success: "#1D7A4C",
+  discount: "#B6D900",     // los descuentos usan el lima de marca
 };
 
+// Escala de espaciado del punto 11 del manual (sistema 8pt): 4, 8, 16, 24, 32,
+// 40, 48, 64, 80. `md`, `lg` y `xl` ya caían en la escala; `xs` y `sm` iban en 6
+// y 10, que no pertenecen a ningún sistema y se habían elegido a ojo.
 export const spacing = {
-  xs: 6,
-  sm: 10,
+  xs: 4,
+  sm: 8,
   md: 16,
   lg: 24,
   xl: 32,
+  xxl: 40,
+  xxxl: 48,
 };
 
 export const radius = {
@@ -50,8 +71,10 @@ export const shadows = {
   },
 };
 
+// Montserrat para títulos, botones y navegación; Inter para textos de cuerpo y
+// descripciones largas (Manual de Diseño Digital, punto 04).
 export const typography = {
-  regular: "Poppins_400Regular",
-  semiBold: "Poppins_600SemiBold",
-  bold: "Poppins_700Bold",
+  regular: "Inter_400Regular",
+  semiBold: "Montserrat_600SemiBold",
+  bold: "Montserrat_700Bold",
 };

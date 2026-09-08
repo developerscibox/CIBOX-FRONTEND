@@ -8,7 +8,7 @@ import {
   useWindowDimensions,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import { colors } from "../constants/theme";
 import useCategoryStore from "../store/categoryStore";
 import { getProducts } from "../services/productService";
@@ -18,7 +18,18 @@ import AppText from "./AppText";
 import CategoryMegaMenu from "./CategoryMegaMenu";
 
 import brand from "../constants/brand";
-// Mega-nav magenta (debajo del header). Cada link a su pantalla propia.
+
+/**
+ * Caja de contenido del Manual de Diseño Digital v1.0: 1200 de ancho máximo,
+ * centrada, con 24 de margen lateral. Antes eran 1280/28 y en pantallas anchas
+ * la cabecera quedaba "descolgada": no coincidía con el resto de las secciones.
+ * Al vivir en constantes, las tres franjas (avisos, header y navegación) se
+ * alinean sí o sí en la misma columna.
+ */
+const MAX_WIDTH = 1200;
+const GUTTER = 24;
+
+// Barra de navegación azul (debajo del header). Cada link a su pantalla propia.
 const NAV_LINKS = [
   { label: "Inicio", screen: "Inicio" },
   { label: "Mi Despensa", screen: "PantryTab" },
@@ -30,8 +41,24 @@ const NAV_LINKS = [
   { label: "Contacto", screen: "Contact" },
 ];
 
+/**
+ * ¿Este enlace apunta a donde ya estamos?
+ *
+ * Se compara también el `preset` porque "Más Vendido" e "Imperdibles de la
+ * semana" son la MISMA pantalla (Products) con distinto filtro: mirando solo el
+ * nombre se encenderían los dos a la vez, y también al buscar por categoría.
+ */
+const isActiveLink = (link, route) => {
+  if (!route?.name || route.name !== link.screen) return false;
+  if (link.params?.preset) return route.params?.preset === link.params.preset;
+  return !route.params?.preset;
+};
+
 export default function WebHeader() {
   const navigation = useNavigation();
+  // WebHeader solo se monta dentro de `withWebLayout`, o sea siempre dentro de
+  // una pantalla del stack: `useRoute` es seguro y dice qué enlace resaltar.
+  const route = useRoute();
   const { width } = useWindowDimensions();
   const { cartCount, loadCartSummary } = useCartStore();
   const { token } = useAuthStore();
@@ -139,6 +166,19 @@ export default function WebHeader() {
   // Ancho del mega-menú según el viewport (sin desbordar a la derecha).
   const megaWidth = width >= 1200 ? 780 : width >= 980 ? 620 : 480;
 
+  // Cortes del manual: escritorio >1024, tablet 768–1024. Los ocho enlaces a
+  // tamaño completo piden ~1130px; bajo 1180 se compactan (fuente y padding)
+  // antes de tener que deslizarlos, que es el último recurso.
+  const navCompact = width < 1180;
+  const navFontSize = navCompact ? 12.5 : 13.5;
+  const navGap = navCompact ? 10 : 14;
+
+  // Bajo 1000 los rótulos de los iconos de la derecha (Mi cuenta / Despensa)
+  // dejan sin aire a la caja de búsqueda; se quedan solo los iconos.
+  const compactActions = width < 1000;
+  // Bajo 900 el saludo de la franja superior chocaba con los accesos rápidos.
+  const showWelcome = width >= 900;
+
   const handleSubmitSearch = () => {
     const value = search.trim();
     setSearchOpen(false);
@@ -213,22 +253,42 @@ export default function WebHeader() {
 
   return (
     <View style={{ width: "100%", zIndex: 1000, position: "relative" }}>
-      {/* Barra superior utilitaria */}
-      <View style={{ backgroundColor: colors.accent, paddingHorizontal: 28, paddingVertical: 7 }}>
-        <View style={{ width: "100%", maxWidth: 1280, alignSelf: "center", flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-          <AppText style={{ color: "rgba(255,255,255,0.95)", fontSize: 12.5, fontWeight: "600" }}>Bienvenido a {brand.name} · {brand.tagline}</AppText>
+      {/* Franja superior de avisos — azul navy (`primaryDark`), el fondo más
+          profundo de la paleta. Antes iba en lima con texto blanco: 1,9:1, es
+          decir ilegible. El manual reserva el lima para acentos, no para
+          fondos, y sobre azul el texto va blanco (11,9:1). */}
+      <View style={{ backgroundColor: colors.primaryDark, paddingHorizontal: GUTTER, paddingVertical: 7 }}>
+        {/* Sin el saludo queda un solo hijo: `space-between` lo dejaría pegado
+            a la izquierda, así que se cambia a `flex-end` y los accesos se
+            quedan donde el ojo los busca, en el borde derecho de la caja. */}
+        <View style={{ width: "100%", maxWidth: MAX_WIDTH, alignSelf: "center", flexDirection: "row", alignItems: "center", justifyContent: showWelcome ? "space-between" : "flex-end", gap: 16 }}>
+          {showWelcome ? (
+            <AppText weight="semiBold" numberOfLines={1} style={{ color: colors.primaryText, fontSize: 12.5, flexShrink: 1 }}>Bienvenido a {brand.name} · {brand.tagline}</AppText>
+          ) : null}
           <View style={{ flexDirection: "row", alignItems: "center", gap: 18 }}>
             <Pressable onPress={() => navigation.navigate("Stores")} style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
-              <Ionicons name="location-outline" size={14} color="#fff" />
-              <AppText style={{ color: "#fff", fontSize: 12.5, fontWeight: "600" }}>Nuestras tiendas</AppText>
+              {({ hovered }) => (
+                <>
+                  <Ionicons name="location-outline" size={14} color={hovered ? colors.accent : colors.primaryText} />
+                  <AppText weight="semiBold" style={{ color: hovered ? colors.accent : colors.primaryText, fontSize: 12.5 }}>Nuestras tiendas</AppText>
+                </>
+              )}
             </Pressable>
             <Pressable onPress={() => navigation.navigate("HowItWorks")} style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
-              <Ionicons name="help-circle-outline" size={14} color="#fff" />
-              <AppText style={{ color: "#fff", fontSize: 12.5, fontWeight: "600" }}>Ayuda</AppText>
+              {({ hovered }) => (
+                <>
+                  <Ionicons name="help-circle-outline" size={14} color={hovered ? colors.accent : colors.primaryText} />
+                  <AppText weight="semiBold" style={{ color: hovered ? colors.accent : colors.primaryText, fontSize: 12.5 }}>Ayuda</AppText>
+                </>
+              )}
             </Pressable>
             <Pressable onPress={() => navigation.navigate(token ? "ProfileTab" : "Auth")} style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
-              <Ionicons name="person-outline" size={14} color="#fff" />
-              <AppText style={{ color: "#fff", fontSize: 12.5, fontWeight: "600" }}>Mi cuenta</AppText>
+              {({ hovered }) => (
+                <>
+                  <Ionicons name="person-outline" size={14} color={hovered ? colors.accent : colors.primaryText} />
+                  <AppText weight="semiBold" style={{ color: hovered ? colors.accent : colors.primaryText, fontSize: 12.5 }}>Mi cuenta</AppText>
+                </>
+              )}
             </Pressable>
           </View>
         </View>
@@ -242,7 +302,7 @@ export default function WebHeader() {
           backgroundColor: colors.surface,
           borderBottomWidth: 1,
           borderBottomColor: colors.border,
-          paddingHorizontal: 28,
+          paddingHorizontal: GUTTER,
           paddingVertical: 12,
           position: "relative",
           zIndex: 100,
@@ -251,7 +311,7 @@ export default function WebHeader() {
       <View
         style={{
           width: "100%",
-          maxWidth: 1280,
+          maxWidth: MAX_WIDTH,
           alignSelf: "center",
           flexDirection: "row",
           alignItems: "center",
@@ -267,12 +327,16 @@ export default function WebHeader() {
             source={require("../../assets/logo-cibox.png")}
             style={{ width: 82, height: 86, resizeMode: "contain" }}
           />
+          {/* El grosor va por `weight`, no por `fontWeight`: Montserrat se
+              carga como una familia por peso (Montserrat_700Bold), así que
+              pedir 900 sobre ella no trae una tipografía más gruesa, el
+              navegador la ENGORDA a la fuerza y sale emborronada. */}
           {width >= 1040 ? (
             <View style={{ justifyContent: "center", borderLeftWidth: 1, borderLeftColor: colors.border, paddingLeft: 12 }}>
-              <AppText style={{ fontSize: 15, fontWeight: "900", color: colors.primary, lineHeight: 18 }}>
+              <AppText weight="bold" style={{ fontSize: 15, color: colors.primary, lineHeight: 18 }}>
                 Tu supermercado online
               </AppText>
-              <AppText style={{ fontSize: 12, fontWeight: "600", color: colors.muted, lineHeight: 15, marginTop: 2 }}>
+              <AppText weight="semiBold" style={{ fontSize: 12, color: colors.muted, lineHeight: 15, marginTop: 2 }}>
                 Compra desde donde estés · retira sin filas
               </AppText>
             </View>
@@ -285,34 +349,38 @@ export default function WebHeader() {
             onMouseLeave={handleCloseCategories}
             style={{ position: "relative" }}
           >
+            {/* Botón de acción del header: va en lima, que es el color de
+                ACCIÓN del manual. Antes era blanco sobre el header blanco, o
+                sea invisible hasta pasar el ratón por encima. Sobre lima el
+                texto va oscuro (`accentText`, 10,1:1); en blanco daría 1,9:1. */}
             <Pressable
               onPress={() => setCategoriesOpen((prev) => !prev)}
-              style={{
+              style={({ hovered }) => ({
                 height: 42,
                 borderRadius: 999,
                 paddingHorizontal: 16,
                 flexDirection: "row",
                 alignItems: "center",
-                backgroundColor: "#fff",
-              }}
+                backgroundColor: hovered || categoriesOpen ? colors.accentLight : colors.accent,
+              })}
             >
               <Ionicons
                 name="grid-outline"
                 size={16}
-                color={colors.text}
+                color={colors.accentText}
                 style={{ marginRight: 8 }}
               />
               <AppText
+                weight="bold"
                 style={{
                   fontSize: 14,
-                  fontWeight: "800",
-                  color: colors.text,
+                  color: colors.accentText,
                   marginRight: 6,
                 }}
               >
                 Categorías
               </AppText>
-              <Ionicons name="chevron-down" size={16} color={colors.text} />
+              <Ionicons name="chevron-down" size={16} color={colors.accentText} />
             </Pressable>
 
             {categoriesOpen ? (
@@ -323,7 +391,7 @@ export default function WebHeader() {
                   left: 0,
                   zIndex: 1000,
                   width: megaWidth,
-                  backgroundColor: "#fff",
+                  backgroundColor: colors.surface,
                   borderRadius: 18,
                   borderWidth: 1,
                   borderColor: colors.border,
@@ -361,7 +429,11 @@ export default function WebHeader() {
             style={{
               height: 42,
               borderRadius: 999,
-              backgroundColor: "#f1f1f1",
+              // Gris de marca en vez del #f1f1f1 suelto, con borde para que el
+              // campo se lea como campo sobre el header blanco.
+              backgroundColor: colors.background,
+              borderWidth: 1,
+              borderColor: colors.border,
               flexDirection: "row",
               alignItems: "center",
               paddingHorizontal: 16,
@@ -411,7 +483,7 @@ export default function WebHeader() {
                 top: 50,
                 left: 0,
                 right: 0,
-                backgroundColor: "#fff",
+                backgroundColor: colors.surface,
                 borderRadius: 22,
                 borderWidth: 1,
                 borderColor: colors.border,
@@ -441,10 +513,13 @@ export default function WebHeader() {
                   <>
                     {hasCategoryResults ? (
                       <View style={{ marginBottom: 14 }}>
+                        {/* Mismo motivo que en el rótulo del logo: el grosor
+                            se pide por `weight` para usar la Montserrat real y
+                            no una negrita falsa del navegador. */}
                         <AppText
+                          weight="bold"
                           style={{
                             fontSize: 12,
-                            fontWeight: "800",
                             color: colors.muted,
                             marginBottom: 10,
                             textTransform: "uppercase",
@@ -460,7 +535,7 @@ export default function WebHeader() {
                             style={{
                               paddingVertical: 8,
                               borderBottomWidth: 1,
-                              borderBottomColor: "#f1f1f1",
+                              borderBottomColor: colors.border,
                             }}
                           >
                             <AppText
@@ -480,9 +555,9 @@ export default function WebHeader() {
                     {hasProductResults ? (
                       <View>
                         <AppText
+                          weight="bold"
                           style={{
                             fontSize: 12,
-                            fontWeight: "800",
                             color: colors.muted,
                             marginBottom: 10,
                             textTransform: "uppercase",
@@ -500,7 +575,7 @@ export default function WebHeader() {
                               alignItems: "center",
                               paddingVertical: 10,
                               borderBottomWidth: 1,
-                              borderBottomColor: "#f1f1f1",
+                              borderBottomColor: colors.border,
                             }}
                           >
                             <View
@@ -508,13 +583,13 @@ export default function WebHeader() {
                                 width: 42,
                                 height: 42,
                                 borderRadius: 8,
-                                backgroundColor: "#f7f7f7",
+                                backgroundColor: colors.background,
                                 justifyContent: "center",
                                 alignItems: "center",
                                 overflow: "hidden",
                                 marginRight: 12,
                                 borderWidth: 1,
-                                borderColor: "#efefef",
+                                borderColor: colors.border,
                               }}
                             >
                               {product?.thumbnail || product?.images?.[0] ? (
@@ -539,11 +614,11 @@ export default function WebHeader() {
 
                             <AppText
                               numberOfLines={1}
+                              weight="semiBold"
                               style={{
                                 flex: 1,
                                 color: colors.text,
                                 fontSize: 15,
-                                fontWeight: "700",
                                 textTransform: "uppercase",
                               }}
                             >
@@ -560,10 +635,10 @@ export default function WebHeader() {
                           }}
                         >
                           <AppText
+                            weight="semiBold"
                             style={{
                               color: colors.muted,
                               fontSize: 13,
-                              fontWeight: "700",
                               textTransform: "uppercase",
                             }}
                           >
@@ -594,6 +669,8 @@ export default function WebHeader() {
             gap: 18,
           }}
         >
+          {/* Bajo 1000px los rótulos se caen y quedan solo los iconos: así el
+              buscador conserva su ancho y nada se sale de la caja de 1200. */}
           <Pressable
             onPress={() => navigation.navigate(token ? "ProfileTab" : "Auth")}
             style={{
@@ -605,17 +682,19 @@ export default function WebHeader() {
               name="person-outline"
               size={22}
               color={colors.text}
-              style={{ marginRight: 6 }}
+              style={{ marginRight: compactActions ? 0 : 6 }}
             />
-            <AppText
-              style={{
-                fontSize: 14,
-                fontWeight: "600",
-                color: colors.text,
-              }}
-            >
-              {token ? "Mi cuenta" : "Acceso/Registro"}
-            </AppText>
+            {compactActions ? null : (
+              <AppText
+                weight="semiBold"
+                style={{
+                  fontSize: 14,
+                  color: colors.text,
+                }}
+              >
+                {token ? "Mi cuenta" : "Acceso/Registro"}
+              </AppText>
+            )}
           </Pressable>
 
           <Pressable
@@ -626,11 +705,13 @@ export default function WebHeader() {
               name="basket-outline"
               size={22}
               color={colors.text}
-              style={{ marginRight: 6 }}
+              style={{ marginRight: compactActions ? 0 : 6 }}
             />
-            <AppText style={{ fontSize: 14, fontWeight: "600", color: colors.text }}>
-              Despensa
-            </AppText>
+            {compactActions ? null : (
+              <AppText weight="semiBold" style={{ fontSize: 14, color: colors.text }}>
+                Despensa
+              </AppText>
+            )}
           </Pressable>
 
           <Pressable
@@ -660,10 +741,10 @@ export default function WebHeader() {
               }}
             >
               <AppText
+                weight="bold"
                 style={{
-                  color: "#fff",
+                  color: colors.primaryText,
                   fontSize: 10,
-                  fontWeight: "800",
                 }}
               >
                 {cartCount || 0}
@@ -674,15 +755,67 @@ export default function WebHeader() {
       </View>
       </View>
 
-      {/* Mega-nav magenta — z-index BAJO para quedar por debajo del dropdown de
-          Categorías (que cuelga desde el Header principal). */}
-      <View style={{ backgroundColor: colors.primary, paddingHorizontal: 28, position: "relative", zIndex: 1 }}>
-        <View style={{ width: "100%", maxWidth: 1280, alignSelf: "center", flexDirection: "row", alignItems: "center", flexWrap: "wrap" }}>
-          {NAV_LINKS.map((l) => (
-            <Pressable key={l.label} onPress={() => navigation.navigate(l.screen, l.params)} style={{ paddingHorizontal: 14, paddingVertical: 12 }}>
-              <AppText style={{ color: "#fff", fontSize: 13.5, fontWeight: "700" }}>{l.label}</AppText>
-            </Pressable>
-          ))}
+      {/* Barra de navegación azul (`primary`) — z-index BAJO para quedar por
+          debajo del dropdown de Categorías, que cuelga del header principal. */}
+      <View style={{ backgroundColor: colors.primary, paddingHorizontal: GUTTER, position: "relative", zIndex: 1 }}>
+        <View style={{ width: "100%", maxWidth: MAX_WIDTH, alignSelf: "center" }}>
+          {/*
+            Los enlaces van CENTRADOS, no pegados a la izquierda (pedido del
+            dueño). Se usa un ScrollView horizontal en lugar de `flexWrap`:
+              · si los ocho enlaces caben, `flexGrow:1` estira el contenido al
+                ancho de la caja y `justifyContent:"center"` los centra;
+              · si no caben (ventanas de ~800), se deslizan de lado en una sola
+                fila, en vez de partirse en dos filas que dejaban un hueco raro
+                bajo la barra o de recortar "Contacto".
+            La barra de desplazamiento se oculta: el recorte ya se insinúa
+            porque el último enlace queda a medias en el borde.
+          */}
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{
+              flexGrow: 1,
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            {NAV_LINKS.map((l) => {
+              const active = isActiveLink(l, route);
+
+              return (
+                <Pressable
+                  key={l.label}
+                  onPress={() => navigation.navigate(l.screen, l.params)}
+                  style={{ paddingHorizontal: navGap, paddingTop: 12, paddingBottom: 9 }}
+                >
+                  {({ hovered }) => (
+                    // El subrayado lima marca dónde estás. Va siempre dibujado
+                    // (transparente cuando no toca) para que el alto de la
+                    // barra no salte al cambiar de página.
+                    <View
+                      style={{
+                        borderBottomWidth: 3,
+                        borderBottomColor: active ? colors.accent : "transparent",
+                        paddingBottom: 3,
+                      }}
+                    >
+                      <AppText
+                        weight="semiBold"
+                        numberOfLines={1}
+                        style={{
+                          // Lima sobre azul: 6,3:1 el activo, 7,3:1 el hover.
+                          color: active ? colors.accent : hovered ? colors.accentLight : colors.primaryText,
+                          fontSize: navFontSize,
+                        }}
+                      >
+                        {l.label}
+                      </AppText>
+                    </View>
+                  )}
+                </Pressable>
+              );
+            })}
+          </ScrollView>
         </View>
       </View>
     </View>

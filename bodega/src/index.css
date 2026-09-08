@@ -1,12 +1,14 @@
-/* Paleta Cibox. Los nombres --magenta/--rosa se conservan como alias para no
-   tocar cientos de reglas; los valores son los de brand.js (verde Cibox). */
+/* Paleta Cibox — Manual de Diseño Digital v1.0: azules de base, verde lima de
+   acento. Los nombres --magenta/--rosa son alias heredados de dos identidades
+   atrás; se conservan para no tocar cientos de reglas, pero NINGUNO vale ya un
+   magenta ni un rosa. Los valores son espejo de brand.js. */
 :root{
-  --magenta:#4E9B27; --brand:#4E9B27; --magenta-d:#3B7A1D; --morado:#3B7A1D; --rosa:#C3E062;
-  --rosa-soft:#E8F4CE; --bg:#f7f8f5; --surface:#fff; --text:#111811; --muted:#5f6b5f;
-  --border:#e3e8e0; --border-soft:#eef2ec; --ok:#16794a; --warn:#d97706; --danger:#b00020;
-  --accent:#F7B81C;
+  --magenta:#004568; --brand:#004568; --magenta-d:#003D49; --morado:#003D49; --rosa:#E8F29A;
+  --rosa-soft:#EDF6C8; --bg:#F5F6F7; --surface:#fff; --text:#17202A; --muted:#5A6672;
+  --border:#E2E6EA; --border-soft:#EEF1F4; --ok:#16794a; --warn:#d97706; --danger:#b00020;
+  --accent:#B6D900;
   --shadow:0 1px 2px rgba(16,24,40,.06);
-  --grad:linear-gradient(120deg,#3E7D1E 0%,#4E9B27 50%,#C3E062 100%);
+  --grad:linear-gradient(120deg,#003D49 0%,#004568 50%,#006996 100%);
 }
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins','Segoe UI',system-ui,-apple-system,sans-serif;}
 body{background:var(--bg);color:var(--text);}
@@ -26,33 +28,33 @@ td,.num,.kpi .v,.kpi-v,.mono{font-variant-numeric:tabular-nums;}
 
 /* Layout */
 .app{display:flex;min-height:100vh;}
-.sidebar{width:248px;background:#16240f;color:#fff;display:flex;flex-direction:column;flex-shrink:0;position:sticky;top:0;height:100vh;}
+.sidebar{width:248px;background:var(--morado);color:#fff;display:flex;flex-direction:column;flex-shrink:0;position:sticky;top:0;height:100vh;}
 .brand{display:flex;align-items:center;gap:11px;padding:18px 18px;border-bottom:1px solid rgba(255,255,255,.1);}
 .brand-logo{height:36px;width:auto;max-width:160px;object-fit:contain;display:block;}
 .brand .badge{width:46px;height:46px;border-radius:50%;background:var(--grad);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(78,155,39,.4);}
 .brand .badge b{color:#fff;font-weight:800;font-size:22px;letter-spacing:-1px;}
 .brand .nm{font-weight:800;font-size:17px;line-height:1;}
 .brand .nm i{color:var(--rosa);font-style:normal;}
-.brand .nm small{display:block;font-weight:600;font-size:9.5px;color:#b8cfa0;letter-spacing:1.6px;margin-top:3px;}
+.brand .nm small{display:block;font-weight:600;font-size:9.5px;color:rgba(255,255,255,.72);letter-spacing:1.6px;margin-top:3px;}
 .nav{padding:14px 12px;flex:1;overflow-y:auto;min-height:0;}
-.nav .lbl{font-size:10.5px;font-weight:700;color:#8fa87c;letter-spacing:1.5px;padding:10px 12px 6px;}
+.nav .lbl{font-size:10.5px;font-weight:700;color:rgba(255,255,255,.66);letter-spacing:1.5px;padding:10px 12px 6px;}
 .nav-grp{margin-bottom:2px;}
-.nav .grp-h{display:flex;align-items:center;gap:8px;width:100%;background:none;border:none;cursor:pointer;font-size:10.5px;font-weight:700;color:#8fa87c;letter-spacing:1.5px;padding:11px 12px 6px;text-transform:uppercase;}
-.nav .grp-h:hover{color:#cfe0b8;}
+.nav .grp-h{display:flex;align-items:center;gap:8px;width:100%;background:none;border:none;cursor:pointer;font-size:10.5px;font-weight:700;color:rgba(255,255,255,.66);letter-spacing:1.5px;padding:11px 12px 6px;text-transform:uppercase;}
+.nav .grp-h:hover{color:#fff;}
 .nav .grp-name{flex:1;text-align:left;}
 .nav .grp-chev{font-size:11px;display:inline-block;transition:transform .15s;opacity:.8;}
 .nav .grp-chev.col{transform:rotate(-90deg);}
-.nav .grp-pill{background:var(--amarillo,#FBBF24);color:#5a2d00;font-size:10px;font-weight:800;border-radius:99px;padding:1px 6px;}
+.nav .grp-pill{background:var(--accent);color:#17202A;font-size:10px;font-weight:800;border-radius:99px;padding:1px 6px;}
 .nav-grp.collapsed .grp-items{display:none;}
-.nav button{display:flex;align-items:center;gap:11px;width:100%;background:none;border:none;color:#e7c9da;font-size:14.5px;font-weight:600;padding:11px 13px;border-radius:11px;text-align:left;margin-bottom:3px;transition:.12s;}
+.nav button{display:flex;align-items:center;gap:11px;width:100%;background:none;border:none;color:rgba(255,255,255,.86);font-size:14.5px;font-weight:600;padding:11px 13px;border-radius:11px;text-align:left;margin-bottom:3px;transition:.12s;}
 .nav button:hover{background:rgba(255,255,255,.07);color:#fff;}
-.nav button.active{background:var(--magenta);color:#fff;box-shadow:0 4px 10px rgba(230,0,126,.16);}
+.nav button.active{background:var(--magenta);color:#fff;box-shadow:0 4px 10px rgba(0,69,104,.16);}
 .nav button .ic{font-size:18px;width:22px;text-align:center;}
-.nav button .pill{margin-left:auto;background:var(--amarillo,#FBBF24);color:#5a2d00;font-size:11px;font-weight:800;border-radius:99px;padding:1px 7px;}
-@keyframes pillpulse{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(230,0,126,.6);}50%{transform:scale(1.18);box-shadow:0 0 0 6px rgba(230,0,126,0);}}
+.nav button .pill{margin-left:auto;background:var(--accent);color:#17202A;font-size:11px;font-weight:800;border-radius:99px;padding:1px 7px;}
+@keyframes pillpulse{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(0,69,104,.6);}50%{transform:scale(1.18);box-shadow:0 0 0 6px rgba(0,69,104,0);}}
 .pill-bump{animation:pillpulse 1s ease-in-out 3;}
 .fila-wait{animation:pillpulse 1.4s ease-in-out infinite;}
-.sb-foot{padding:14px 18px;border-top:1px solid rgba(255,255,255,.1);font-size:11.5px;color:#c79bb6;}
+.sb-foot{padding:14px 18px;border-top:1px solid rgba(255,255,255,.1);font-size:11.5px;color:rgba(255,255,255,.66);}
 .sb-foot .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:middle;}
 
 .main{flex:1;min-width:0;}
@@ -120,7 +122,7 @@ tr:hover td{background:#fafafa;}
 .pick-grid{display:grid;grid-template-columns:340px 1fr;gap:20px;align-items:start;}
 .ord{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:12px;cursor:pointer;transition:.12s;}
 .ord:hover{border-color:#d8d5dc;}
-.ord.sel{border-color:var(--magenta);box-shadow:0 0 0 3px rgba(230,0,126,.10);}
+.ord.sel{border-color:var(--magenta);box-shadow:0 0 0 3px rgba(0,69,104,.10);}
 .ord .n{font-weight:800;font-size:15px;}
 .ord .c{font-size:13px;color:var(--muted);margin:2px 0 8px;}
 .pick-item{display:flex;align-items:center;gap:14px;padding:14px 18px;border-top:1px solid var(--border);}
@@ -158,7 +160,7 @@ tr:hover td{background:#fafafa;}
 .seg button{border:none;background:none;padding:7px 14px;font-size:13px;font-weight:600;color:var(--muted);border-left:1px solid var(--border-soft);border-radius:0;}
 .seg button:first-child{border-left:none;}
 .seg button:hover{background:#fafafa;color:var(--text);}
-.seg button.on{background:rgba(230,0,126,.08);color:var(--magenta-d);font-weight:700;}
+.seg button.on{background:rgba(0,69,104,.08);color:var(--magenta-d);font-weight:700;}
 
 /* Dashboard — retiros */
 .dash-row{display:grid;grid-template-columns:1fr 320px;gap:20px;align-items:start;margin-bottom:20px;}
@@ -183,7 +185,7 @@ tr:hover td{background:#fafafa;}
 .ped-grid.open{grid-template-columns:1fr 380px;}
 .row-sel td{background:#fdf0f7 !important;}
 .tag-venc{background:#fee2e2;color:#b91c1c;margin-top:4px;}
-.tag-hoy{background:#e9f3da;color:var(--magenta);margin-top:4px;}
+.tag-hoy{background:#E6F0F5;color:var(--magenta);margin-top:4px;}
 .ped-detail{position:sticky;top:88px;}
 .ped-body{padding:18px 20px;}
 .ped-cols{display:grid;grid-template-columns:1fr 1fr;gap:20px;}

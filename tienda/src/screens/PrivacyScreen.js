@@ -309,7 +309,8 @@ function SectionBlock({ section }) {
       <View style={{ height: 1, backgroundColor: colors.border, marginBottom: 14 }} />
 
       {/* Contenido */}
-      <AppText style={{ fontSize: 13, color: colors.muted, lineHeight: 22 }}>
+      {/* Cap. 13: mínimo 16px en cuerpo. */}
+      <AppText style={{ fontSize: 16, color: colors.muted, lineHeight: 24 }}>
         {section.content}
       </AppText>
     </View>
@@ -422,7 +423,8 @@ export default function PrivacyScreen() {
           padding: spacing.md,
           marginBottom: spacing.lg,
         }}>
-          <Ionicons name="information-circle-outline" size={22} color={colors.accent} style={{ marginTop: 1 }} />
+          {/* Mismo caso que ContactScreen: sobre el tinte lima el icono va azul. */}
+          <Ionicons name="information-circle-outline" size={22} color={colors.primary} style={{ marginTop: 1 }} />
           <View style={{ flex: 1 }}>
             <AppText style={{ fontSize: 13, fontWeight: "800", color: colors.text, marginBottom: 3 }}>
               Tus derechos sobre tus datos

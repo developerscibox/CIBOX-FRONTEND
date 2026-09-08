@@ -67,7 +67,7 @@ export default function ForgotPasswordScreen({ navigation }) {
               paddingHorizontal: spacing.lg,
               paddingVertical: spacing.xl,
               borderWidth: 1,
-              borderColor: "#dfe8d8",
+              borderColor: colors.border,
               ...shadows.card,
             }}
           >
@@ -117,7 +117,7 @@ export default function ForgotPasswordScreen({ navigation }) {
                     flexDirection: "row",
                     alignItems: "center",
                     borderWidth: 1.5,
-                    borderColor: "#cfdcc6",
+                    borderColor: colors.border,
                     borderRadius: 999,
                     paddingHorizontal: 16,
                     height: 54,

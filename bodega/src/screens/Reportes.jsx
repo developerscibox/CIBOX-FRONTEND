@@ -24,7 +24,7 @@ const sum = (arr, k) => (arr || []).reduce((a, x) => a + (Number(x[k]) || 0), 0)
 // meta del backend ("estimado a costo actual"): string directo u objeto con nota.
 const metaTxt = (m) => (!m ? null : typeof m === "string" ? m : m.nota || m.note || m.label || "Estimado a costo actual");
 const PERIODOS = { hoy: { label: "Hoy", days: 0 }, semana: { label: "7 días", days: 6 }, mes: { label: "30 días", days: 29 }, trimestre: { label: "Trimestre", days: 89 } };
-const MAGENTA = [155, 0, 122]; // = var(--magenta-d) #3B7A1D (PDF: jsPDF no lee CSS vars)
+const MAGENTA = [155, 0, 122]; // = var(--magenta-d) #003D49 (PDF: jsPDF no lee CSS vars)
 
 function Bars({ serie }) {
   const arr = serie || [];

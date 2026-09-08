@@ -7,17 +7,25 @@ import useAuthStore from "../store/authStore";
 import { useHomeSlots, cmsText } from "../services/contentService";
 
 import brand, { links } from "../constants/brand";
-const TEXT = "#FFFFFF";
+import { colors } from "../constants/theme";
+const TEXT = colors.primaryText;
+// Blanco al 82% sobre el degradado. La parada más clara es `primaryMid`, y ahí
+// el texto queda en 4,63:1 — pasa el 4,5:1 de texto normal; en el resto del pie
+// sube a 7,4:1 y 8,5:1. Es el punto más justo del footer, así que si alguna vez
+// se aclara el degradado hay que subir esta opacidad.
 const MUTED = "rgba(255,255,255,0.82)";
 const LINE = "rgba(255,255,255,0.22)";
-const GRAD = ["#4E9B27", "#3E7D1E", "#2E6116"];
+// Degradado del pie: azul medio → azul Cibox → navy. El manual reserva los
+// fondos profundos para el pie de página, y el lima se queda fuera de la rampa
+// a propósito (es acento, no fondo).
+const GRAD = [colors.primaryMid, colors.primary, colors.primaryDark];
 
 // ─── Link de columna ─────────────────────────────────────────────────────────
 function FooterLink({ label, onPress }) {
   return (
     <Pressable onPress={onPress} style={{ marginBottom: 10 }}>
       {({ hovered }) => (
-        <AppText style={{ fontSize: 13, color: hovered ? "#fff" : MUTED, fontWeight: "500" }}>
+        <AppText weight="semiBold" style={{ fontSize: 13, color: hovered ? "#fff" : MUTED }}>
           {label}
         </AppText>
       )}
@@ -62,7 +70,8 @@ function SocialBtn({ name, url }) {
 function PayChip({ label }) {
   return (
     <View style={{ backgroundColor: "#fff", borderRadius: 7, paddingHorizontal: 12, paddingVertical: 7 }}>
-      <AppText style={{ fontSize: 12, fontWeight: "900", color: "#3B7A1D", letterSpacing: 0.3 }}>
+      {/* Azul de marca sobre el chip blanco: 10,2:1. */}
+      <AppText style={{ fontSize: 12, fontWeight: "900", color: colors.primary, letterSpacing: 0.3 }}>
         {label}
       </AppText>
     </View>
@@ -86,7 +95,7 @@ export default function WebFooter() {
       {/* Cuerpo */}
       <View
         style={{
-          maxWidth: 1280,
+          maxWidth: 1200,
           alignSelf: "center",
           width: "100%",
           paddingHorizontal: 32,
@@ -98,12 +107,13 @@ export default function WebFooter() {
       >
         {/* Marca */}
         <View style={{ flex: 1.4, minWidth: 240 }}>
-          {/* Va la versión blanca del logo, no la de color: el pie usa el degradado
-              verde de GRAD y sobre #4E9B27 el logo a color queda en 1.0:1 de
-              contraste — literalmente el mismo tono que el fondo, se ve como una
-              mancha fantasma. En blanco rinde entre 3.48:1 y 7.40:1 según el
-              punto del degradado. Mismo arte y mismo tamaño (795x1061), así que
-              el layout no cambia. */}
+          {/* Va la versión blanca del logo, no la de color: el pie usa el
+              degradado azul de GRAD y el logo a color es lima, que sobre el azul
+              medio queda en 3,73:1 y sobre el navy sube a 7,32:1 — el logo
+              cambiaría de peso a lo largo del pie, y en su tramo más flojo no
+              llega al 4,5:1. En blanco rinde parejo y siempre holgado, entre
+              6,07:1 y 11,91:1 según el punto del degradado. Mismo arte y mismo
+              tamaño (795x1061), así que el layout no cambia. */}
           <Image
             source={require("../../assets/logo-cibox-blanco.png")}
             resizeMode="contain"
@@ -170,7 +180,7 @@ export default function WebFooter() {
       <View style={{ borderTopWidth: 1, borderColor: LINE }}>
         <View
           style={{
-            maxWidth: 1280,
+            maxWidth: 1200,
             alignSelf: "center",
             width: "100%",
             paddingVertical: 18,

@@ -92,7 +92,7 @@ export default function RegisterScreen({ navigation }) {
     flexDirection: "row",
     alignItems: "center",
     borderWidth: 1.5,
-    borderColor: hasError ? colors.danger : "#cfdcc6",
+    borderColor: hasError ? colors.danger : colors.border,
     borderRadius: 999,
     paddingHorizontal: 16,
     height: 54,
@@ -134,7 +134,7 @@ export default function RegisterScreen({ navigation }) {
               width: "100%",
               alignItems: "center",
               borderWidth: 1,
-              borderColor: "#dfe8d8",
+              borderColor: colors.border,
               ...shadows.card,
             }}
           >
@@ -219,7 +219,7 @@ export default function RegisterScreen({ navigation }) {
               minHeight: 660,
               justifyContent: "center",
               borderWidth: 1,
-              borderColor: "#dfe8d8",
+              borderColor: colors.border,
               ...shadows.card,
             }}
           >

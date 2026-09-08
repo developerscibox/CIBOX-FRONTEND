@@ -20,9 +20,9 @@ const ROLE_LABEL = {
 
 // Color del .badge por rol.
 const ROLE_BADGE = {
-  customer: { bg: "#eef4e7", text: "#2E6116" },
+  customer: { bg: "#EEF1F4", text: "#003D49" },
   vendor:   { bg: "#e0f2fe", text: "#0369a1" },
-  admin:    { bg: "#e9f3da", text: "#6B8F4E" },
+  admin:    { bg: "#E6F0F5", text: "#006996" },
   manager:  { bg: "#ede9fe", text: "#6d28d9" },
   vendedor: { bg: "#e0e7ff", text: "#3730a3" },
   cashier:  { bg: "#fef3c7", text: "#92400e" },
@@ -44,7 +44,7 @@ const MOCK_USERS = {
 };
 
 function RoleBadge({ role }) {
-  const c = ROLE_BADGE[role] || { bg: "#eef4e7", text: t.morado };
+  const c = ROLE_BADGE[role] || { bg: "#EEF1F4", text: t.morado };
   return (
     <span className="badge" style={{ background: c.bg, color: c.text }}>
       {ROLE_LABEL[role] || role}
@@ -149,7 +149,7 @@ export default function Usuarios() {
       <div className="card" style={{ marginBottom: 0 }}>
         <div className="card-h">
           <h2>Usuarios</h2>
-          <span className="badge" style={{ background: "#e9f3da", color: "#6B8F4E" }}>
+          <span className="badge" style={{ background: "#E6F0F5", color: "#006996" }}>
             {res.loading ? "Cargando…" : `${total} ${total === 1 ? "usuario" : "usuarios"}`}
           </span>
         </div>

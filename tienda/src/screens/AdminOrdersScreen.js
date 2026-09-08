@@ -40,7 +40,10 @@ const NEXT_STATUS = {
 const STATUS_META = {
   pending:   { label: "Pendiente",        bg: "#fef3c7", text: "#92400e", dot: "#f59e0b" },
   paid:      { label: "Pagada",           bg: "#dbeafe", text: "#1d4ed8", dot: "#3b82f6" },
-  preparing: { label: "Preparando",       bg: "#ede9fe", text: "#6d28d9", dot: "#83BA42" },
+  // "Preparando" en el azul de marca, el mismo par que usa el panel de
+  // bodega (bodega/src/theme.js): es el estado que se cruza entre las dos
+  // apps y no puede verse de un color en cada una. 10,3:1 sobre su fondo.
+  preparing: { label: "Preparando",       bg: "#E6F0F5", text: "#003D49", dot: "#004568" },
   ready:     { label: "Lista para retiro", bg: "#e0f2fe", text: "#0369a1", dot: "#0ea5e9" },
   delivered: { label: "Retirada",         bg: "#dcfce7", text: "#166534", dot: "#16a34a" },
   cancelled: { label: "Cancelada",        bg: "#fee2e2", text: "#b91c1c", dot: "#ef4444" },

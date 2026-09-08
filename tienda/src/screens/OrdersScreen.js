@@ -19,7 +19,8 @@ const getStatusMeta = (status) => {
   const map = {
     pending:   { label: "Pendiente",        bg: "#fef3c7", text: "#92400e" },
     paid:      { label: "Pagada",           bg: "#dbeafe", text: "#1d4ed8" },
-    preparing: { label: "Preparando",       bg: "#ede9fe", text: "#6d28d9" },
+    // Mismo par que bodega/src/theme.js: el estado se cruza entre las dos apps.
+    preparing: { label: "Preparando",       bg: "#E6F0F5", text: "#003D49" },
     ready:     { label: "Lista p/ retiro",  bg: "#e0f2fe", text: "#0369a1" },
     shipped:   { label: "En camino",        bg: "#cffafe", text: "#0e7490" },
     delivered: { label: "Entregada",        bg: "#dcfce7", text: "#166534" },
@@ -32,9 +33,9 @@ const getStatusMeta = (status) => {
 // ── Mini-timeline: 4 puntos para retiro ──────────────────────────────────────
 const TRACK_STEPS = [
   { key: "paid",      label: "Pago",          color: "#3b82f6" },
-  { key: "preparing", label: "Preparación",   color: "#83BA42" },
-  { key: "ready",     label: "Listo retiro",  color: "#0ea5e9" },
-  { key: "delivered", label: "Entregado",     color: "#16a34a" },
+  { key: "preparing", label: "Preparación",   color: "#006996" },
+  { key: "ready",     label: "Listo retiro",  color: colors.primaryMid },
+  { key: "delivered", label: "Entregado",     color: colors.success },
 ];
 // Orden de progreso: estados previos a "paid" aún no completan ningún punto.
 const TRACK_ORDER = ["pending", "paid", "preparing", "ready", "shipped", "delivered"];

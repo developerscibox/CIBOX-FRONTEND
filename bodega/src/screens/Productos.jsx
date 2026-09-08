@@ -725,7 +725,7 @@ export default function Productos() {
       <div className="card" style={{ marginBottom: 0 }}>
         <div className="card-h">
           <h2>Productos</h2>
-          <span className="badge" style={{ background: "#e9f3da", color: "var(--magenta-d)" }}>
+          <span className="badge" style={{ background: "#E6F0F5", color: "var(--magenta-d)" }}>
             {res.loading ? "…" : products.length === 1 ? "1 producto" : `${products.length} productos`}
           </span>
         </div>

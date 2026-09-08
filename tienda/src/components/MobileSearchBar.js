@@ -130,7 +130,12 @@ export default function MobileSearchBar() {
         style={{
           height: 44,
           borderRadius: radius.md,
-          backgroundColor: "#f1f1f1",
+          // Cap. 07: campo claro con borde suave. El #f1f1f1 no está entre los
+          // ocho colores del manual; el gris muy claro sí, y el borde de marca
+          // le da el contorno que el buscador de escritorio ya tenía.
+          backgroundColor: colors.background,
+          borderWidth: 1,
+          borderColor: colors.border,
           flexDirection: "row",
           alignItems: "center",
           paddingHorizontal: 12,

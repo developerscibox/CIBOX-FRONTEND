@@ -607,7 +607,9 @@ function SectionBlock({ section }) {
             </View>
           )}
 
-          <AppText style={{ fontSize: 13, color: colors.muted, lineHeight: 22 }}>
+          {/* Cap. 13: mínimo 16px en cuerpo. Es prosa de lectura larga, no una
+              etiqueta, así que entra de lleno en la regla. */}
+          <AppText style={{ fontSize: 16, color: colors.muted, lineHeight: 24 }}>
             {item.content}
           </AppText>
         </View>

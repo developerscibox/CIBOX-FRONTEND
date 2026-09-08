@@ -11,7 +11,9 @@ const ICON = {
   info: "information-circle",
 };
 const ICON_COLOR = {
-  success: colors.primary,
+  // Cap. 03: el lima es el color de estado. El azul de marca sobre el fondo
+  // oscuro del toast se hundia; el lima rinde 9,5:1 sobre el mismo fondo.
+  success: colors.accent,
   error: "#f87171",
   info: "#fff",
 };

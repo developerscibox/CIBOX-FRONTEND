@@ -10,7 +10,7 @@
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#3E7D1E"
+      "backgroundColor": "#004568"
     },
     "scheme": "cibox",
     "ios": {
@@ -21,7 +21,7 @@
       "package": "cl.cibox.app",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#3E7D1E"
+        "backgroundColor": "#004568"
       },
       "edgeToEdgeEnabled": true
     },
@@ -34,7 +34,7 @@
         "expo-notifications",
         {
           "icon": "./assets/notification-icon.png",
-          "color": "#3E7D1E"
+          "color": "#004568"
         }
       ]
     ],

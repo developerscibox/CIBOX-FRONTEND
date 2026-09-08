@@ -33,14 +33,19 @@ import { readCache, writeCache } from "../utils/catalogCache";
 import { useHomeSlots, cmsText } from "../services/contentService";
 
 import brand from "../constants/brand";
-// Degradado de marca de Cibox: verde profundo → verde → lima (los tonos del logo).
-const GRAD = ["#3E7D1E", "#4E9B27", "#C3E062"];
+// Degradado de marca de Cibox: navy → azul Cibox → azul medio. La rampa se queda
+// entera dentro de la familia azul; el lima no cierra el degradado porque en el
+// manual es color de acción (botones, precios, badges), no fondo extenso, y como
+// última parada dejaba media franja sin contraste para el texto blanco.
+const GRAD = [colors.primaryDark, colors.primary, colors.primaryMid];
 // Ícono "NEWS" de marca para el newsletter (versión móvil, ver Newsletter).
 const NEWS_ICON = require("../../assets/home/qa-news.png");
 // Arte del hero (1600x800, provisto por diseño): trae el logo de Cibox a la
 // izquierda y la caja de productos a la derecha.
 const BANNER_BG = require("../../assets/home/banner-hero.webp");
-// Arte del bloque de ofertas: verde de marca con una persona y una caja Cibox.
+// Arte del bloque de ofertas: una persona con una caja Cibox. El fondo se llevó
+// al azul medio que pide el punto 10 del manual; la persona y el cartón conservan
+// su color, que es lo que pide el punto 09 (fotografía real, colores vibrantes).
 const BANNER_OFERTAS = require("../../assets/home/banner-ofertas.webp");
 
 // Ícono por categoría (según el nombre) para "Categorías principales".
@@ -107,9 +112,9 @@ function Hero({ navigation, isWebDesktop, isWide, width, content }) {
   // el título y el botón.
   //
   // Ancho real del banner: el hero vive dentro de ScreenContainer, que centra el
-  // contenido con `maxWidth` 1180 (ver el render de esta pantalla) y lo separa
+  // contenido con `maxWidth` 1200 (ver el render de esta pantalla) y lo separa
   // `spacing.md` por lado.
-  const anchoBanner = Math.max(1, Math.min(width, 1180) - spacing.md * 2);
+  const anchoBanner = Math.max(1, Math.min(width, 1200) - spacing.md * 2);
   const esMovil = !isWide && !isWebDesktop;
 
   // El tramo móvil NO puede ser de tamaño fijo. El banner es 2:1, así que su alto
@@ -159,7 +164,8 @@ function Hero({ navigation, isWebDesktop, isWide, width, content }) {
         borderRadius: 24,
         overflow: "hidden",
         marginBottom: spacing.lg,
-        backgroundColor: "#3E7D1E",
+        // Color de respaldo mientras el arte no ha cargado: el navy de marca.
+        backgroundColor: colors.primaryDark,
       }}
     >
       <Image
@@ -170,10 +176,13 @@ function Hero({ navigation, isWebDesktop, isWide, width, content }) {
       {/* Velo de marca sobre la mitad izquierda: da contraste al texto SIN
           apagar la caja de productos de la derecha. Va solo cuando el panel
           define un título: sobre un arte que ya trae el suyo impreso, este velo
-          lo único que hace es ensuciarlo. */}
+          lo único que hace es ensuciarlo.
+          El tinte pasa del verde (38,79,18) al azul de marca (0,69,104), que es
+          un pelo más oscuro, así que el texto blanco no pierde nada: en la zona
+          plena del velo queda en 8,24:1 incluso si debajo el arte fuese blanco. */}
       {hayTexto && (
         <LinearGradient
-          colors={["rgba(38,79,18,0.92)", "rgba(38,79,18,0.66)", "rgba(38,79,18,0)"]}
+          colors={["rgba(0,69,104,0.92)", "rgba(0,69,104,0.66)", "rgba(0,69,104,0)"]}
           locations={[0, 0.4, 0.75]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
@@ -276,7 +285,10 @@ function PromoBanner({ banner, navigation, isWebDesktop }) {
         bottom: 0,
         justifyContent: "center",
         paddingHorizontal: isWebDesktop ? 36 : 20,
-        backgroundColor: "rgba(0,0,0,0.22)",
+        // Cap. 10: el velo de los banners va en el azul de la marca. Un negro
+        // al 22% apaga el arte y no dice nada; el azul da el mismo contraste
+        // al texto y de paso tiñe la franja con el color de Cibox.
+        backgroundColor: "rgba(0,69,104,0.42)",
       }}
     >
       <AppText
@@ -310,7 +322,8 @@ function PromoBanner({ banner, navigation, isWebDesktop }) {
             borderRadius: 22,
             overflow: "hidden",
             aspectRatio: isWebDesktop ? 4 : 2,
-            backgroundColor: "#3E7D1E",
+            // Respaldo en navy mientras baja la imagen del CMS.
+            backgroundColor: colors.primaryDark,
           }}
         >
           {titleOverlay}
@@ -382,16 +395,19 @@ function Newsletter({ title, subtitle, isWebDesktop }) {
           value={email}
           onChangeText={setEmail}
           placeholder="Tu correo electrónico"
-          placeholderTextColor="#9b6f8b"
+          // El malva #9b6f8b no pertenecía a ninguna paleta de la marca; el gris
+          // secundario del tema rinde 5,87:1 sobre el campo blanco.
+          placeholderTextColor={colors.muted}
           keyboardType="email-address"
           autoCapitalize="none"
           style={{ flex: 1, backgroundColor: "#fff", borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontSize: 14, color: colors.text }}
         />
-        {/* Amarillo de marca: sobre la franja verde el verde de `accent` rendía
-            1,49:1 y el botón se perdía en el fondo. El texto va oscuro porque
-            blanco sobre amarillo queda en 1,7:1. */}
-        <Pressable onPress={submit} style={{ backgroundColor: colors.discount, borderRadius: 12, paddingHorizontal: 18, justifyContent: "center" }}>
-          <AppText style={{ color: colors.text, fontWeight: "900", fontSize: 14 }}>Suscribirme</AppText>
+        {/* Lima de marca sobre la franja azul: aquí el acento hace exactamente
+            su trabajo —es el único botón de acción del bloque y salta a la
+            vista—. El texto va oscuro porque sobre el lima el blanco se queda en
+            1,9:1; en `colors.text` rinde 10,1:1. */}
+        <Pressable onPress={submit} style={{ backgroundColor: colors.accent, borderRadius: 12, paddingHorizontal: 18, justifyContent: "center" }}>
+          <AppText style={{ color: colors.accentText, fontWeight: "900", fontSize: 14 }}>Suscribirme</AppText>
         </Pressable>
       </View>
     </>
@@ -408,14 +424,15 @@ function Newsletter({ title, subtitle, isWebDesktop }) {
   // paso saca del bundle un archivo que además traía cuatro rayas de 1px.
   //
   // El degradado original iba de lima (#A2D15B) a verde (#559534) y dejaba el
-  // texto blanco en 1,85:1. Este mantiene el verde de marca plano bajo el texto
+  // texto blanco en 1,85:1. Este mantiene el azul de marca plano bajo el texto
   // hasta el 55% del ancho —donde el título y la bajada terminan en los dos
   // layouts, porque en móvil se centran y en desktop se alinean a la izquierda—
-  // y recién ahí abre hacia el verde claro, detrás del campo de correo. Sobre
-  // #3E7D1E el blanco rinde 5,05:1: pasa el 4,5:1 que exige la bajada.
+  // y recién ahí abre hacia el azul medio, detrás del campo de correo. Sobre
+  // `primary` el blanco rinde 10,24:1 y la bajada al 90% de opacidad 8,59:1;
+  // incluso en la parada más clara (`primaryMid`) quedan 6,07:1 y 5,24:1.
   return (
     <LinearGradient
-      colors={["#3E7D1E", "#3E7D1E", "#4E9B27"]}
+      colors={[colors.primary, colors.primary, colors.primaryMid]}
       locations={[0, 0.55, 1]}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 0 }}
@@ -483,39 +500,51 @@ function OffersBanner({ navigation, isWebDesktop }) {
         overflow: "hidden",
         marginBottom: spacing.lg,
         padding: isWebDesktop ? 36 : 24,
-        // Respaldo del mismo verde del arte, por si la imagen aún no cargó.
-        backgroundColor: "#7AB73F",
+        // Respaldo mientras la imagen no ha cargado. Va en el azul del velo, no
+        // en el verde del arte: lo que se ve en pantalla es siempre azul.
+        backgroundColor: colors.primaryDark,
       }}
     >
-      <View style={{ alignSelf: "flex-start", backgroundColor: colors.discount, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 4, marginBottom: 12 }}>
-        <AppText style={{ color: "#7a4d00", fontSize: 11, fontWeight: "900", letterSpacing: 0.5 }}>🔥 OFERTA DE LA SEMANA</AppText>
+      {/* Velo de legibilidad, el mismo recurso que el hero. El arte ya está en
+          azul de marca, así que el velo no está para teñir sino solo para que
+          el texto no compita con las cajas y las etiquetas del arte: pesa en la
+          mitad izquierda —donde va el texto— y se desvanece a la derecha para
+          no apagar la foto. */}
+      <LinearGradient
+        colors={["rgba(0,61,73,0.82)", "rgba(0,61,73,0.55)", "rgba(0,69,104,0)"]}
+        locations={[0, 0.45, 0.85]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0.3 }}
+        style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}
+      />
+      {/* Sobre el velo azul el lima vuelve a ser legible y es el acento que
+          manda el manual: #17202A sobre #B6D900 rinde 10,1:1. */}
+      <View style={{ alignSelf: "flex-start", backgroundColor: colors.accent, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 4, marginBottom: 12 }}>
+        <AppText style={{ color: colors.accentText, fontSize: 11, fontWeight: "900", letterSpacing: 0.5 }}>🔥 OFERTA DE LA SEMANA</AppText>
       </View>
       {/* El texto se queda en la mitad izquierda: la persona con la caja ocupa
           el tercio derecho del arte y taparla con letras arruina la foto. */}
+      {/* Texto blanco sobre el velo. Sin velo, el blanco sobre el arte verde
+          rendía entre 1,88:1 y 2,73:1; sobre la zona del velo donde cae el
+          texto (opacidad 0,94 a 0,80 del azul oscuro) queda entre 8,9:1 y
+          10,7:1 aun contando lo que se transparenta del arte. Sin sombras: el
+          velo ya hace ese trabajo y el halo solo ensuciaba los bordes. */}
       <View style={{ maxWidth: isWebDesktop ? "62%" : "78%" }}>
         <AppText
           style={{
-            color: "#fff",
+            color: colors.primaryText,
             fontSize: isWebDesktop ? 30 : 23,
             fontWeight: "900",
             lineHeight: isWebDesktop ? 34 : 27,
-            // El arte es verde claro y el texto blanco: sin sombra el titular
-            // pierde definición sobre las zonas más claras del degradado.
-            textShadowColor: "rgba(20,50,10,0.45)",
-            textShadowOffset: { width: 0, height: 1 },
-            textShadowRadius: 6,
           }}
         >
           Ofertas imperdibles{"\n"}¡Por tiempo limitado!
         </AppText>
         <AppText
           style={{
-            color: "#fff",
+            color: "rgba(255,255,255,0.94)",
             fontSize: 14,
             marginTop: 10,
-            textShadowColor: "rgba(20,50,10,0.45)",
-            textShadowOffset: { width: 0, height: 1 },
-            textShadowRadius: 5,
           }}
         >
           Aprovecha nuestros descuentos exclusivos en productos seleccionados.
@@ -523,10 +552,12 @@ function OffersBanner({ navigation, isWebDesktop }) {
       </View>
       <Pressable
         onPress={() => navigation.navigate("Products", { preset: "liquidation" })}
-        style={{ alignSelf: "flex-start", marginTop: 20, backgroundColor: "#fff", borderRadius: 12, paddingHorizontal: 22, paddingVertical: 12, flexDirection: "row", alignItems: "center", gap: 8 }}
+        // Boton primario del manual: fondo lima con texto oscuro. Iba en
+        // blanco, que sobre el arte se leia como un boton secundario.
+        style={{ alignSelf: "flex-start", marginTop: 20, backgroundColor: colors.accent, borderRadius: 12, paddingHorizontal: 22, paddingVertical: 12, flexDirection: "row", alignItems: "center", gap: 8 }}
       >
-        <AppText style={{ color: colors.primary, fontWeight: "900", fontSize: 14 }}>Ver los imperdibles</AppText>
-        <Ionicons name="arrow-forward" size={16} color={colors.primary} />
+        <AppText weight="bold" style={{ color: colors.accentText, fontSize: 14 }}>Ver los imperdibles</AppText>
+        <Ionicons name="arrow-forward" size={16} color={colors.accentText} />
       </Pressable>
     </ImageBackground>
   );
@@ -688,9 +719,12 @@ export default function HomeScreen({ navigation }) {
           </Pressable>
           <Pressable onPress={() => navigation.navigate("Cart")} style={{ width: 38, height: 38, borderRadius: 19, justifyContent: "center", alignItems: "center", backgroundColor: colors.primary, position: "relative" }}>
             <Ionicons name="bag-outline" size={20} color="#fff" />
+            {/* Contador del carrito: la píldora lima es justo el uso de acento
+                que pide el manual, pero el número iba en blanco y sobre el lima
+                eso es 1,9:1 —a 10px, ilegible—. Va en `accentText`: 10,1:1. */}
             {cartCount > 0 && (
               <View style={{ position: "absolute", top: -2, right: -2, minWidth: 18, height: 18, borderRadius: 9, backgroundColor: colors.accent, justifyContent: "center", alignItems: "center", paddingHorizontal: 4 }}>
-                <AppText style={{ color: "#fff", fontSize: 10, fontWeight: "800" }}>{cartCount}</AppText>
+                <AppText style={{ color: colors.accentText, fontSize: 10, fontWeight: "800" }}>{cartCount}</AppText>
               </View>
             )}
           </Pressable>
@@ -738,7 +772,7 @@ export default function HomeScreen({ navigation }) {
   ];
 
   return (
-    <ScreenContainer maxWidth={1180} padded>
+    <ScreenContainer maxWidth={1200} padded>
       <FlatList
         data={[]}
         nestedScrollEnabled
@@ -826,7 +860,12 @@ export default function HomeScreen({ navigation }) {
 
             {/* Imperdibles de la semana (productos reales con ahorro) */}
             {!sectionsLoading && liquidation.length > 0 && (
-              <View style={{ marginBottom: spacing.lg, backgroundColor: `${colors.discount}1A`, borderRadius: 22, borderWidth: 1, borderColor: `${colors.discount}55`, padding: spacing.md }}>
+              // Tinte azul, no lima. El lima al 10% pintaba los 680px de alto de
+              // esta sección de un verde pálido —el color que el rediseño vino a
+              // sacar— y encima recuperaba el look anterior justo debajo del
+              // banner azul. El acento se queda donde hace falta: botones y
+              // píldoras, no fondos de sección.
+              <View style={{ marginBottom: spacing.lg, backgroundColor: `${colors.primary}0A`, borderRadius: 22, borderWidth: 1, borderColor: `${colors.primary}22`, padding: spacing.md }}>
                 <SectionTitle title="Imperdibles de la semana" />
                 <ProductRowSection
                   title=""

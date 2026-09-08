@@ -69,7 +69,7 @@ export default function VerifyEmailScreen({ navigation, route }) {
             paddingHorizontal: spacing.lg,
             paddingVertical: spacing.xl,
             borderWidth: 1,
-            borderColor: "#dfe8d8",
+            borderColor: colors.border,
             ...shadows.card,
             alignItems: "center",
           }}

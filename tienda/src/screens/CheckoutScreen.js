@@ -780,7 +780,10 @@ export default function CheckoutScreen({ navigation }) {
                       paddingVertical: 2,
                     }}
                   >
-                    <AppText style={{ fontSize: 10, fontWeight: "900", color: "#7a4d00" }}>
+                    {/* Sobre el lima el texto va oscuro. El café #7a4d00 era el
+                        par del amarillo antiguo; contra el lima nuevo se queda
+                        en 4,47:1, y en 10px negrita eso no se lee. */}
+                    <AppText style={{ fontSize: 10, fontWeight: "900", color: colors.accentText }}>
                       PRONTO
                     </AppText>
                   </View>

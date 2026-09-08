@@ -4,7 +4,7 @@ import PantryScreen from "../screens/PantryScreen";
 import FavoritesScreen from "../screens/FavoritesScreen";
 import OrdersScreen from "../screens/OrdersScreen";
 import ProfileScreen from "../screens/ProfileScreen";
-import { colors } from "../constants/theme";
+import { colors, typography } from "../constants/theme";
 import { Image } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -31,8 +31,12 @@ export default function MainTabs() {
         },
         headerTintColor: colors.text,
         headerTitleAlign: "left",
+        // Cap. 04 del manual: Montserrat en titulos y navegacion. El peso
+        // numerico pedia una cara que no esta cargada (solo hay SemiBold y Bold
+        // de Montserrat, y Inter Regular), asi que el navegador engordaba Inter
+        // a la fuerza: negrita fingida, de bordes sucios.
         headerTitleStyle: {
-          fontWeight: "800",
+          fontFamily: typography.bold,
           color: colors.text,
         },
         tabBarStyle: {
@@ -46,7 +50,8 @@ export default function MainTabs() {
         tabBarInactiveTintColor: colors.muted,
         tabBarLabelStyle: {
           fontSize: 12,
-          fontWeight: "700",
+          // Montserrat SemiBold: el manual la asigna a interfaz y navegación.
+          fontFamily: typography.semiBold,
         },
       }}
     >

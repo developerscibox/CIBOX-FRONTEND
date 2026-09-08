@@ -171,9 +171,12 @@ export default function ProfileScreen({ navigation }) {
         )}
 
         {/* Mis pedidos — seguimiento en vivo + historial (pestañas dentro) */}
+        {/* El círculo iba en el verde claro #83BA42, que con el ícono blanco
+            encima daba 2,32:1 — bajo el 3:1 que pide un ícono. En azul de marca
+            sube a 10,2:1 y además deja de ser el último verde de la pantalla. */}
         <ActionCard
           icon="cube-outline"
-          iconColor="#83BA42"
+          iconColor={colors.primary}
           title="Mis pedidos"
           description="Sigue en vivo los pedidos en curso (pago → preparación → retiro) y revisa tu historial de compras finalizadas."
           buttonTitle="Ver mis pedidos"
@@ -206,19 +209,22 @@ export default function ProfileScreen({ navigation }) {
         <View style={styles.quickRow}>
           <QuickTile
             icon="basket-outline"
-            iconColor="#16a34a"
+            iconColor={colors.success}
             label="Mi despensa"
             onPress={() => navigation.navigate("PantryTab")}
           />
+          {/* Verde antiguo de marca → azul medio. No va `primary` para que las
+              tres pastillas sigan distinguiéndose entre sí de un vistazo; con el
+              ícono blanco encima rinde 6,07:1. */}
           <QuickTile
             icon="heart-outline"
-            iconColor="#4E9B27"
+            iconColor={colors.primaryMid}
             label="Favoritos"
             onPress={() => navigation.navigate("FavoritesTab")}
           />
           <QuickTile
             icon="notifications-outline"
-            iconColor="#f59e0b"
+            iconColor={colors.primaryDark}
             label="Notificaciones"
             onPress={() => navigation.navigate("Notifications")}
           />
@@ -243,7 +249,7 @@ export default function ProfileScreen({ navigation }) {
         {/* Ayuda */}
         <View style={styles.card}>
           <View style={styles.cardHeader}>
-            <View style={[styles.iconCircle, { backgroundColor: "#0ea5e9" }]}>
+            <View style={[styles.iconCircle, { backgroundColor: colors.primaryMid }]}>
               <Ionicons name="help-circle-outline" size={20} color="#fff" />
             </View>
             <AppText style={styles.cardTitle}>Ayuda</AppText>

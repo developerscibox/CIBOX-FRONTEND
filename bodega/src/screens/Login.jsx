@@ -54,10 +54,10 @@ export default function Login() {
       <div style={S.inner}>
         {/* Acá va la versión blanca del logo apuntada a mano, no `brand.logo`.
             El fondo de esta pantalla es el degradado verde de la marca y sobre
-            #4E9B27 el logo a color rinde 1.0:1 de contraste: desaparece. En
+            #004568 el logo a color rinde 1.0:1 de contraste: desaparece. En
             blanco queda entre 3.48:1 y 5.05:1 en la zona donde cae el logo.
             No se toca `brand.logo` porque ese token también lo usa el sidebar,
-            que va sobre #16240f y ahí el logo a color sí se lee bien. */}
+            que va sobre el navy de marca y ahí el logo a color sí se lee bien. */}
         <img src="/logo-cibox-blanco.png" alt={brand.name} style={S.logo} />
 
         {vista === "login" ? (

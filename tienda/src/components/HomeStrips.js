@@ -3,7 +3,11 @@ import { Ionicons } from "@expo/vector-icons";
 import { colors, shadows, spacing } from "../constants/theme";
 import AppText from "./AppText";
 
-const MORADO = "#2E6116";
+// Azul navy de marca. Antes esta constante era `MORADO = "#2E6116"` —un verde
+// oscuro con nombre heredado de una paleta anterior— y era el único color de
+// estas franjas escrito a mano. Ahora sale del tema, así que la paleta vive en
+// un solo sitio (constants/theme.js).
+const AZUL_PROFUNDO = colors.primaryDark;
 const LOGO = require("../../assets/logo-cibox.png");
 export const COUPON_CODE = "BODEGA10";
 
@@ -88,13 +92,16 @@ export function PromoStrip({ navigation, isWebDesktop }) {
         minHeight: isWebDesktop ? 124 : 104,
       }}
     >
+      {/* Los dos círculos de firma: el lima entra como acento sobre el azul del
+          banner (es decoración, no fondo extenso ni soporte de texto) y el navy
+          da profundidad por abajo. */}
       <View
         pointerEvents="none"
-        style={{ position: "absolute", right: -40, top: -40, width: 170, height: 170, borderRadius: 85, backgroundColor: "#C3E062", opacity: 0.4 }}
+        style={{ position: "absolute", right: -40, top: -40, width: 170, height: 170, borderRadius: 85, backgroundColor: colors.accent, opacity: 0.4 }}
       />
       <View
         pointerEvents="none"
-        style={{ position: "absolute", left: -30, bottom: -55, width: 160, height: 160, borderRadius: 80, backgroundColor: MORADO, opacity: 0.5 }}
+        style={{ position: "absolute", left: -30, bottom: -55, width: 160, height: 160, borderRadius: 80, backgroundColor: AZUL_PROFUNDO, opacity: 0.5 }}
       />
 
       {/* Logo de Cibox */}
@@ -109,10 +116,14 @@ export function PromoStrip({ navigation, isWebDesktop }) {
           ...shadows.card,
         }}
       >
+        {/* `contain` y no `cover`: el logo es más alto que ancho y dentro de
+            esta caja cuadrada el recorte le comía los costados, que es el uso
+            incorrecto que prohíbe el punto 05. El radio se queda solo en el
+            contenedor; redondear también la imagen mordía el arte. */}
         <Image
           source={LOGO}
-          style={{ width: "100%", height: "100%", borderRadius: 14 }}
-          resizeMode="cover"
+          style={{ width: "100%", height: "100%" }}
+          resizeMode="contain"
         />
       </View>
 
@@ -137,8 +148,13 @@ export function PromoStrip({ navigation, isWebDesktop }) {
           10% OFF en tu primera compra
         </AppText>
 
+        {/* Esta fila cae bajo el círculo lima de arriba a la derecha (el círculo
+            baja hasta 130px y la fila arranca ~73px), y ahí el fondo efectivo es
+            #49803E: el blanco al 90% se queda en 4,17:1 y el blanco pleno sube a
+            4,72:1. Por 12px hay que pasar el 4,5:1, así que estos dos rótulos
+            van en blanco pleno y no rebajados. */}
         <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginTop: 6, flexWrap: "wrap" }}>
-          <AppText style={{ color: "rgba(255,255,255,0.9)", fontSize: 12 }}>
+          <AppText style={{ color: "#fff", fontSize: 12 }}>
             Usa el código
           </AppText>
           {/* "Ticket" del código */}
@@ -161,7 +177,7 @@ export function PromoStrip({ navigation, isWebDesktop }) {
               {COUPON_CODE}
             </AppText>
           </View>
-          <AppText style={{ color: "rgba(255,255,255,0.9)", fontSize: 12 }}>
+          <AppText style={{ color: "#fff", fontSize: 12 }}>
             en el checkout
           </AppText>
         </View>
@@ -202,16 +218,17 @@ export function HowToBoxStrip({ isWebDesktop }) {
     <View
       style={{
         marginBottom: spacing.lg,
-        backgroundColor: `${MORADO}0A`,
+        backgroundColor: `${AZUL_PROFUNDO}0A`,
         borderRadius: 20,
         borderWidth: 1,
-        borderColor: `${MORADO}22`,
+        borderColor: `${AZUL_PROFUNDO}22`,
         padding: spacing.md,
       }}
     >
       <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 12 }}>
-        <Ionicons name="cube" size={18} color={MORADO} />
-        <AppText style={{ fontSize: 16, fontWeight: "900", color: MORADO }}>
+        <Ionicons name="cube" size={18} color={AZUL_PROFUNDO} />
+        {/* Titular en navy sobre el tinte azul al 4%: 10,3:1. */}
+        <AppText style={{ fontSize: 16, fontWeight: "900", color: AZUL_PROFUNDO }}>
           Comprar por caja en 3 pasos
         </AppText>
       </View>
@@ -262,7 +279,7 @@ export function HowToBoxStrip({ isWebDesktop }) {
                 {s.sub}
               </AppText>
             </View>
-            <Ionicons name={s.icon} size={20} color={`${MORADO}99`} />
+            <Ionicons name={s.icon} size={20} color={`${AZUL_PROFUNDO}99`} />
           </View>
         ))}
       </View>

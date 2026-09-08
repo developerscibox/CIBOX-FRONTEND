@@ -30,14 +30,14 @@ import brand from "../constants/brand";
 // pedidos/estados.js, servida por GET /tracking/orders/:id). Aquí solo vive lo
 // visual: el ícono y el color de cada estado.
 const STEP_LOOK = {
-  pending:   { icon: "receipt-outline",          color: "#f59e0b" },
+  pending:   { icon: "receipt-outline",          color: colors.primaryDark },
   paid:      { icon: "checkmark-circle-outline", color: "#3b82f6" },
-  preparing: { icon: "cube-outline",             color: "#83BA42" },
-  ready:     { icon: "checkbox-outline",         color: "#0ea5e9" },
+  preparing: { icon: "cube-outline",             color: "#006996" },
+  ready:     { icon: "checkbox-outline",         color: colors.primaryMid },
   shipped:   { icon: "car-outline",              color: "#06b6d4" },
-  delivered: { icon: "home-outline",             color: "#16a34a" },
+  delivered: { icon: "home-outline",             color: colors.success },
   cancelled: { icon: "close-circle-outline",     color: "#ef4444" },
-  refunded:  { icon: "return-down-back-outline", color: "#6BA834" },
+  refunded:  { icon: "return-down-back-outline", color: colors.success },
 };
 
 const PICKUP_LOCATION = {
@@ -102,7 +102,8 @@ const getStatusMeta = (status) => {
   const map = {
     pending:   { label: "Pendiente",   bg: "#fef3c7", text: "#92400e" },
     paid:      { label: "Pagada",      bg: "#dbeafe", text: "#1d4ed8" },
-    preparing: { label: "Preparando",  bg: "#ede9fe", text: "#6d28d9" },
+    // Mismo par que bodega/src/theme.js.
+    preparing: { label: "Preparando",  bg: "#E6F0F5", text: "#003D49" },
     ready:     { label: "Lista p/ despacho", bg: "#e0f2fe", text: "#0369a1" },
     shipped:   { label: "En camino",   bg: "#cffafe", text: "#0e7490" },
     delivered: { label: "Entregada",   bg: "#dcfce7", text: "#166534" },
@@ -494,9 +495,9 @@ export default function OrderDetailScreen({ route, navigation }) {
                     <Ionicons
                       name={copied ? "checkmark-outline" : "copy-outline"}
                       size={15}
-                      color={copied ? "#16a34a" : colors.primary}
+                      color={copied ? colors.success : colors.primary}
                     />
-                    <AppText style={[styles.copyText, copied && { color: "#16a34a" }]}>
+                    <AppText style={[styles.copyText, copied && { color: colors.success }]}>
                       {copied ? "Copiado" : "Copiar"}
                     </AppText>
                   </Pressable>
@@ -593,8 +594,8 @@ export default function OrderDetailScreen({ route, navigation }) {
 
               {Number(order.discount_amount) > 0 && (
                 <View style={styles.summaryRow}>
-                  <AppText style={[styles.mutedSm, { color: "#16a34a" }]}>Descuento</AppText>
-                  <AppText style={[styles.mutedSm, { color: "#16a34a" }]}>
+                  <AppText style={[styles.mutedSm, { color: colors.success }]}>Descuento</AppText>
+                  <AppText style={[styles.mutedSm, { color: colors.success }]}>
                     -{formatPrice(order.discount_amount)}
                   </AppText>
                 </View>
@@ -633,7 +634,7 @@ export default function OrderDetailScreen({ route, navigation }) {
               ) : null}
               <AppText style={styles.mutedSm}>x{item.quantity}</AppText>
               {item.discount_applied ? (
-                <AppText style={{ fontSize: 11, color: "#16a34a" }}>
+                <AppText style={{ fontSize: 11, color: colors.success }}>
                   Descuento {item.discount_source || ""}: -{item.discount_percent || 0}%
                 </AppText>
               ) : null}

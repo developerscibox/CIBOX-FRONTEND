@@ -5,8 +5,11 @@ import ScreenContainer from "../components/ScreenContainer";
 import AppText from "../components/AppText";
 import { colors, spacing, radius, shadows } from "../constants/theme";
 
-const G = "#38B27B";
-const G2 = "#3CC18E";
+// Cap. 03: la pantalla iba en un verde esmeralda que no esta entre los ocho
+// colores de la marca, y ademas como fondo extenso. Pasa a los azules del
+// manual; el lima queda para los llamados a la accion.
+const G = colors.primary;
+const G2 = colors.primaryMid;
 
 const META = [
   { label: "Razón social", value: "CIBOX COMERCIALIZADORA SpA" },
@@ -24,7 +27,9 @@ const SECTIONS = [
     tag: "Modalidad 1: Proveedor B2B",
     cards: [
       {
-        icon: "handshake-outline",
+        // "handshake-outline" no existe en el glyphmap de Ionicons: no se
+        // dibujaba nada. Se usa uno real con el mismo sentido de alianza.
+        icon: "people-circle-outline",
         title: "Marco de la Relación",
         items: [
           "Modalidad 1: Proveedor B2B acordada formalmente.",

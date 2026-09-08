@@ -192,7 +192,7 @@ export default function Onboarding({ open, onClose }) {
         .ob-skip:hover{color:${t.text};background:${t.bg};}
         .ob-ic{width:64px;height:64px;border-radius:18px;background:${t.grad};
           display:flex;align-items:center;justify-content:center;font-size:32px;
-          box-shadow:0 8px 22px rgba(230,0,126,.32);margin-bottom:16px;}
+          box-shadow:0 8px 22px rgba(0,69,104,.32);margin-bottom:16px;}
         .ob-title{font-size:22px;font-weight:800;line-height:1.15;color:${t.text};margin-bottom:10px;}
         .ob-body{font-size:15px;line-height:1.55;color:${t.muted};min-height:88px;}
         .ob-dots{display:flex;gap:7px;flex-wrap:wrap;margin:20px 0 22px;}
@@ -204,7 +204,7 @@ export default function Onboarding({ open, onClose }) {
           border-radius:11px;padding:10px 18px;font-weight:700;font-size:14px;}
         .ob-back:hover{border-color:${t.rosaSoft};}
         .ob-next{border:none;border-radius:11px;padding:11px 24px;font-weight:800;font-size:14px;
-          color:#fff;background:${t.grad};box-shadow:0 6px 16px rgba(230,0,126,.32);margin-left:auto;}
+          color:#fff;background:${t.grad};box-shadow:0 6px 16px rgba(0,69,104,.32);margin-left:auto;}
         .ob-next:hover{filter:brightness(1.04);}
         @keyframes ob-fade{from{opacity:0;}to{opacity:1;}}
         @keyframes ob-pop{from{opacity:0;transform:translateY(12px) scale(.97);}to{opacity:1;transform:none;}}

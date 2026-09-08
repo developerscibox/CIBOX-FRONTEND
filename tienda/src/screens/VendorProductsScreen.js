@@ -550,7 +550,7 @@ export default function VendorProductsScreen() {
               ) : null}
 
               {hasPackPricing(item) ? (
-                <View style={badgeStyle("#2f8f4e")}>
+                <View style={badgeStyle(colors.primary)}>
                   <AppText style={badgeTextStyle}>Pack</AppText>
                 </View>
               ) : null}
@@ -589,7 +589,7 @@ export default function VendorProductsScreen() {
 
             <AppText
               style={{
-                color: item.is_active ? "#2f8f4e" : "#d33",
+                color: item.is_active ? colors.primary : "#d33",
                 fontWeight: "700",
                 marginBottom: 12,
               }}
@@ -644,7 +644,7 @@ export default function VendorProductsScreen() {
                 style={{
                   flex: 1,
                   borderWidth: 1,
-                  borderColor: item.is_active ? "#d33" : "#2f8f4e",
+                  borderColor: item.is_active ? "#d33" : colors.primary,
                   borderRadius: radius.md,
                   paddingVertical: 12,
                   alignItems: "center",
@@ -652,7 +652,7 @@ export default function VendorProductsScreen() {
               >
                 <AppText
                   style={{
-                    color: item.is_active ? "#d33" : "#2f8f4e",
+                    color: item.is_active ? "#d33" : colors.primary,
                     fontWeight: "700",
                   }}
                 >

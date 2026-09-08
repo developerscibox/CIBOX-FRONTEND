@@ -716,8 +716,8 @@ export default function ProductForm({
                   <View
                     style={{
                       borderWidth: 1,
-                      borderColor: "#2f8f4e",
-                      backgroundColor: "#2f8f4e",
+                      borderColor: colors.primary,
+                      backgroundColor: colors.primary,
                       borderRadius: radius.md,
                       paddingVertical: 8,
                       alignItems: "center",
@@ -735,7 +735,7 @@ export default function ProductForm({
                     onPress={() => handleMakePrimaryCurrent(index)}
                     style={{
                       borderWidth: 1,
-                      borderColor: "#2f8f4e",
+                      borderColor: colors.primary,
                       borderRadius: radius.md,
                       paddingVertical: 8,
                       alignItems: "center",
@@ -744,7 +744,7 @@ export default function ProductForm({
                   >
                     <AppText
                       style={{
-                        color: "#2f8f4e",
+                        color: colors.primary,
                         fontWeight: "700",
                         fontSize: 12,
                       }}
@@ -813,8 +813,8 @@ export default function ProductForm({
                   <View
                     style={{
                       borderWidth: 1,
-                      borderColor: "#2f8f4e",
-                      backgroundColor: "#2f8f4e",
+                      borderColor: colors.primary,
+                      backgroundColor: colors.primary,
                       borderRadius: radius.md,
                       paddingVertical: 8,
                       alignItems: "center",
@@ -832,7 +832,7 @@ export default function ProductForm({
                     onPress={() => handleMakePrimarySelected(index)}
                     style={{
                       borderWidth: 1,
-                      borderColor: "#2f8f4e",
+                      borderColor: colors.primary,
                       borderRadius: radius.md,
                       paddingVertical: 8,
                       alignItems: "center",
@@ -841,7 +841,7 @@ export default function ProductForm({
                   >
                     <AppText
                       style={{
-                        color: "#2f8f4e",
+                        color: colors.primary,
                         fontWeight: "700",
                         fontSize: 12,
                       }}

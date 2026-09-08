@@ -113,7 +113,7 @@ export default function ResetPasswordScreen({ navigation, route }) {
               paddingHorizontal: spacing.lg,
               paddingVertical: spacing.xl,
               borderWidth: 1,
-              borderColor: "#dfe8d8",
+              borderColor: colors.border,
               ...shadows.card,
             }}
           >
@@ -178,7 +178,7 @@ export default function ResetPasswordScreen({ navigation, route }) {
                     flexDirection: "row",
                     alignItems: "center",
                     borderWidth: 1.5,
-                    borderColor: "#cfdcc6",
+                    borderColor: colors.border,
                     borderRadius: 999,
                     paddingHorizontal: 16,
                     height: 54,
@@ -213,7 +213,7 @@ export default function ResetPasswordScreen({ navigation, route }) {
                     flexDirection: "row",
                     alignItems: "center",
                     borderWidth: 1.5,
-                    borderColor: "#cfdcc6",
+                    borderColor: colors.border,
                     borderRadius: 999,
                     paddingHorizontal: 16,
                     height: 54,

@@ -82,7 +82,7 @@ export default function Picking() {
 
   const badgeAsignado = (o) =>
     asignadoId(o) ? (
-      <span style={{ fontSize: 11, fontWeight: 700, borderRadius: 999, padding: "2px 8px", whiteSpace: "nowrap", background: asignadoAMi(o) ? "#ecfdf5" : "#f3e8ff", color: asignadoAMi(o) ? "#166534" : "#6b21a8", border: `1px solid ${asignadoAMi(o) ? "#a7f3d0" : "#DDEEBF"}` }}>
+      <span style={{ fontSize: 11, fontWeight: 700, borderRadius: 999, padding: "2px 8px", whiteSpace: "nowrap", background: asignadoAMi(o) ? "#ecfdf5" : "#f3e8ff", color: asignadoAMi(o) ? "#166534" : "#6b21a8", border: `1px solid ${asignadoAMi(o) ? "#a7f3d0" : "#93C4D8"}` }}>
         {asignadoAMi(o) ? "Asignado a ti" : `Asignado a ${o.assigned_to?.label || "otra persona"}`}
       </span>
     ) : null;
@@ -203,7 +203,7 @@ export default function Picking() {
     <div className="pick-grid">
       <div>
         <div style={{ fontSize: 12, fontWeight: 700, color: "var(--muted)", letterSpacing: ".5px", margin: "2px 4px 10px" }}>
-          PEDIDOS POR PREPARAR ({orders.length}){porTomar > 0 ? <span style={{ color: "var(--magenta,#4E9B27)" }}> · {porTomar} nuevo{porTomar === 1 ? "" : "s"} por tomar</span> : null}
+          PEDIDOS POR PREPARAR ({orders.length}){porTomar > 0 ? <span style={{ color: "var(--magenta,#004568)" }}> · {porTomar} nuevo{porTomar === 1 ? "" : "s"} por tomar</span> : null}
         </div>
         {load.loading ? (
           <div className="ord" style={{ color: "var(--muted)" }}>Cargando pedidos…</div>
@@ -223,7 +223,7 @@ export default function Picking() {
                 {asignadoId(o) ? <div style={{ marginTop: 4 }}>{badgeAsignado(o)}</div> : null}
                 {o.status === "paid"
                   ? (puedeTomar(o)
-                    ? <div style={{ fontSize: 12.5, color: "var(--magenta,#4E9B27)", fontWeight: 700 }}>Nuevo · disponible para preparar</div>
+                    ? <div style={{ fontSize: 12.5, color: "var(--magenta,#004568)", fontWeight: 700 }}>Nuevo · disponible para preparar</div>
                     : <div style={{ fontSize: 12.5, color: "var(--muted)", fontWeight: 600 }}>Reservado</div>)
                   : <div style={{ fontSize: 12.5, color: "var(--muted)" }}>{done}/{o.items.length} ítems preparados</div>}
               </div>

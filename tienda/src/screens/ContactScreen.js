@@ -271,7 +271,9 @@ export default function ContactScreen({ navigation }) {
           borderColor: `${colors.accent}30`,
           padding: spacing.md,
         }}>
-          <Ionicons name="time-outline" size={22} color={colors.accent} />
+          {/* Azul y no lima: el fondo de esta caja ya es lima rebajado y un icono
+              lima encima se disuelve (1,2:1). El cap. 06 admite ambos colores. */}
+          <Ionicons name="time-outline" size={22} color={colors.primary} />
           <View style={{ flex: 1 }}>
             <AppText style={{ fontSize: 13, fontWeight: "800", color: colors.text, marginBottom: 2 }}>
               Horario de atención

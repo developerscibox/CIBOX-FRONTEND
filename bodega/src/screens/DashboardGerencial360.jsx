@@ -84,8 +84,13 @@ function calcDelta(cur, prev) {
 // View-model: misma estructura para datos reales y demo.
 // ============================================================
 
-const CAT_COLORS = ["#4E9B27", "#83BA42", "#C3E062", "#2E6116", "#A8CC7A", "#DDEEBF"];
-const PIPE_COLORS = ["#3E7D1E", "#4E9B27", "#6BA834", "#83BA42", "#A8CC7A", "#C3E062"];
+// Escala de marca para las series: del navy al lima, ocho pasos que se
+// distinguen entre si. Antes eran los ocho verdes de la identidad anterior;
+// al traducirlos uno a uno varios caian en el mismo azul y dos categorias
+// quedaban del mismo color, asi que la escala se escribe entera a mano.
+const CAT_COLORS = ["#004568", "#006996", "#2A87B0", "#5AA6C4", "#B6D900", "#003D49"];
+// Embudo: de mas oscuro a mas claro, para que se lea como un progreso.
+const PIPE_COLORS = ["#003D49", "#004568", "#006996", "#2A87B0", "#5AA6C4", "#93C4D8"];
 
 // Contrato GET /gerencia/dashboard360 → estructuras de la maqueta.
 function buildVM(d) {
@@ -107,12 +112,12 @@ function buildVM(d) {
   // que el Centro de mando: cada dato lleva a su área).
   const conDelta = (delta) => (delta ? { ...delta, sub: "vs ayer" } : { delta: null, sub: "sin comparación" });
   const kpis = [
-    { label: "VENTAS DEL DÍA", valor: money(k.ventasHoy), ...conDelta(dVen), icono: "dollar", color: "#4E9B27", spark: k.sparkVentas, nav: "ventas", navTitulo: "Ventas · Negocio" },
-    { label: "MARGEN BRUTO", valor: k.margenBrutoPct == null ? "—" : `${fmtDec(k.margenBrutoPct)}%`, ...conDelta(dMar), icono: "tag", color: "#4E9B27", spark: null, nav: "precios", navTitulo: "Precios y márgenes" },
-    { label: "PEDIDOS INGRESADOS", valor: num(k.ingresados), ...conDelta(dIng), icono: "clipboard", color: "#83BA42", spark: k.sparkIngresados, nav: "pedidos", navTitulo: "Pedidos" },
-    { label: "PEDIDOS EN PREPARACIÓN", valor: num(k.enPreparacion), delta: null, sub: "En picking ahora", icono: "package", color: "#4E9B27", spark: null, nav: "picking", navTitulo: "Picking" },
-    { label: "PEDIDOS LISTOS", valor: num(k.listos), delta: null, sub: "Listos para retiro", icono: "check", color: "#4E9B27", spark: null, nav: "pedidos", navTitulo: "Retiro / Mostrador" },
-    { label: "PEDIDOS ENTREGADOS", valor: num(k.entregados), ...conDelta(dEnt), icono: "truck", color: "#4E9B27", spark: k.sparkEntregados, nav: "pedidos", navTitulo: "Pedidos" },
+    { label: "VENTAS DEL DÍA", valor: money(k.ventasHoy), ...conDelta(dVen), icono: "dollar", color: "#004568", spark: k.sparkVentas, nav: "ventas", navTitulo: "Ventas · Negocio" },
+    { label: "MARGEN BRUTO", valor: k.margenBrutoPct == null ? "—" : `${fmtDec(k.margenBrutoPct)}%`, ...conDelta(dMar), icono: "tag", color: "#004568", spark: null, nav: "precios", navTitulo: "Precios y márgenes" },
+    { label: "PEDIDOS INGRESADOS", valor: num(k.ingresados), ...conDelta(dIng), icono: "clipboard", color: "#006996", spark: k.sparkIngresados, nav: "pedidos", navTitulo: "Pedidos" },
+    { label: "PEDIDOS EN PREPARACIÓN", valor: num(k.enPreparacion), delta: null, sub: "En picking ahora", icono: "package", color: "#004568", spark: null, nav: "picking", navTitulo: "Picking" },
+    { label: "PEDIDOS LISTOS", valor: num(k.listos), delta: null, sub: "Listos para retiro", icono: "check", color: "#004568", spark: null, nav: "pedidos", navTitulo: "Retiro / Mostrador" },
+    { label: "PEDIDOS ENTREGADOS", valor: num(k.entregados), ...conDelta(dEnt), icono: "truck", color: "#004568", spark: k.sparkEntregados, nav: "pedidos", navTitulo: "Pedidos" },
   ];
 
   // ---- Alertas críticas ----
@@ -308,7 +313,7 @@ function Sparkline({ data, color = BRAND.primary }) {
 // Etiqueta de periodo: texto plano (sin dropdown falso — nada decorativo que
 // parezca interactivo y no lo sea).
 function PeriodoLabel({ label }) {
-  return <span className="rounded-lg bg-pink-50/60 px-2 py-1 text-[11px] font-semibold text-slate-500">{label}</span>;
+  return <span className="rounded-lg bg-sky-50/60 px-2 py-1 text-[11px] font-semibold text-slate-500">{label}</span>;
 }
 
 // Acción de tarjeta: periodo + link REAL a la sección de detalle del panel.
@@ -321,7 +326,7 @@ function CardAction({ periodo, onVer, verTitulo }) {
           type="button"
           onClick={onVer}
           title={verTitulo ? `Abrir ${verTitulo}` : "Ver la sección de detalle"}
-          className="flex cursor-pointer items-center gap-0.5 rounded-lg border-0 bg-transparent px-2 py-1 text-[11px] font-bold text-[#4E9B27] hover:bg-pink-50"
+          className="flex cursor-pointer items-center gap-0.5 rounded-lg border-0 bg-transparent px-2 py-1 text-[11px] font-bold text-[#004568] hover:bg-sky-50"
         >
           Ver detalle <span className="text-[13px] leading-none">›</span>
         </button>
@@ -332,7 +337,7 @@ function CardAction({ periodo, onVer, verTitulo }) {
 
 function Card({ title, action, children, className = "" }) {
   return (
-    <section className={`min-w-0 rounded-2xl border border-pink-100 bg-white p-4 shadow-sm ${className}`}>
+    <section className={`min-w-0 rounded-2xl border border-sky-100 bg-white p-4 shadow-sm ${className}`}>
       <div className="mb-3 flex items-center justify-between gap-2">
         <h2 className="text-xs font-bold uppercase tracking-wide text-slate-700">{title}</h2>
         {action}
@@ -361,10 +366,10 @@ function HBar({ label, value, max, right, labelWidth = "w-36" }) {
   return (
     <div className="flex items-center gap-2 py-1 text-[11px]">
       <span title={label} className={`${labelWidth} shrink-0 truncate text-slate-600`}>{label}</span>
-      <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-pink-50">
+      <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-sky-50">
         <div
           className="h-full rounded-full"
-          style={{ width: `${(value / max) * 100}%`, background: "linear-gradient(90deg,#C3E062,#4E9B27)" }}
+          style={{ width: `${(value / max) * 100}%`, background: "linear-gradient(90deg,#B6D900,#004568)" }}
         />
       </div>
       <span className="w-11 shrink-0 text-right font-semibold text-slate-700">{right}</span>
@@ -397,7 +402,7 @@ function KpiRow({ kpis, onNav }) {
             key={k.label}
             onClick={clic}
             title={clic ? `Abrir ${k.navTitulo}` : undefined}
-            className={`rounded-2xl border border-pink-100 bg-white p-3 shadow-sm ${clic ? "cursor-pointer transition hover:border-pink-300 hover:shadow-md" : ""}`}
+            className={`rounded-2xl border border-sky-100 bg-white p-3 shadow-sm ${clic ? "cursor-pointer transition hover:border-sky-300 hover:shadow-md" : ""}`}
           >
             <div className="mb-1.5 flex items-center gap-2">
               <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full" style={{ background: `${k.color}1a`, color: k.color }}>
@@ -418,8 +423,8 @@ function KpiRow({ kpis, onNav }) {
             </div>
             {k.meta && (
               <div className="mt-1">
-                <div className="h-1 w-full overflow-hidden rounded-full bg-pink-100">
-                  <div className="h-full rounded-full bg-[#4E9B27]" style={{ width: `${k.meta.pct}%` }} />
+                <div className="h-1 w-full overflow-hidden rounded-full bg-sky-100">
+                  <div className="h-full rounded-full bg-[#004568]" style={{ width: `${k.meta.pct}%` }} />
                 </div>
                 <p className="mt-0.5 text-[9px] text-slate-400">{k.meta.pct}% de la meta diaria ({k.meta.valor})</p>
               </div>
@@ -438,7 +443,7 @@ function KpiRow({ kpis, onNav }) {
 
 function AlertasBar({ alertas, onNav }) {
   return (
-    <div className="flex flex-wrap items-stretch rounded-2xl border border-pink-100 bg-white px-2 py-3 shadow-sm">
+    <div className="flex flex-wrap items-stretch rounded-2xl border border-sky-100 bg-white px-2 py-3 shadow-sm">
       <div className="flex items-center gap-2 px-3">
         <span className="grid h-9 w-9 place-items-center rounded-full bg-red-50 text-red-500">
           <AlertTriangle size={16} />
@@ -453,9 +458,9 @@ function AlertasBar({ alertas, onNav }) {
             key={a.texto}
             onClick={clic}
             title={clic ? `Abrir ${a.navTitulo}` : undefined}
-            className={`flex flex-1 items-center gap-2 border-l border-pink-100 px-3 min-w-[150px] ${clic ? "cursor-pointer rounded-lg transition hover:bg-pink-50/60" : ""}`}
+            className={`flex flex-1 items-center gap-2 border-l border-sky-100 px-3 min-w-[150px] ${clic ? "cursor-pointer rounded-lg transition hover:bg-sky-50/60" : ""}`}
           >
-            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-pink-50 text-[#4E9B27]">
+            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-sky-50 text-[#004568]">
               <Icon size={14} />
             </span>
             <div className="leading-tight">
@@ -519,13 +524,13 @@ function VentasCard({ ventas, onNav, className }) {
 // ============================================================
 
 function TileStat({ label, valor, sub, tone, nav, navTitulo, onNav }) {
-  const color = tone === "violet" ? "#83BA42" : "#4E9B27";
+  const color = tone === "violet" ? "#006996" : "#004568";
   const clic = onNav && nav ? () => onNav(nav) : undefined;
   return (
     <div
       onClick={clic}
       title={clic ? `Abrir ${navTitulo}` : undefined}
-      className={`rounded-xl border border-pink-100 bg-pink-50/40 p-2 text-center ${clic ? "cursor-pointer transition hover:border-pink-300 hover:bg-pink-50" : ""}`}
+      className={`rounded-xl border border-sky-100 bg-sky-50/40 p-2 text-center ${clic ? "cursor-pointer transition hover:border-sky-300 hover:bg-sky-50" : ""}`}
     >
       <p className="text-[9.5px] font-semibold leading-tight text-slate-500">{label}</p>
       <p className="text-xl font-extrabold leading-tight" style={{ color }}>{valor}</p>
@@ -628,7 +633,7 @@ function LogisticaCard({ logistica, onNav, className }) {
                 key={s.etapa}
                 onClick={clic}
                 title={clic ? `Abrir ${destino.titulo}` : undefined}
-                className={`text-center ${clic ? "cursor-pointer rounded-xl p-1 transition hover:bg-pink-50/60" : ""}`}
+                className={`text-center ${clic ? "cursor-pointer rounded-xl p-1 transition hover:bg-sky-50/60" : ""}`}
               >
                 <div
                   className="mx-auto flex h-7 items-center justify-center px-3 text-[10px] font-bold text-white"
@@ -655,7 +660,7 @@ function LogisticaCard({ logistica, onNav, className }) {
 
       <div className={`mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3 ${metricas.length >= 5 ? "xl:grid-cols-5" : "xl:grid-cols-4"}`}>
         {metricas.map((m) => (
-          <div key={m.label} className="rounded-xl border border-pink-100 bg-pink-50/40 p-2 text-center">
+          <div key={m.label} className="rounded-xl border border-sky-100 bg-sky-50/40 p-2 text-center">
             <div className={`text-base font-extrabold ${m.tone === "bad" ? "text-red-500" : "text-slate-800"}`}>{m.valor}</div>
             <div className="text-[9.5px] leading-tight text-slate-500">{m.label}</div>
             {m.delta ? <Delta arrow={m.arrow} tone={m.tone} className="mt-0.5">{m.delta}</Delta> : null}
@@ -693,7 +698,7 @@ function ProductividadCard({ tabs, onNav, className }) {
             onClick={() => setTab(key)}
             className={[
               "cursor-pointer rounded-lg border-0 px-3 py-1 text-[11px] font-semibold transition",
-              tab === key ? "bg-[#4E9B27] text-white shadow" : "bg-transparent text-slate-500 hover:text-slate-700",
+              tab === key ? "bg-[#004568] text-white shadow" : "bg-transparent text-slate-500 hover:text-slate-700",
             ].join(" ")}
           >
             {tabs[key].label}
@@ -705,7 +710,7 @@ function ProductividadCard({ tabs, onNav, className }) {
         <div className="overflow-x-auto">
         <table className="w-full text-[11px]">
           <thead>
-            <tr className="border-b border-pink-100 text-left text-[10px] uppercase tracking-wide text-slate-400">
+            <tr className="border-b border-sky-100 text-left text-[10px] uppercase tracking-wide text-slate-400">
               <th className="py-1.5 font-semibold">Usuario</th>
               {columns.map((c) => (
                 <th key={c.header} className="py-1.5 text-right font-semibold">{c.header}</th>
@@ -714,7 +719,7 @@ function ProductividadCard({ tabs, onNav, className }) {
           </thead>
           <tbody>
             {filas.map((f, i) => (
-              <tr key={f.nombre || i} className="border-b border-pink-50 last:border-0">
+              <tr key={f.nombre || i} className="border-b border-sky-50 last:border-0">
                 <td className="py-2">
                   <span className="mr-1.5 text-slate-400">{i + 1}</span>
                   <span className="font-semibold text-slate-700">{f.nombre}</span>
@@ -723,8 +728,8 @@ function ProductividadCard({ tabs, onNav, className }) {
                   c.bar ? (
                     <td key={c.header} className="py-2">
                       <div className="flex items-center justify-end gap-1.5">
-                        <div className="h-1.5 w-12 overflow-hidden rounded-full bg-pink-100">
-                          <div className="h-full rounded-full bg-[#4E9B27]" style={{ width: `${((Number(c.value(f)) || 0) / maxProd) * 100}%` }} />
+                        <div className="h-1.5 w-12 overflow-hidden rounded-full bg-sky-100">
+                          <div className="h-full rounded-full bg-[#004568]" style={{ width: `${((Number(c.value(f)) || 0) / maxProd) * 100}%` }} />
                         </div>
                         <span className="whitespace-nowrap font-semibold text-slate-700">{c.cell(f)}</span>
                       </div>
@@ -799,13 +804,13 @@ function LoadingSkeleton() {
     <>
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3 2xl:grid-cols-6">
         {[0, 1, 2, 3, 4, 5].map((i) => (
-          <div key={i} className="h-36 animate-pulse rounded-2xl border border-pink-100 bg-white" />
+          <div key={i} className="h-36 animate-pulse rounded-2xl border border-sky-100 bg-white" />
         ))}
       </div>
-      <div className="h-16 animate-pulse rounded-2xl border border-pink-100 bg-white" />
+      <div className="h-16 animate-pulse rounded-2xl border border-sky-100 bg-white" />
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
         {[0, 1, 2, 3].map((i) => (
-          <div key={i} className="h-96 animate-pulse rounded-2xl border border-pink-100 bg-white" />
+          <div key={i} className="h-96 animate-pulse rounded-2xl border border-sky-100 bg-white" />
         ))}
       </div>
     </>
@@ -814,7 +819,7 @@ function LoadingSkeleton() {
 
 function Footer({ stamp }) {
   return (
-    <footer className="flex flex-wrap items-center justify-between gap-2 border-t border-pink-100 bg-white px-4 py-2 text-[10.5px] text-slate-400 xl:px-6">
+    <footer className="flex flex-wrap items-center justify-between gap-2 border-t border-sky-100 bg-white px-4 py-2 text-[10.5px] text-slate-400 xl:px-6">
       <span>{stamp}</span>
       <span>{HEADER.nota}</span>
       <span>{brand.name} · Plataforma 360° · {HEADER.version}</span>
@@ -843,7 +848,7 @@ export default function DashboardGerencial360({ onNav }) {
       <main className="space-y-4 p-4 xl:p-5">
         {/* Chip de contexto: la fecha real de hoy */}
         <div className="flex items-center justify-end">
-          <span className="rounded-xl border border-pink-200 bg-pink-50/60 px-3 py-1.5 text-xs font-semibold text-[#D8127D]">{fechaChip}</span>
+          <span className="rounded-xl border border-sky-200 bg-sky-50/60 px-3 py-1.5 text-xs font-semibold text-[#004568]">{fechaChip}</span>
         </div>
 
         {!vm && loading && <LoadingSkeleton />}

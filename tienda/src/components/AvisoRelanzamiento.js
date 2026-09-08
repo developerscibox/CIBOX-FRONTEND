@@ -10,11 +10,13 @@ import { colors, shadows, spacing } from "../constants/theme";
 
 import brand from "../constants/brand";
 
-// Degradado de marca de Cibox (verde profundo → verde → lima), el mismo que usan
-// la portada y el bloque de ofertas.
-const GRAD = ["#3E7D1E", "#4E9B27", "#C3E062"];
-// Sobre el verde va el logo en blanco: el logo a color es lima y sobre este
-// fondo se pierde (queda en 1:1 de contraste).
+// Degradado de marca de Cibox (navy → azul Cibox → azul medio), el mismo que usa
+// la portada. La rampa termina en azul y no en lima: el manual usa el lima como
+// acento, y cerrar el degradado con él convertía el color de acción en fondo
+// —además de dejar el borde derecho de la cabecera sin contraste para el texto—.
+const GRAD = [colors.primaryDark, colors.primary, colors.primaryMid];
+// Sobre el azul va el logo en blanco: el logo a color es lima y en la parada más
+// clara del degradado se queda en 3,73:1, bajo el mínimo.
 const LOGO = require("../../assets/logo-cibox-blanco.png");
 
 // Razones para registrarse. Son tres y cortas a propósito: la ventana tiene que
@@ -78,7 +80,9 @@ export default function AvisoRelanzamiento({ navigationRef }) {
           left: 0,
           right: 0,
           bottom: 0,
-          backgroundColor: "rgba(17,24,17,0.72)",
+          // Velo del modal: el mismo peso de antes, pero con el tinte azul de
+          // marca en vez del verdoso (17,24,17) de la identidad anterior.
+          backgroundColor: "rgba(0,25,34,0.72)",
           justifyContent: "center",
           alignItems: "center",
           padding: esAngosto ? spacing.sm : spacing.md,
@@ -153,7 +157,11 @@ export default function AvisoRelanzamiento({ navigationRef }) {
                 paddingVertical: 7,
               }}
             >
-              <AppText style={{ color: "#7a4d00", fontSize: esAngosto ? 12.5 : 14, fontWeight: "900", letterSpacing: 0.8 }}>
+              {/* Sobre el lima el texto va oscuro: `accentText` rinde 10,1:1.
+                  Antes iba en el café #7a4d00, que era el par del amarillo
+                  anterior y sobre el lima nuevo se queda en 4,47:1: bajo el
+                  mínimo, por poco pero bajo. */}
+              <AppText style={{ color: colors.accentText, fontSize: esAngosto ? 12.5 : 14, fontWeight: "900", letterSpacing: 0.8 }}>
                 🎉 ESTAMOS DE VUELTA
               </AppText>
             </View>
@@ -215,7 +223,12 @@ export default function AvisoRelanzamiento({ navigationRef }) {
               onPress={conSesion ? irAOfertas : irARegistro}
               style={({ pressed }) => ({
                 marginTop: 26,
-                backgroundColor: pressed ? colors.accent : colors.primary,
+                // El estado pulsado se oscurece dentro de la familia azul. Antes
+                // viraba a `accent`, y el rótulo blanco del botón sobre el lima
+                // se queda en 1,9:1: el botón se borraba justo al tocarlo.
+                // Botón primario del manual: lima con texto oscuro. Al pulsar
+                // pasa al lima claro, que mantiene el rótulo legible (9,6:1).
+                backgroundColor: pressed ? colors.accentLight : colors.accent,
                 borderRadius: 16,
                 paddingVertical: esAngosto ? 16 : 19,
                 flexDirection: "row",
@@ -224,10 +237,11 @@ export default function AvisoRelanzamiento({ navigationRef }) {
                 gap: 9,
               })}
             >
-              <AppText style={{ color: colors.primaryText, fontWeight: "900", fontSize: esAngosto ? 16 : 18 }}>
+              {/* Sobre el lima el rótulo va oscuro: en blanco se queda en 1,9:1. */}
+              <AppText weight="bold" style={{ color: colors.accentText, fontSize: esAngosto ? 16 : 18 }}>
                 {conSesion ? "Ver ofertas imperdibles" : "Crear mi cuenta gratis"}
               </AppText>
-              <Ionicons name="arrow-forward" size={esAngosto ? 18 : 20} color={colors.primaryText} />
+              <Ionicons name="arrow-forward" size={esAngosto ? 18 : 20} color={colors.accentText} />
             </Pressable>
 
             {!conSesion && (
@@ -242,7 +256,10 @@ export default function AvisoRelanzamiento({ navigationRef }) {
                   alignItems: "center",
                 })}
               >
-                <AppText style={{ color: colors.accent, fontWeight: "800", fontSize: esAngosto ? 14.5 : 15.5 }}>
+                {/* Botón secundario: fondo blanco, así que el rótulo va en azul
+                    de marca (10,2:1). El lima es color de relleno, no de texto:
+                    sobre blanco se queda en 1,63:1 y es ilegible. */}
+                <AppText style={{ color: colors.primary, fontWeight: "800", fontSize: esAngosto ? 14.5 : 15.5 }}>
                   Ver ofertas imperdibles
                 </AppText>
               </Pressable>

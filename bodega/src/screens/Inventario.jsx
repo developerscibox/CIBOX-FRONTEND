@@ -2,7 +2,11 @@ import { api, useLoad } from "../api.js";
 import { MOVEMENTS_RES } from "../data.js";
 import { t, clp, MOVEMENT } from "../theme.js";
 
-const CAT_COLORS = ["#4E9B27", "#2E6116", "#C3E062", "#2E6116", "#3B7A1D", "#6B8F4E", "#A8CC7A", "#7BA84F"];
+// Escala de marca para las series: del navy al lima, ocho pasos que se
+// distinguen entre si. Antes eran los ocho verdes de la identidad anterior;
+// al traducirlos uno a uno varios caian en el mismo azul y dos categorias
+// quedaban del mismo color, asi que la escala se escribe entera a mano.
+const CAT_COLORS = ["#004568", "#006996", "#2A87B0", "#5AA6C4", "#93C4D8", "#B6D900", "#D2E51A", "#003D49"];
 const SUMMARY_FALLBACK = { totals: { sku: 0, units: 0, cajas: 0, low: 0, value: 0 }, by_category: [], top_products: [] };
 
 // Mock para modo demostración (usingMock) de "Productos por vencer".
@@ -64,7 +68,7 @@ function ExpiringSoon() {
               const dl = Number(it.days_left);
               const vencido = dl < 0;
               const critico = !vencido && dl <= 7;
-              const badgeBg = vencido ? "#fee2e2" : critico ? "#fef3c7" : "#eef4e7";
+              const badgeBg = vencido ? "#fee2e2" : critico ? "#fef3c7" : "#EEF1F4";
               const badgeText = vencido ? "#b91c1c" : critico ? "#92400e" : t.muted;
               const label = vencido
                 ? "VENCIDO"
@@ -112,7 +116,7 @@ function Donut({ data, size = 190, thickness = 28, centerLabel = "unidades" }) {
   return (
     <svg viewBox={`0 0 ${size} ${size}`} width={size} height={size} role="img">
       <g transform={`translate(${size / 2},${size / 2}) rotate(-90)`}>
-        <circle r={r} fill="none" stroke="#eef4e7" strokeWidth={thickness} />
+        <circle r={r} fill="none" stroke="#EEF1F4" strokeWidth={thickness} />
         {total > 0 && data.map((d, i) => {
           const len = (d.value / total) * c;
           const el = (
@@ -141,7 +145,7 @@ function HBars({ items }) {
             <span style={{ fontWeight: 600, color: t.text }}>{it.label}</span>
             <span style={{ color: t.muted, fontWeight: 600 }}>{it.display ?? it.value}</span>
           </div>
-          <div style={{ height: 10, background: "#eef4e7", borderRadius: 6, overflow: "hidden" }}>
+          <div style={{ height: 10, background: "#EEF1F4", borderRadius: 6, overflow: "hidden" }}>
             <div style={{ height: "100%", width: `${(it.value / max) * 100}%`, background: it.color || t.magenta, borderRadius: 6, minWidth: it.value > 0 ? 4 : 0 }} />
           </div>
         </div>
@@ -174,7 +178,7 @@ export default function Inventario({ onNav } = {}) {
     .sort((a, b) => b.value - a.value);
 
   const kpis = [
-    { ic: "📦", bg: "#e9f3da", v: totals.sku ?? 0, l: "SKUs activos" },
+    { ic: "📦", bg: "#E6F0F5", v: totals.sku ?? 0, l: "SKUs activos" },
     { ic: "🟪", bg: "#fde7f1", v: (totals.cajas ?? 0).toLocaleString("es-CL"), l: "Cajas en bodega" },
     { ic: "🔢", bg: "#e0f2fe", v: (totals.units ?? 0).toLocaleString("es-CL"), l: "Unidades sueltas" },
     { ic: "💰", bg: "#ede9fe", v: clp(totals.value ?? 0), l: "Valor venta del inventario" },
