@@ -92,7 +92,10 @@ export default function BlogScreen() {
       <View
         style={{
           marginTop: spacing.lg,
-          backgroundColor: `${colors.primary}0E`,
+          // Superficie opaca: este panel se apoya directo en el fondo de la
+          // pantalla, y con el azul al 5% el patrón de marca se colaba por encima
+          // y cruzaba el texto con sus líneas.
+          backgroundColor: colors.surface,
           borderRadius: 18,
           borderWidth: 1,
           borderColor: `${colors.primary}33`,

@@ -13,6 +13,7 @@ import { getFavorites, removeFavorite } from "../services/favoriteService";
 import { showAppAlert } from "../utils/appAlerts";
 import useAuthStore from "../store/authStore";
 import AppText from "../components/AppText";
+import BrandBackdrop from "../components/BrandBackdrop";
 import UnitPrice from "../components/UnitPrice";
 import { colors, radius, spacing, shadows } from "../constants/theme";
 import { boxTierOf, packSizeOf, unitPriceOf } from "../utils/boxPricing";
@@ -75,6 +76,7 @@ export default function FavoritesScreen({ navigation }) {
   if (!token) {
     return (
       <SafeAreaView style={{ flex: 1 }}>
+        <BrandBackdrop fijoAlViewport={false} />
         <View style={styles.centered}>
           <AppText style={styles.emptyTitle}>Inicia sesión</AppText>
           <AppText style={styles.emptyText}>
@@ -94,6 +96,7 @@ export default function FavoritesScreen({ navigation }) {
   if (loading) {
     return (
       <View style={{ flex: 1, justifyContent: "center" }}>
+        <BrandBackdrop fijoAlViewport={false} />
         <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
@@ -102,6 +105,7 @@ export default function FavoritesScreen({ navigation }) {
   if (!favorites.length) {
     return (
       <SafeAreaView style={{ flex: 1 }}>
+        <BrandBackdrop fijoAlViewport={false} />
         <View style={styles.centered}>
           <View style={styles.emptyIcon}>
             <Ionicons name="heart-outline" size={34} color={colors.primary} />
@@ -117,6 +121,11 @@ export default function FavoritesScreen({ navigation }) {
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
+      {/* Esta pantalla no usa ScreenContainer, así que monta el patrón de marca
+          por su cuenta: la escena de la pestaña ya pinta un fondo opaco (para
+          no dejar ver la pestaña de abajo) y ese fondo tapa el patrón que
+          `App.js` pone en la raíz. */}
+      <BrandBackdrop fijoAlViewport={false} />
       <FlatList
         data={favorites}
         keyExtractor={(item, index) =>

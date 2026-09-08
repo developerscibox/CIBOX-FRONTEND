@@ -26,6 +26,16 @@ export default function MainTabs() {
     <Tab.Navigator
       screenOptions={{
         headerShadowVisible: false,
+        // Fondo opaco para la escena de cada pestaña. En la web las cinco
+        // pestañas quedan montadas y apiladas en la misma posición: la que no
+        // tiene el foco solo baja de z-index, no se oculta. Si la escena no
+        // pinta fondo, la pestaña de arriba deja ver la de abajo (al entrar a
+        // Perfil se seguía viendo la portada entre las tarjetas). Es
+        // `sceneStyle`, no el `sceneContainerStyle` de la v6: ese nombre se
+        // ignora en silencio.
+        sceneStyle: {
+          backgroundColor: colors.background,
+        },
         headerStyle: {
           backgroundColor: colors.surface,
         },

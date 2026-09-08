@@ -25,6 +25,14 @@ export default function InfoPageLayout({
         alignItems: "center",
         gap: 14,
         marginBottom: spacing.lg,
+        // El patrón de marca cruzaba el título y el subtítulo de estas cuatro
+        // páginas: en Beneficios, la bajada quedaba atravesada por una botella y
+        // costaba leerla. Este fondo lo tapa por detrás del texto.
+        //
+        // Es el MISMO color que el fondo de la página, así que no aparece
+        // ninguna caja ni recuadro: lo único que cambia es que el dibujo deja de
+        // pasar por encima de las letras. Por eso tampoco lleva padding propio.
+        backgroundColor: colors.background,
       }}
     >
       {icon ? (

@@ -11,15 +11,20 @@ import { Image, Platform } from 'react-native';
  * En web va FIXED al viewport para que el patrón quede quieto y se vea repetido
  * a lo largo de toda la página al hacer scroll. pointerEvents none para no
  * interferir con los toques.
+ *
+ * Con `fijoAlViewport={false}` se ancla al contenedor que lo monta. Lo usa
+ * `ScreenContainer`: ahí un fixed se cuelga del primer ancestro con transform
+ * (los que animan la navegación) y el patrón termina anclado a medio scroll,
+ * cubriendo solo un trozo de la pantalla.
  */
-export default function BrandBackdrop() {
+export default function BrandBackdrop({ fijoAlViewport = true }) {
   return (
     <Image
       source={require('../../assets/home/patron.png')}
       resizeMode="repeat"
       pointerEvents="none"
       style={{
-        position: Platform.OS === 'web' ? 'fixed' : 'absolute',
+        position: fijoAlViewport && Platform.OS === 'web' ? 'fixed' : 'absolute',
         top: 0, left: 0, right: 0, bottom: 0,
         // El ancho y el alto van explícitos: react-native-web le pone al Image
         // el tamaño intrínseco del archivo (560x560) y ese gana sobre el

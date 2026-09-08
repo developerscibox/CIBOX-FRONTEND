@@ -325,7 +325,10 @@ export default function PrivacyScreen() {
 
         {/* ── Hero ── */}
         <View style={{
-          backgroundColor: `${colors.primary}0E`,
+          // Superficie opaca: este panel se apoya directo en el fondo de la
+          // pantalla, y con el azul al 5% el patrón de marca se colaba por encima
+          // y cruzaba el texto con sus líneas.
+          backgroundColor: colors.surface,
           borderRadius: radius.xl,
           borderWidth: 1,
           borderColor: `${colors.primary}20`,
@@ -416,7 +419,11 @@ export default function PrivacyScreen() {
           flexDirection: "row",
           alignItems: "flex-start",
           gap: 12,
-          backgroundColor: `${colors.accent}15`,
+          // Opaco, no el lima al 8%: este panel se apoya directo en el fondo de
+          // la pantalla y el patrón de marca se colaba por encima, cruzando el
+          // texto con sus líneas. Es el mismo lima al 8% ya mezclado contra
+          // `colors.background` (#F5F6F7), así que se ve igual que antes.
+          backgroundColor: "#F0F4E3",
           borderRadius: radius.md,
           borderWidth: 1,
           borderColor: `${colors.accent}30`,

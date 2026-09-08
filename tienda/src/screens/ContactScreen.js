@@ -108,7 +108,11 @@ export default function ContactScreen({ navigation }) {
 
         {/* ── Hero ── */}
         <View style={{
-          backgroundColor: `${PRIMARY}0F`,
+          // Opaco, no el azul al 6%: este panel se apoya directo en el fondo de
+          // la pantalla y el patrón de marca se colaba por encima, cruzando el
+          // título y el texto con sus líneas. Es el mismo azul al 6% ya mezclado
+          // contra `colors.background` (#F5F6F7), así que se ve igual que antes.
+          backgroundColor: "#E7ECEF",
           borderRadius: radius.xl,
           borderWidth: 1,
           borderColor: `${PRIMARY}22`,
