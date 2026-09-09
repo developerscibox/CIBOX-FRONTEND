@@ -3,6 +3,7 @@ import { Ionicons } from "@expo/vector-icons";
 import ScreenContainer from "../components/ScreenContainer";
 import AppText from "../components/AppText";
 import { colors, spacing } from "../constants/theme";
+import { comunasEnTexto, tarifaEnTexto } from "../constants/delivery";
 
 const STEPS = [
   {
@@ -19,15 +20,15 @@ const STEPS = [
   },
   {
     icon: "card-outline",
-    title: "3. Reserva y paga al retirar",
+    title: "3. Paga con tarjeta",
     description:
-      "Reserva tu pedido y paga al retirar (efectivo o transferencia). Sin pagos online: confirmas tu compra y cancelas en bodega.",
+      "Escribes tu dirección y pagas con tarjeta de crédito o débito en Webpay Plus de Transbank. El pedido entra a preparación apenas se aprueba el pago.",
   },
   {
-    icon: "storefront-outline",
-    title: "4. Retira en bodega",
+    icon: "car-outline",
+    title: "4. Te lo llevamos",
     description:
-      "Cuando tu pedido esté listo, te avisamos para que lo retires en nuestra bodega. Rápido y sin filas.",
+      `Despachamos a domicilio en ${comunasEnTexto()} por ${tarifaEnTexto()} el pedido. Te avisamos por correo cuando sale a reparto.`,
   },
 ];
 
@@ -75,8 +76,8 @@ export default function HowItWorksScreen({ navigation }) {
               lineHeight: 21,
             }}
           >
-            Tu mayorista de confianza. Compra por caja, ahorra más y retira
-            tu pedido directo en nuestra bodega.
+            Tu mayorista de confianza. Compra por caja, ahorra más y recibe
+            tu pedido en la puerta de tu casa.
           </AppText>
         </View>
 

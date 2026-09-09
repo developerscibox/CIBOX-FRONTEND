@@ -12,9 +12,10 @@ import ScreenContainer from "../components/ScreenContainer";
 import AppText from "../components/AppText";
 import AppButton from "../components/AppButton";
 import { colors, radius, shadows, spacing } from "../constants/theme";
+import { comunasEnTexto, tarifaEnTexto } from "../constants/delivery";
 import { showAppAlert } from "../utils/appAlerts";
 
-import brand, { links, addressText } from "../constants/brand";
+import brand, { links } from "../constants/brand";
 const PRIMARY = colors.primary;
 
 // ─── Tarjeta de contacto directo ─────────────────────────────────────────────
@@ -169,7 +170,7 @@ export default function ContactScreen({ navigation }) {
           />
         </View>
 
-        {/* ── Dirección / Retiro en bodega ── */}
+        {/* ── Zona de reparto ── */}
         <View style={{
           flexDirection: "row",
           alignItems: "flex-start",
@@ -185,11 +186,10 @@ export default function ContactScreen({ navigation }) {
           <Ionicons name="location-outline" size={22} color={PRIMARY} />
           <View style={{ flex: 1 }}>
             <AppText style={{ fontSize: 13, fontWeight: "800", color: colors.text, marginBottom: 4 }}>
-              Retiro en bodega
+              Dónde despachamos
             </AppText>
             <AppText style={{ fontSize: 13, color: colors.muted, lineHeight: 19 }}>
-              {addressText()}
-              {brand.address.hint ? `\n${brand.address.hint}` : ""}
+              {`${comunasEnTexto()} — despacho a domicilio por ${tarifaEnTexto()} el pedido.`}
             </AppText>
           </View>
         </View>

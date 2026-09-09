@@ -1,6 +1,7 @@
 import { Image, Pressable, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { colors, shadows, spacing } from "../constants/theme";
+import { comunasEnTexto, tarifaEnTexto } from "../constants/delivery";
 import AppText from "./AppText";
 
 // Azul navy de marca. Antes esta constante era `MORADO = "#2E6116"` —un verde
@@ -15,8 +16,10 @@ export const COUPON_CODE = "BODEGA10";
 // Barra horizontal compacta. En desktop los 4 ítems van en fila; en móvil 2×2.
 export function TrustStrip() {
   const items = [
-    { icon: "storefront-outline", label: "Retiro gratis", sub: "en nuestra bodega" },
-    { icon: "cash-outline", label: "Efectivo o transferencia", sub: "pago al retirar" },
+    // Lo primero que ve el cliente en la portada es a dónde llegamos y cuánto
+    // cuesta: es la información que decide si sigue mirando o no.
+    { icon: "car-outline", label: `Despacho ${tarifaEnTexto()}`, sub: "a domicilio en la zona" },
+    { icon: "card-outline", label: "Pago con tarjeta", sub: "Webpay de Transbank" },
     { icon: "cube-outline", label: "Venta por caja", sub: "precio mayorista" },
     { icon: "time-outline", label: "Lun a Sáb", sub: "horario de atención" },
   ];
@@ -212,7 +215,7 @@ export function HowToBoxStrip({ isWebDesktop }) {
   const steps = [
     { n: "1", icon: "search-outline", label: "Elige tu producto", sub: "del catálogo mayorista" },
     { n: "2", icon: "cube-outline", label: "Suma cajas", sub: "mientras más, mejor precio" },
-    { n: "3", icon: "storefront-outline", label: "Retira gratis", sub: "en nuestra bodega" },
+    { n: "3", icon: "car-outline", label: "Te lo llevamos", sub: comunasEnTexto() },
   ];
   return (
     <View

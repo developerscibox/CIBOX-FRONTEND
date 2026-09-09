@@ -15,7 +15,7 @@ import AppText from "../components/AppText";
 import AppButton from "../components/AppButton";
 import TransferPaymentCard from "../components/TransferPaymentCard";
 import { colors, radius, spacing } from "../constants/theme";
-import { getOrderById, cancelOrder, getOrderTracking } from "../services/orderService";
+import { getOrderById, cancelOrder, getOrderTracking, retryOrderPayment } from "../services/orderService";
 import { addItemToCart } from "../services/cartService";
 import useAuthStore from "../store/authStore";
 import useCartStore from "../store/cartStore";
@@ -73,6 +73,10 @@ const formatDateTime = (dateStr) => {
   return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 };
 
+// Etiquetas del historial de un pedido de RETIRO EN BODEGA. El retiro se
+// descontinuó, así que este bloque solo se usa ya para los pedidos antiguos
+// (delivery_method "pickup"): tiene que seguir contando lo que de verdad les
+// pasó — se retiraron en la bodega, no salieron a reparto.
 const PICKUP_STEP_FALLBACK = {
   pending: "Pedido recibido (esperando confirmación de pago)",
   paid: "Pago confirmado",
@@ -150,6 +154,39 @@ export default function OrderDetailScreen({ route, navigation }) {
   }, [orderId, token]);
 
   useEffect(() => { fetchOrder(); }, [fetchOrder]);
+
+  // ── Retomar el pago ───────────────────────────────────────────────────────
+  // Con la tarjeta como único medio, el pedido nace impago y se paga en Webpay.
+  // Si el cliente cierra Webpay a medias —se le acaba la batería, se arrepiente,
+  // se le cae la red— vuelve por aquí, y hasta ahora esta pantalla solo le
+  // ofrecía cancelar: el pedido quedaba muerto reteniendo su stock.
+  const [pagando, setPagando] = useState(false);
+
+  const handleRetomarPago = async () => {
+    try {
+      setPagando(true);
+      const pago = await retryOrderPayment({
+        orderId,
+        platform: Platform.OS === "web" ? "web" : Platform.OS,
+      });
+      if (!pago?.paymentToken || !pago?.paymentUrl) {
+        showAppAlert("Error", "No se pudo generar el link de pago. Intenta de nuevo en unos minutos.");
+        return;
+      }
+      navigation.navigate("Webpay", {
+        orderId,
+        paymentToken: pago.paymentToken,
+        paymentUrl: pago.paymentUrl,
+      });
+    } catch (error) {
+      showAppAlert(
+        "No se pudo retomar el pago",
+        error?.response?.data?.message || "Intenta de nuevo en unos minutos.",
+      );
+    } finally {
+      setPagando(false);
+    }
+  };
 
   // ── Cancelar orden ────────────────────────────────────────────────────────
   const handleCancel = () => {
@@ -666,6 +703,34 @@ export default function OrderDetailScreen({ route, navigation }) {
                 <Ionicons name="refresh-circle-outline" size={18} color="#fff" />
                 <AppText style={styles.reorderText}>
                   {addingAll ? "Agregando..." : "Volver a pedir"}
+                </AppText>
+              </Pressable>
+            )}
+
+            {/* Retomar el pago — el camino principal de un pedido sin pagar.
+                Va antes que "Cancelar" a propósito: quien dejó el pago a medias
+                casi siempre vuelve para terminarlo, no para desistir. */}
+            {order?.status === "pending" && order?.payment?.method === "webpay" && (
+              <Pressable
+                onPress={handleRetomarPago}
+                disabled={pagando}
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 8,
+                  backgroundColor: colors.accent,
+                  borderRadius: 14,
+                  paddingVertical: 14,
+                  marginBottom: 10,
+                }}
+              >
+                {pagando
+                  ? <ActivityIndicator size="small" color={colors.accentText} />
+                  : <Ionicons name="card-outline" size={18} color={colors.accentText} />
+                }
+                <AppText weight="bold" style={{ color: colors.accentText, fontSize: 15 }}>
+                  {pagando ? "Abriendo el pago..." : "Pagar con tarjeta"}
                 </AppText>
               </Pressable>
             )}

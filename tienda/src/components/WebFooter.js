@@ -7,6 +7,7 @@ import useAuthStore from "../store/authStore";
 import { useHomeSlots, cmsText } from "../services/contentService";
 
 import brand, { links } from "../constants/brand";
+import { seccionVisible } from "../constants/seccionesOcultas";
 import { colors } from "../constants/theme";
 const TEXT = colors.primaryText;
 // Blanco al 82% sobre el degradado. La parada más clara es `primaryMid`, y ahí
@@ -87,7 +88,7 @@ export default function WebFooter() {
   const slots = useHomeSlots();
   const footerNote = cmsText(
     slots?.textos?.footer_note,
-    "Tu supermercado online. Compra desde donde estés: nosotros preparamos tu pedido y lo dejamos listo para que lo retires.",
+    "Tu supermercado online. Compra desde donde estés: preparamos tu pedido y te lo llevamos a la puerta en la zona de Rancagua.",
   );
 
   return (
@@ -135,8 +136,8 @@ export default function WebFooter() {
           <FooterLink label="Mi Despensa" onPress={() => navigation.navigate(token ? "PantryTab" : "Auth")} />
           <FooterLink label="Más Vendido" onPress={() => navigation.navigate("Products", { preset: "best_sellers" })} />
           <FooterLink label="Imperdibles de la semana" onPress={() => navigation.navigate("Products", { preset: "liquidation" })} />
-          <FooterLink label="Beneficios" onPress={() => navigation.navigate("Beneficios")} />
-          <FooterLink label="Blog" onPress={() => navigation.navigate("Blog")} />
+          {seccionVisible("Beneficios") && <FooterLink label="Beneficios" onPress={() => navigation.navigate("Beneficios")} />}
+          {seccionVisible("Blog") && <FooterLink label="Blog" onPress={() => navigation.navigate("Blog")} />}
           <FooterLink label="Contacto" onPress={() => navigation.navigate("Contact")} />
         </Col>
 
@@ -147,7 +148,10 @@ export default function WebFooter() {
           <FooterLink label="Política de privacidad" onPress={() => navigation.navigate("Privacy")} />
           <FooterLink label="Formas de pago" onPress={() => navigation.navigate("HowItWorks")} />
           <FooterLink label="Despacho y entregas" onPress={() => navigation.navigate("Despacho")} />
-          <FooterLink label="Nuestras tiendas" onPress={() => navigation.navigate("Stores")} />
+          {/* La puerta de entrada del que compró SIN cuenta: sin este enlace no
+              tiene ningún camino para volver a ver su pedido. */}
+          <FooterLink label="Seguir mi pedido" onPress={() => navigation.navigate("TrackOrder")} />
+          {seccionVisible("Stores") && <FooterLink label="Nuestras tiendas" onPress={() => navigation.navigate("Stores")} />}
           <FooterLink label="Preguntas frecuentes" onPress={() => navigation.navigate("Contact")} />
         </Col>
 

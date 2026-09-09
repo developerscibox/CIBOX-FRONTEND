@@ -44,12 +44,12 @@ Datos de registro y cuenta:
 • Contraseña (almacenada de forma cifrada).
 • Número de teléfono (opcional).
 
-Datos de compra y retiro:
+Datos de compra y despacho:
 • Historial de pedidos y productos adquiridos.
-• Preferencias de retiro en bodega.
+• Dirección de despacho: comuna, calle y número, departamento u oficina y referencias para la entrega.
 
 Datos de pago:
-• ${EMPRESA} no almacena datos de tarjetas. El pago se realiza de forma presencial al retirar el pedido en bodega, en efectivo o por transferencia, por lo que no se procesan pagos en línea a través de la plataforma.
+• ${EMPRESA} no almacena datos de tarjetas. El pago se procesa en línea a través de Webpay Plus de Transbank: el cliente ingresa el número de su tarjeta en el entorno de Transbank, y ${EMPRESA} solo recibe el resultado de la transacción (aprobada o rechazada), el monto y un identificador de la operación.
 
 Datos de uso de la plataforma:
 • Dirección IP.
@@ -73,7 +73,7 @@ Datos de comunicaciones:
 Finalidades necesarias para la prestación del servicio:
 • Crear y gestionar su cuenta de usuario.
 • Procesar, confirmar y gestionar sus pedidos.
-• Coordinar la preparación y el retiro de productos en bodega.
+• Preparar el pedido y despacharlo a la dirección indicada por el cliente.
 • Emitir documentos tributarios electrónicos (boletas y facturas) conforme a la normativa del SII.
 • Brindar soporte y atención al cliente.
 • Gestionar devoluciones, cambios y garantías.
@@ -96,7 +96,7 @@ Usted puede revocar su consentimiento para las finalidades opcionales en cualqui
     icon: "shield-checkmark-outline",
     content: `El tratamiento de sus datos personales se fundamenta en las siguientes bases legales, conforme a la Ley N° 19.628 sobre Protección de la Vida Privada:
 
-• Ejecución de un contrato: cuando el tratamiento es necesario para procesar su compra, gestionar su cuenta o coordinar el retiro del pedido en bodega.
+• Ejecución de un contrato: cuando el tratamiento es necesario para procesar su compra, gestionar su cuenta o despachar el pedido a su domicilio.
 • Cumplimiento de obligación legal: cuando la ley exige el tratamiento, como en la emisión de documentos tributarios.
 • Interés legítimo: para la prevención de fraudes, seguridad de la plataforma y mejora del servicio.
 • Consentimiento del titular: para el envío de comunicaciones comerciales y notificaciones opcionales.`,
@@ -216,7 +216,7 @@ Si tomamos conocimiento de que hemos recopilado datos de un menor sin autorizaci
     icon: "notifications-outline",
     content: `La aplicación móvil de ${EMPRESA} puede enviar notificaciones push a su dispositivo para informarle sobre:
 
-• El estado de sus pedidos (confirmación, preparación, listo para retiro).
+• El estado de sus pedidos (confirmación, preparación, en camino, entregado).
 • Promociones y ofertas especiales (solo con su consentimiento).
 • Novedades y actualizaciones relevantes de la plataforma.
 

@@ -1,18 +1,16 @@
-import { useMemo } from "react";
-import { Platform, View, useWindowDimensions } from "react-native";
+import { useMemo, useState } from "react";
+import { Platform, Pressable, View, useWindowDimensions } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import * as Clipboard from "expo-clipboard";
 import ScreenContainer from "../components/ScreenContainer";
 import AppButton from "../components/AppButton";
-import TransferPaymentCard from "../components/TransferPaymentCard";
 import { colors, spacing } from "../constants/theme";
 import AppText from "../components/AppText";
 import useAuthStore from "../store/authStore";
-import { addressText } from "../constants/brand";
 
-// La dirección sale de la marca (backend). Mientras no esté definida se muestra
-// el aviso en vez de una dirección equivocada.
-const PICKUP_ADDRESS = addressText(
-  "Te avisaremos por correo dónde retirar apenas confirmemos la dirección de la bodega.",
-);
+// A esta pantalla se llega después de que Transbank confirmó el pago: cuando
+// el cliente la ve, la plata ya está cobrada y el pedido entra a preparación.
+// Por eso aquí no queda nada por pagar ni nada que mostrar en una caja.
 
 export default function OrderSuccessScreen({ route, navigation }) {
   const params = route.params || {};
@@ -20,20 +18,6 @@ export default function OrderSuccessScreen({ route, navigation }) {
   const isGuest = !token;
   const { width } = useWindowDimensions();
   const isWebDesktop = Platform.OS === "web" && width >= 800; // ← igual que AppStack
-
-  const paymentMethod = params.paymentMethod || null;
-  const committedLabel = params.committedLabel || params.committedDate || null;
-  const guestToken = params.guestToken || null;
-
-  const paymentMessage = useMemo(() => {
-    if (paymentMethod === "transfer") {
-      return "Paga con los datos de transferencia de abajo y sube tu comprobante: tu pedido se confirma al verificar el pago.";
-    }
-    if (paymentMethod === "cash_on_pickup") {
-      return "Paga al retirar en la bodega.";
-    }
-    return null;
-  }, [paymentMethod]);
 
   const orderId = useMemo(() => {
     if (params.orderId) return params.orderId;
@@ -51,6 +35,29 @@ export default function OrderSuccessScreen({ route, navigation }) {
     } catch {
       navigation.navigate(home);
     }
+  };
+
+  // Folio corto: los últimos 6 del identificador. Es LO ÚNICO que le queda a
+  // quien compró sin cuenta para volver a encontrar su pedido, así que aquí
+  // tiene que estar a la vista y poder copiarse de un toque.
+  const folio = orderId ? String(orderId).slice(-6).toUpperCase() : null;
+  const [copiado, setCopiado] = useState(false);
+
+  const copiarFolio = async () => {
+    if (!folio) return;
+    try {
+      await Clipboard.setStringAsync(folio);
+      setCopiado(true);
+      setTimeout(() => setCopiado(false), 2000);
+    } catch {
+      // Si el navegador no deja copiar, el número igual está seleccionable.
+    }
+  };
+
+  // El invitado no tiene "Mis pedidos": su camino de vuelta es el seguimiento
+  // público. Le llevamos el folio ya escrito para que solo ponga su correo.
+  const goToTracking = () => {
+    navigation.navigate("TrackOrder", folio ? { folio } : undefined);
   };
 
   const goToOrder = () => {
@@ -101,11 +108,14 @@ export default function OrderSuccessScreen({ route, navigation }) {
           }}
         >
           {isGuest
-            ? "Tu pedido fue recibido. Te enviamos un correo con el resumen de tu compra y te avisaremos cuando esté listo para retiro."
-            : "Tu pedido fue creado correctamente. Revisa tu correo para ver el resumen y futuras actualizaciones."}
+            ? "Recibimos tu pago y tu pedido. Te enviamos un correo con el resumen y te avisamos cuando salga a reparto."
+            : "Tu pago fue aprobado y tu pedido está en preparación. Revisa tu correo para ver el resumen y las actualizaciones."}
         </AppText>
 
-        {/* Folio corto: es lo que el cliente muestra en caja al retirar. */}
+        {/* Folio corto: la referencia con la que el cliente nos escribe si
+            necesita algo de su pedido, y con la que lo sigue si compró sin
+            cuenta. Por eso lleva botón de copiar y no solo texto seleccionable:
+            si se pierde, al invitado no le queda ningún otro camino de vuelta. */}
         {orderId ? (
           <View
             style={{
@@ -133,58 +143,74 @@ export default function OrderSuccessScreen({ route, navigation }) {
                 letterSpacing: 3,
               }}
             >
-              #{String(orderId).slice(-6).toUpperCase()}
-            </AppText>
-            <AppText
-              style={{ color: colors.primary, fontWeight: "700", fontSize: 13, marginTop: 4 }}
-            >
-              Muéstralo en caja al retirar
-            </AppText>
-          </View>
-        ) : null}
-
-        {paymentMessage ? (
-          <View
-            style={{
-              width: "100%",
-              maxWidth: 440,
-              backgroundColor: colors.background,
-              borderWidth: 1,
-              borderColor: colors.border,
-              borderRadius: 16,
-              padding: 16,
-              marginBottom: 24,
-              gap: 8,
-            }}
-          >
-            <AppText
-              style={{ color: colors.text, fontSize: 14, lineHeight: 20 }}
-            >
-              {paymentMessage}
+              #{folio}
             </AppText>
 
-            {committedLabel ? (
-              <AppText
-                style={{ color: colors.accent, fontWeight: "800", fontSize: 14 }}
-              >
-                Retiro comprometido: {committedLabel}
+            <Pressable
+              onPress={copiarFolio}
+              style={({ hovered, pressed }) => ({
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 6,
+                marginTop: 10,
+                paddingVertical: 8,
+                paddingHorizontal: 14,
+                borderRadius: 999,
+                borderWidth: 1.5,
+                borderColor: colors.primary,
+                backgroundColor: hovered || pressed ? colors.background : "transparent",
+              })}
+            >
+              <Ionicons
+                name={copiado ? "checkmark" : "copy-outline"}
+                size={15}
+                color={colors.primary}
+              />
+              <AppText weight="bold" style={{ color: colors.primary, fontSize: 13 }}>
+                {copiado ? "Copiado" : "Copiar número"}
               </AppText>
-            ) : null}
+            </Pressable>
 
             <AppText
-              style={{ color: colors.muted, fontSize: 13, lineHeight: 19 }}
+              style={{
+                color: colors.muted,
+                fontSize: 12.5,
+                marginTop: 8,
+                textAlign: "center",
+                lineHeight: 17,
+              }}
             >
-              📍 {PICKUP_ADDRESS}
+              {isGuest
+                ? "Guárdalo: con este número y tu correo puedes ver en qué va tu pedido cuando quieras."
+                : "Tenlo a mano si nos escribes"}
             </AppText>
           </View>
         ) : null}
 
-        {/* Transferencia: datos bancarios + subida del comprobante (H1). */}
-        {paymentMethod === "transfer" && orderId ? (
-          <View style={{ width: "100%", maxWidth: 440 }}>
-            <TransferPaymentCard orderId={orderId} guestToken={guestToken} />
-          </View>
-        ) : null}
+        <View
+          style={{
+            width: "100%",
+            maxWidth: 440,
+            backgroundColor: colors.background,
+            borderWidth: 1,
+            borderColor: colors.border,
+            borderRadius: 16,
+            padding: 16,
+            marginBottom: 24,
+            gap: 8,
+          }}
+        >
+          <AppText style={{ color: colors.text, fontSize: 14, lineHeight: 20 }}>
+            Pago aprobado con tarjeta. Preparamos tu pedido y lo despachamos a
+            la dirección que nos diste.
+          </AppText>
+
+          <AppText style={{ color: colors.muted, fontSize: 13, lineHeight: 19 }}>
+            {isGuest
+              ? "Te escribimos por correo cuando salga a reparto. Compraste sin cuenta, así que para volver a ver tu pedido usa “Seguir mi pedido” con el número de arriba y tu correo."
+              : "Te escribimos por correo cuando salga a reparto. El detalle de tu pedido, con la dirección de entrega, queda en “Mis pedidos”."}
+          </AppText>
+        </View>
 
         {!isGuest && orderId ? (
           <AppButton
@@ -194,9 +220,19 @@ export default function OrderSuccessScreen({ route, navigation }) {
           />
         ) : null}
 
+        {/* Al invitado el seguimiento es lo que MÁS le sirve de aquí en adelante,
+            así que se lleva el botón primario (lima, según el manual). */}
+        {isGuest && orderId ? (
+          <AppButton
+            title="Seguir mi pedido"
+            onPress={goToTracking}
+            style={{ marginBottom: 12 }}
+          />
+        ) : null}
+
         <AppButton
           title="Volver al inicio"
-          variant={isGuest ? "primary" : "secondary"}
+          variant={isGuest && !orderId ? "primary" : "secondary"}
           onPress={goToInicio}
         />
       </View>

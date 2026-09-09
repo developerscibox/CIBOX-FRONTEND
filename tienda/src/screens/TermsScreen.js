@@ -5,6 +5,11 @@ import AppText from "../components/AppText";
 import { colors, radius, shadows, spacing } from "../constants/theme";
 
 import brand, { hasAddress } from "../constants/brand";
+import {
+  DESPACHO_REGION,
+  comunasEnTexto,
+  tarifaEnTexto,
+} from "../constants/delivery";
 
 // Identidad: viene de constants/brand.js (que a su vez la trae del backend).
 // Es un documento legal: la razón social, el RUT y el domicilio NO se escriben
@@ -32,7 +37,7 @@ const SECTIONS = [
 
 • El uso del sitio web ${SITIO}
 • La compra de productos.
-• Las condiciones de retiro de los pedidos en bodega.
+• Las condiciones de despacho a domicilio de los pedidos.
 • Las políticas sanitarias.
 • El tratamiento de datos personales.
 • La relación contractual entre ${EMPRESA} y el cliente.
@@ -66,7 +71,7 @@ Este documento constituye contrato electrónico y se regulan conforme a la Ley N
 • Programas de ahorro y membresías.
 • Comercializador directo de productos, cajas temáticas, packs u otro bulto.
 
-El retiro se realiza únicamente en nuestra bodega. No se realiza despacho a domicilio.
+La única modalidad de entrega es el despacho a domicilio dentro de la zona de reparto. No existe retiro presencial en bodega.
 
 ${EMPRESA} podrá abastecer productos desde:
 
@@ -92,16 +97,18 @@ El usuario es responsable de la confidencialidad de su clave de acceso y de toda
 
 • El cliente selecciona los productos (por caja).
 • Acepta los presentes términos.
-• Reserva su pedido para retiro en bodega.
+• Indica su dirección de despacho dentro de la zona de reparto.
+• Paga en línea con tarjeta de crédito o débito.
 • Recibe confirmación electrónica de la orden.
 
-El pago se realiza de forma presencial al momento del retiro, en efectivo o mediante transferencia.
+El pago se realiza en línea, al momento de confirmar la compra, a través de Webpay Plus de Transbank. La orden se confirma cuando el pago es aprobado.
 
 ${EMPRESA} podrá anular pedidos en caso de:
 
 • Error evidente en precios.
 • Falta de stock no informada oportunamente.
-• Pedido no retirado dentro del plazo informado.`,
+• Pago no completado dentro del plazo informado.
+• Dirección de despacho fuera de la zona de reparto.`,
       },
       {
         num: "6",
@@ -115,10 +122,11 @@ ${EMPRESA} podrá anular pedidos en caso de:
 
 Medios de pago aceptados:
 
-• Efectivo.
-• Transferencia bancaria.
+• Tarjetas de crédito y débito, mediante Webpay Plus de Transbank.
 
-El pago se realiza de forma presencial al momento del retiro del pedido en bodega. ${EMPRESA} no procesa pagos en línea a través del Sitio.`,
+El pago se procesa en línea, en el entorno seguro de Transbank. ${EMPRESA} no captura, no visualiza ni almacena los datos de la tarjeta del cliente.
+
+Al total de los productos se suma el costo de despacho, que es una tarifa plana de ${tarifaEnTexto()} por pedido dentro de la zona de reparto, informada en el carrito y en el resumen antes de pagar.`,
       },
     ],
   },
@@ -132,10 +140,10 @@ El pago se realiza de forma presencial al momento del retiro del pedido en bodeg
         content: `La venta se perfecciona cuando:
 
 • El cliente acepta los términos.
-• El cliente reserva su pedido para retiro en bodega.
+• El cliente indica su dirección de despacho y paga en línea con tarjeta.
 • ${EMPRESA} envía confirmación electrónica.
 
-El pago se efectúa al momento del retiro, en efectivo o por transferencia. Hasta ese momento, la orden es una reserva de compra.
+Mientras el pago no sea aprobado por Transbank, la orden es una reserva de compra y puede ser anulada, liberándose el stock comprometido.
 
 ${EMPRESA} podrá rechazar pedidos por:
 
@@ -162,63 +170,67 @@ ${EMPRESA} podrá rechazar pedidos por:
   },
   {
     roman: "V",
-    title: "Retiro en Bodega y Cumplimiento",
+    title: "Despacho a Domicilio y Cumplimiento",
     items: [
       {
         num: "8",
-        title: "Modalidad de Entrega: Retiro en Bodega",
-        content: `La única modalidad de entrega es el retiro presencial en nuestra bodega. No se realiza despacho a domicilio.
+        title: "Modalidad de Entrega: Despacho a Domicilio",
+        content: `La única modalidad de entrega es el despacho a domicilio. No existe retiro presencial en bodega.
 
-Lugar de retiro:
+Zona de reparto:
 
-• En la bodega de ${EMPRESA}. La dirección se informa al confirmar el pedido.
+• ${comunasEnTexto()}, ${DESPACHO_REGION}.
 
-El retiro se realiza dentro del horario y plazo informados al cliente una vez que su pedido se encuentre preparado.`,
+Fuera de esa zona ${EMPRESA} no realiza entregas y no es posible completar la compra. La zona de reparto se informa en el Sitio y en el checkout, antes de que el cliente ingrese sus datos.
+
+Costo de despacho:
+
+• Tarifa plana de ${tarifaEnTexto()} por pedido dentro de la zona de reparto, con independencia del peso, del volumen y de la comuna.
+
+La entrega se realiza en la dirección indicada por el cliente, dentro del plazo informado una vez preparado el pedido. Es responsabilidad del cliente entregar una dirección correcta y completa, y encontrarse en ella o disponer que alguien reciba el pedido.`,
       },
       {
         num: "9",
         title: "Riesgo y Transferencia",
-        content: `El riesgo del producto se transfiere al cliente al momento del retiro presencial del pedido en la bodega.
+        content: `El riesgo del producto se transfiere al cliente al momento de la entrega del pedido en la dirección de despacho.
 
-El cliente debe revisar los productos al momento del retiro.`,
+El cliente, o quien reciba el pedido en su nombre, debe revisar los productos al momento de la entrega.`,
       },
       {
         num: "10",
         title: "Disponibilidad",
-        content: `${EMPRESA} preparará los pedidos para su retiro en bodega según la disponibilidad de stock informada en el Sitio.`,
+        content: `${EMPRESA} preparará y despachará los pedidos según la disponibilidad de stock informada en el Sitio.`,
       },
       {
         num: "11",
         title: "Plazos de Preparación",
-        content: `Los plazos de preparación para retiro estarán de acuerdo con:
+        content: `Los plazos de preparación y despacho estarán de acuerdo con:
 
 • Los informados al momento de la compra.
 • La disponibilidad de stock al momento de preparar el pedido.
 • Condiciones operativas propias de la bodega.
 
-${EMPRESA} avisará al cliente cuando su pedido esté listo para ser retirado.`,
+${EMPRESA} avisará al cliente cuando su pedido esté preparado y cuando salga a reparto.`,
       },
       {
         num: "12",
-        title: "Retiro del Pedido",
+        title: "Entrega del Pedido",
         content: `El cliente debe:
 
-• Retirar su pedido en bodega dentro del plazo informado.
-• Presentar la confirmación de su orden al momento del retiro.
-• Pagar de forma presencial, en efectivo o por transferencia, al momento del retiro.
-• Revisar los productos al momento del retiro.
+• Entregar una dirección de despacho completa y correcta, dentro de la zona de reparto.
+• Estar disponible en esa dirección, o disponer que alguien reciba el pedido, dentro del plazo informado.
+• Revisar los productos al momento de la entrega.
 
-Si el cliente no retira su pedido dentro del plazo informado, ${EMPRESA} podrá liberar el stock y anular la orden según corresponda.`,
+Si no es posible entregar el pedido por ausencia del cliente o por una dirección errónea o incompleta, ${EMPRESA} coordinará un nuevo intento de entrega. Un segundo despacho por causa imputable al cliente podrá tener un nuevo costo de despacho, informado previamente.`,
       },
       {
         num: "13",
-        title: "Pago al Retirar",
-        content: `El pago de los pedidos se realiza de forma presencial, al momento del retiro en bodega, mediante:
+        title: "Pago en Línea con Tarjeta",
+        content: `El pago de los pedidos se realiza en línea, al confirmar la compra, mediante tarjeta de crédito o débito a través de Webpay Plus de Transbank.
 
-• Efectivo.
-• Transferencia bancaria.
+El cliente ingresa los datos de su tarjeta en el entorno seguro de Transbank. ${EMPRESA} no captura, no visualiza ni almacena esos datos: solo recibe de Transbank el resultado de la transacción.
 
-${EMPRESA} no procesa pagos en línea ni cobra costos de envío, por cuanto la única modalidad de entrega es el retiro presencial en bodega.`,
+Si el pago es rechazado o no se completa, el pedido no se confirma y el stock comprometido se libera transcurrido el plazo informado. El cliente puede reintentar el pago desde el detalle de su pedido.`,
       },
     ],
   },
@@ -241,7 +253,7 @@ ${EMPRESA} garantiza:
 • Control de temperatura.
 • Manipulación conforme DS 977/96.
 
-El cliente debe revisar al momento del retiro:
+El cliente debe revisar al momento de la entrega:
 
 • Integridad.
 • Temperatura.
@@ -251,7 +263,7 @@ Los productos perecibles:
 
 • No están sujetos a derecho a retracto, conforme al art. 3 bis letra b) de la Ley 19.496.
 • Deben conservarse según indicaciones del envase.
-• Reclamos por productos perecibles deberán realizarse dentro de 6 horas desde el retiro.`,
+• Reclamos por productos perecibles deberán realizarse dentro de 6 horas desde la entrega.`,
       },
     ],
   },
@@ -523,9 +535,9 @@ ${DOMICILIO_LINEA}`,
 
 • Visualizar los productos ofrecidos.
 • Realizar pedidos por caja.
-• Reservar pedidos para su retiro en bodega.
+• Pagar en línea con tarjeta y recibir el pedido a domicilio.
 
-${EMPRESA} actúa como vendedor directo de los productos ofrecidos en el Sitio. La entrega se realiza exclusivamente mediante retiro presencial en bodega y el pago se efectúa al momento del retiro, en efectivo o por transferencia. ${EMPRESA} no opera despacho a domicilio ni procesa pagos en línea a través del Sitio.`,
+${EMPRESA} actúa como vendedor directo de los productos ofrecidos en el Sitio. La entrega se realiza exclusivamente mediante despacho a domicilio dentro de la zona de reparto, y el pago se efectúa en línea con tarjeta de crédito o débito a través de Webpay Plus de Transbank.`,
       },
     ],
   },

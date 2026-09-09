@@ -33,6 +33,7 @@ import { readCache, writeCache } from "../utils/catalogCache";
 import { useHomeSlots, cmsText } from "../services/contentService";
 
 import brand from "../constants/brand";
+import { seccionVisible } from "../constants/seccionesOcultas";
 // Degradado de marca de Cibox: navy → azul Cibox → azul medio. La rampa se queda
 // entera dentro de la familia azul; el lima no cierra el degradado porque en el
 // manual es color de acción (botones, precios, badges), no fondo extenso, y como
@@ -72,7 +73,7 @@ const FEATURES = [
   // dedicadas (registradas en navigation/AppStack.js) — en celular no había
   // ningún otro camino para llegar a ellas.
   { id: "benef", icon: require("../../assets/home/qa-beneficios.png"), title: "Beneficios", desc: "Descuentos y promos exclusivas para ti", screen: "Beneficios" },
-  { id: "despacho", icon: require("../../assets/home/qa-despacho-pronto.png"), title: "Despacho pronto", desc: "Recibe tus productos rápido y seguro", screen: "Despacho" },
+  { id: "despacho", icon: require("../../assets/home/qa-despacho-pronto.png"), title: "Despacho a domicilio", desc: "Mira si llegamos a tu comuna", screen: "Despacho" },
 ];
 
 // ─── % de ahorro por caja (caja vs unidad) ───────────────────────────────────────
@@ -448,7 +449,7 @@ function TrustBar({ isWebDesktop }) {
   const items = [
     { icon: "cart-outline", label: "Precios mayoristas", sub: "Ahorra más comprando online" },
     { icon: "shield-checkmark-outline", label: "Pago 100% seguro", sub: "Transacciones protegidas" },
-    { icon: "car-outline", label: "Despacho rápido", sub: "A todo Chile" },
+    { icon: "car-outline", label: "Despacho a domicilio", sub: "Zona de Rancagua" },
     { icon: "heart-outline", label: "Atención personalizada", sub: "Estamos para ayudar" },
   ];
   return (
@@ -696,6 +697,14 @@ export default function HomeScreen({ navigation }) {
   };
 
   const goFeature = (item) => {
+    // "Sigue tu pedido" es el acceso más obvio de la portada para quien quiere
+    // saber en qué va su compra, y al invitado lo mandaba al login: sin cuenta,
+    // callejón sin salida. Ahora lo lleva al seguimiento público (número de
+    // pedido + correo), que es justamente la pantalla hecha para su caso.
+    if (item.id === "sigue" && !token) {
+      navigation.navigate("TrackOrder");
+      return;
+    }
     if (item.requiresAuth && !token) {
       navigation.navigate("Auth");
       return;
@@ -771,6 +780,260 @@ export default function HomeScreen({ navigation }) {
     { icon: "shield-checkmark-outline", title: "Confianza", desc: "Calidad garantizada en cada compra" },
   ];
 
+  // ─── La portada, armada por bloques ──────────────────────────────────────────
+  // Todo lo de arriba vive dentro de un único ListHeaderComponent, así que el
+  // orden en que se listan los bloques ES el orden en pantalla. Se arman como
+  // piezas sueltas para poder ordenarlas distinto en el teléfono sin duplicar
+  // nada de contenido.
+  //
+  // Por qué el teléfono va aparte: en pantalla angosta la grilla de accesos
+  // rápidos cae a UNA columna (seis tarjetas ≈ 590px) y encima venía el
+  // newsletter (240px). Entre el banner y la primera tarjeta de producto había
+  // ~940px: casi vez y media de pantalla sin nada que comprar. Quien entra desde
+  // el celular tiene que ver mercadería apenas pasa el banner; si no, la portada
+  // no vende. En escritorio el problema no existe (la misma grilla va en tres
+  // columnas y ocupa 186px, y el hero grande ya justifica el primer pantallazo),
+  // así que ahí el orden queda exactamente como estaba.
+  const esMovil = !isWebDesktop;
+
+  // En el teléfono se recortan dos accesos rápidos: "Más vendido" e "Imperdibles
+  // de la semana" llevan al mismo catálogo que ahora se muestra arriba en filas
+  // reales de producto. El filtro va DESPUÉS del map porque el CMS pisa las
+  // tarjetas por índice (cmsCards[i]); filtrar antes correría los índices y cada
+  // tarjeta se quedaría con el texto e imagen de otra.
+  const featuresVisibles = features
+    // Fuera las secciones escondidas, para que la portada no ofrezca lo que el
+    // menú ya no ofrece (ver constants/seccionesOcultas.js).
+    .filter((f) => !f.screen || seccionVisible(f.screen))
+    // Y en el teléfono, fuera "Imperdibles": esa fila ya va arriba con producto
+    // real y con su propio "Ver todos". "Más vendido" SE QUEDA aunque su fila
+    // también esté arriba, porque su catálogo no tiene ninguna otra puerta en el
+    // celular: el menú y el pie que lo ofrecen son de escritorio.
+    .filter((f) => !esMovil || f.id !== "liq");
+
+  // ¿Hay fila de imperdibles? Depende de que el catálogo traiga cajas con ahorro
+  // real, así que puede venir vacía; se pregunta acá porque de eso depende qué
+  // fila queda primera en el celular.
+  const hayImperdibles = !sectionsLoading && liquidation.length > 0;
+
+  /* Buscador (solo móvil) */
+  const bBuscador = (
+    <View key="buscador" style={{ marginBottom: spacing.md, zIndex: 999, elevation: 999 }}>
+      <MobileSearchBar />
+    </View>
+  );
+
+  /* Bienvenida (CMS, opcional) */
+  const bBienvenida = (!!welcomeTitle || !!welcomeSubtitle) && (
+    <View key="bienvenida" style={{ marginBottom: spacing.md }}>
+      {!!welcomeTitle && (
+        <AppText style={{ fontSize: isWebDesktop ? 24 : 19, fontWeight: "900", color: colors.text }}>
+          {welcomeTitle}
+        </AppText>
+      )}
+      {!!welcomeSubtitle && (
+        <AppText style={{ fontSize: 13.5, color: colors.muted, marginTop: 2 }}>
+          {welcomeSubtitle}
+        </AppText>
+      )}
+    </View>
+  );
+
+  /* Hero */
+  const bHero = (
+    <Hero key="hero" navigation={navigation} isWebDesktop={isWebDesktop} isWide={isWide} width={width} content={slots?.hero} />
+  );
+
+  /* Banners secundarios 1-3 (CMS, opcionales) */
+  const bPromos = (
+    <PromoBanners key="promos" slots={slots} navigation={navigation} isWebDesktop={isWebDesktop} />
+  );
+
+  /* Accesos rápidos con íconos de marca (6 en escritorio, 4 en móvil) */
+  const bAccesos = (
+    <View
+      key="accesos"
+      onLayout={(e) => setGridW(e.nativeEvent.layout.width)}
+      style={{ flexDirection: "row", flexWrap: "wrap", gap: featureGap, marginBottom: spacing.lg }}
+    >
+      {featuresVisibles.map((item) => (
+        <FeatureCard key={item.id} item={item} width={cardW} onPress={() => goFeature(item)} />
+      ))}
+    </View>
+  );
+
+  /* Newsletter de arriba: en el teléfono no se dibuja. Son 240px justo entre el
+     banner y el primer producto, y el formulario del pie hace exactamente lo
+     mismo unas pantallas más abajo. No se borra: sigue en escritorio. */
+  const bNewsletterTop = (
+    <Newsletter
+      key="newsletter-top"
+      title="Entérate de nuestras ofertas y novedades"
+      subtitle="Suscríbete y recibe beneficios exclusivos"
+      isWebDesktop={isWebDesktop}
+    />
+  );
+
+  /* Productos destacados */
+  const bDestacados = (
+    <View key="destacados" style={{ marginBottom: spacing.lg }}>
+      <SectionTitle
+        title="Productos destacados"
+        right={
+          <Pressable onPress={() => navigation.navigate("Products")}>
+            <AppText style={{ color: colors.primary, fontWeight: "800", fontSize: 14 }}>Ver todos</AppText>
+          </Pressable>
+        }
+      />
+      {sectionsLoading ? (
+        <ProductRowSkeleton count={4} />
+      ) : (
+        <ProductRowSection
+          title=""
+          products={featured}
+          onPressProduct={onPressProduct}
+          onAddToCart={handleAddFromCard}
+          addingProductId={addingProductId}
+        />
+      )}
+    </View>
+  );
+
+  /* Franja de confianza */
+  const bConfianza = <TrustBar key="confianza" isWebDesktop={isWebDesktop} />;
+
+  /* Ofertas imperdibles */
+  const bOfertas = <OffersBanner key="ofertas" navigation={navigation} isWebDesktop={isWebDesktop} />;
+
+  /* Imperdibles de la semana (productos reales con ahorro por caja) */
+  const bImperdibles = hayImperdibles && (
+    // Tinte azul, no lima. El lima al 10% pintaba los 680px de alto de
+    // esta sección de un verde pálido —el color que el rediseño vino a
+    // sacar— y encima recuperaba el look anterior justo debajo del
+    // banner azul. El acento se queda donde hace falta: botones y
+    // píldoras, no fondos de sección.
+    <View key="imperdibles" style={{ marginBottom: spacing.lg, backgroundColor: `${colors.primary}0A`, borderRadius: 22, borderWidth: 1, borderColor: `${colors.primary}22`, padding: spacing.md }}>
+      <SectionTitle title="Imperdibles de la semana" />
+      <ProductRowSection
+        title=""
+        products={liquidation}
+        onPressProduct={onPressProduct}
+        onAddToCart={handleAddFromCard}
+        addingProductId={addingProductId}
+      />
+    </View>
+  );
+
+  /* Categorías principales + ¿Por qué elegir Cibox? */
+  const bCategorias = (
+    <View key="categorias" style={{ flexDirection: isWide ? "row" : "column", gap: spacing.lg, marginBottom: spacing.lg }}>
+      {/* Categorías principales */}
+      <View style={{ flex: isWide ? 1 : undefined, backgroundColor: colors.surface, borderRadius: 20, borderWidth: 1, borderColor: colors.border, padding: spacing.md, ...shadows.card }}>
+        <AppText style={{ fontSize: 18, fontWeight: "900", color: colors.text }}>Categorías principales</AppText>
+        <AppText style={{ fontSize: 12.5, color: colors.muted, marginTop: 2, marginBottom: 12 }}>Explora nuestras categorías</AppText>
+        {mainCategories.length === 0 ? (
+          <AppText style={{ fontSize: 13, color: colors.muted }}>Cargando categorías…</AppText>
+        ) : (
+          mainCategories.map((c, i) => (
+            <Pressable
+              key={c._id || i}
+              onPress={() => navigation.navigate("Products", { category: c._id })}
+              style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingVertical: 12, borderBottomWidth: i < mainCategories.length - 1 ? 1 : 0, borderColor: colors.border }}
+            >
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+                <View style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: `${colors.primary}12`, alignItems: "center", justifyContent: "center" }}>
+                  <Ionicons name={catIcon(c.name)} size={19} color={colors.primary} />
+                </View>
+                <AppText style={{ fontSize: 14, fontWeight: "700", color: colors.text }}>{c.name}</AppText>
+              </View>
+              <Ionicons name="chevron-forward" size={18} color={colors.muted} />
+            </Pressable>
+          ))
+        )}
+      </View>
+
+      {/* ¿Por qué elegir Cibox? */}
+      <View style={{ flex: isWide ? 1.2 : undefined }}>
+        <AppText style={{ fontSize: 18, fontWeight: "900", color: colors.text }}>¿Por qué elegir Cibox?</AppText>
+        <AppText style={{ fontSize: 12.5, color: colors.muted, marginTop: 2, marginBottom: 12 }}>Más de 10.000 clientes confían en nosotros</AppText>
+        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 12 }}>
+          {whyCards.map((w, i) => (
+            <View key={i} style={{ width: isWide ? "31.5%" : "47%", flexGrow: 1, backgroundColor: colors.surface, borderRadius: 18, borderWidth: 1, borderColor: colors.border, padding: 18, alignItems: "center", ...shadows.card }}>
+              <View style={{ width: 48, height: 48, borderRadius: 14, backgroundColor: `${colors.primary}12`, alignItems: "center", justifyContent: "center", marginBottom: 10 }}>
+                <Ionicons name={w.icon} size={24} color={colors.primary} />
+              </View>
+              <AppText style={{ fontSize: 15, fontWeight: "800", color: colors.text, marginBottom: 4 }}>{w.title}</AppText>
+              <AppText style={{ fontSize: 12, color: colors.muted, textAlign: "center", lineHeight: 16 }}>{w.desc}</AppText>
+            </View>
+          ))}
+        </View>
+      </View>
+    </View>
+  );
+
+  /* Recomendados (solo con sesión: sin token la lista viene vacía) */
+  const bRecomendados = recommendedProducts.length > 0 && (
+    <View key="recomendados" style={{ marginBottom: spacing.lg }}>
+      <SectionTitle title="Recomendados para ti" />
+      <ProductRowSection
+        title=""
+        products={recommendedProducts}
+        onPressProduct={onPressProduct}
+        onAddToCart={handleAddFromCard}
+        addingProductId={addingProductId}
+      />
+    </View>
+  );
+
+  /* Newsletter del pie */
+  const bNewsletterPie = (
+    <Newsletter
+      key="newsletter-pie"
+      title="No te pierdas nuestras ofertas"
+      subtitle="Suscríbete y recibe las mejores promociones directo en tu correo"
+      isWebDesktop={isWebDesktop}
+    />
+  );
+
+  // Escritorio: el orden de siempre, sin mover un pixel.
+  const ordenEscritorio = [
+    bBienvenida,
+    bHero,
+    bPromos,
+    bAccesos,
+    bNewsletterTop,
+    bDestacados,
+    bConfianza,
+    bOfertas,
+    bImperdibles,
+    bCategorias,
+    bRecomendados,
+    bNewsletterPie,
+  ];
+
+  // Teléfono: banner y enseguida producto.
+  // Primero "Imperdibles de la semana" cuando hay, porque es la única fila con
+  // criterio detrás (ordena por ahorro real caja-vs-unidad, que es justamente el
+  // argumento mayorista de Cibox); detrás va "Productos destacados", que no
+  // repite nada porque `featured` ya excluye los de liquidación. Si no hay
+  // imperdibles —o mientras el catálogo todavía carga— la primera fila es
+  // "Destacados", que sí pinta esqueleto y evita que la portada arranque con un
+  // hueco. El resto (ofertas, banners del CMS, confianza, accesos rápidos,
+  // categorías, newsletter) no se borra: baja debajo de la mercadería.
+  const ordenMovil = [
+    bBuscador,
+    bBienvenida,
+    bHero,
+    ...(hayImperdibles ? [bImperdibles, bDestacados] : [bDestacados]),
+    bOfertas,
+    bPromos,
+    bConfianza,
+    bAccesos,
+    bCategorias,
+    bRecomendados,
+    bNewsletterPie,
+  ];
+
   return (
     <ScreenContainer maxWidth={1200} padded>
       <FlatList
@@ -782,167 +1045,7 @@ export default function HomeScreen({ navigation }) {
         contentContainerStyle={{ paddingBottom: spacing.xl }}
         ListFooterComponent={<View style={{ height: spacing.lg }} />}
         ListHeaderComponent={
-          <View>
-            {/* Buscador móvil */}
-            {!isWebDesktop && (
-              <View style={{ marginBottom: spacing.md, zIndex: 999, elevation: 999 }}>
-                <MobileSearchBar />
-              </View>
-            )}
-
-            {/* Bienvenida (CMS, opcional) */}
-            {(!!welcomeTitle || !!welcomeSubtitle) && (
-              <View style={{ marginBottom: spacing.md }}>
-                {!!welcomeTitle && (
-                  <AppText style={{ fontSize: isWebDesktop ? 24 : 19, fontWeight: "900", color: colors.text }}>
-                    {welcomeTitle}
-                  </AppText>
-                )}
-                {!!welcomeSubtitle && (
-                  <AppText style={{ fontSize: 13.5, color: colors.muted, marginTop: 2 }}>
-                    {welcomeSubtitle}
-                  </AppText>
-                )}
-              </View>
-            )}
-
-            {/* Hero */}
-            <Hero navigation={navigation} isWebDesktop={isWebDesktop} isWide={isWide} width={width} content={slots?.hero} />
-
-            {/* Banners secundarios 1-3 (CMS, opcionales) */}
-            <PromoBanners slots={slots} navigation={navigation} isWebDesktop={isWebDesktop} />
-
-            {/* 6 accesos rápidos con íconos de marca */}
-            <View
-              onLayout={(e) => setGridW(e.nativeEvent.layout.width)}
-              style={{ flexDirection: "row", flexWrap: "wrap", gap: featureGap, marginBottom: spacing.lg }}
-            >
-              {features.map((item) => (
-                <FeatureCard key={item.id} item={item} width={cardW} onPress={() => goFeature(item)} />
-              ))}
-            </View>
-
-            {/* Newsletter */}
-            <Newsletter
-              title="Entérate de nuestras ofertas y novedades"
-              subtitle="Suscríbete y recibe beneficios exclusivos"
-              isWebDesktop={isWebDesktop}
-            />
-
-            {/* Productos destacados */}
-            <View style={{ marginBottom: spacing.lg }}>
-              <SectionTitle
-                title="Productos destacados"
-                right={
-                  <Pressable onPress={() => navigation.navigate("Products")}>
-                    <AppText style={{ color: colors.primary, fontWeight: "800", fontSize: 14 }}>Ver todos</AppText>
-                  </Pressable>
-                }
-              />
-              {sectionsLoading ? (
-                <ProductRowSkeleton count={4} />
-              ) : (
-                <ProductRowSection
-                  title=""
-                  products={featured}
-                  onPressProduct={onPressProduct}
-                  onAddToCart={handleAddFromCard}
-                  addingProductId={addingProductId}
-                />
-              )}
-            </View>
-
-            {/* Franja de confianza */}
-            <TrustBar isWebDesktop={isWebDesktop} />
-
-            {/* Ofertas imperdibles */}
-            <OffersBanner navigation={navigation} isWebDesktop={isWebDesktop} />
-
-            {/* Imperdibles de la semana (productos reales con ahorro) */}
-            {!sectionsLoading && liquidation.length > 0 && (
-              // Tinte azul, no lima. El lima al 10% pintaba los 680px de alto de
-              // esta sección de un verde pálido —el color que el rediseño vino a
-              // sacar— y encima recuperaba el look anterior justo debajo del
-              // banner azul. El acento se queda donde hace falta: botones y
-              // píldoras, no fondos de sección.
-              <View style={{ marginBottom: spacing.lg, backgroundColor: `${colors.primary}0A`, borderRadius: 22, borderWidth: 1, borderColor: `${colors.primary}22`, padding: spacing.md }}>
-                <SectionTitle title="Imperdibles de la semana" />
-                <ProductRowSection
-                  title=""
-                  products={liquidation}
-                  onPressProduct={onPressProduct}
-                  onAddToCart={handleAddFromCard}
-                  addingProductId={addingProductId}
-                />
-              </View>
-            )}
-
-            {/* Categorías principales + ¿Por qué elegir Cibox? */}
-            <View style={{ flexDirection: isWide ? "row" : "column", gap: spacing.lg, marginBottom: spacing.lg }}>
-              {/* Categorías principales */}
-              <View style={{ flex: isWide ? 1 : undefined, backgroundColor: colors.surface, borderRadius: 20, borderWidth: 1, borderColor: colors.border, padding: spacing.md, ...shadows.card }}>
-                <AppText style={{ fontSize: 18, fontWeight: "900", color: colors.text }}>Categorías principales</AppText>
-                <AppText style={{ fontSize: 12.5, color: colors.muted, marginTop: 2, marginBottom: 12 }}>Explora nuestras categorías</AppText>
-                {mainCategories.length === 0 ? (
-                  <AppText style={{ fontSize: 13, color: colors.muted }}>Cargando categorías…</AppText>
-                ) : (
-                  mainCategories.map((c, i) => (
-                    <Pressable
-                      key={c._id || i}
-                      onPress={() => navigation.navigate("Products", { category: c._id })}
-                      style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingVertical: 12, borderBottomWidth: i < mainCategories.length - 1 ? 1 : 0, borderColor: colors.border }}
-                    >
-                      <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
-                        <View style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: `${colors.primary}12`, alignItems: "center", justifyContent: "center" }}>
-                          <Ionicons name={catIcon(c.name)} size={19} color={colors.primary} />
-                        </View>
-                        <AppText style={{ fontSize: 14, fontWeight: "700", color: colors.text }}>{c.name}</AppText>
-                      </View>
-                      <Ionicons name="chevron-forward" size={18} color={colors.muted} />
-                    </Pressable>
-                  ))
-                )}
-              </View>
-
-              {/* ¿Por qué elegir Cibox? */}
-              <View style={{ flex: isWide ? 1.2 : undefined }}>
-                <AppText style={{ fontSize: 18, fontWeight: "900", color: colors.text }}>¿Por qué elegir Cibox?</AppText>
-                <AppText style={{ fontSize: 12.5, color: colors.muted, marginTop: 2, marginBottom: 12 }}>Más de 10.000 clientes confían en nosotros</AppText>
-                <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 12 }}>
-                  {whyCards.map((w, i) => (
-                    <View key={i} style={{ width: isWide ? "31.5%" : "47%", flexGrow: 1, backgroundColor: colors.surface, borderRadius: 18, borderWidth: 1, borderColor: colors.border, padding: 18, alignItems: "center", ...shadows.card }}>
-                      <View style={{ width: 48, height: 48, borderRadius: 14, backgroundColor: `${colors.primary}12`, alignItems: "center", justifyContent: "center", marginBottom: 10 }}>
-                        <Ionicons name={w.icon} size={24} color={colors.primary} />
-                      </View>
-                      <AppText style={{ fontSize: 15, fontWeight: "800", color: colors.text, marginBottom: 4 }}>{w.title}</AppText>
-                      <AppText style={{ fontSize: 12, color: colors.muted, textAlign: "center", lineHeight: 16 }}>{w.desc}</AppText>
-                    </View>
-                  ))}
-                </View>
-              </View>
-            </View>
-
-            {/* Recomendados (con sesión) */}
-            {recommendedProducts.length > 0 && (
-              <View style={{ marginBottom: spacing.lg }}>
-                <SectionTitle title="Recomendados para ti" />
-                <ProductRowSection
-                  title=""
-                  products={recommendedProducts}
-                  onPressProduct={onPressProduct}
-                  onAddToCart={handleAddFromCard}
-                  addingProductId={addingProductId}
-                />
-              </View>
-            )}
-
-            {/* Newsletter final */}
-            <Newsletter
-              title="No te pierdas nuestras ofertas"
-              subtitle="Suscríbete y recibe las mejores promociones directo en tu correo"
-              isWebDesktop={isWebDesktop}
-            />
-          </View>
+          <View>{esMovil ? ordenMovil : ordenEscritorio}</View>
         }
       />
       <MobileCategoryMenu visible={categoryMenuOpen} onClose={() => setCategoryMenuOpen(false)} />

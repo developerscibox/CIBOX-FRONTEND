@@ -119,6 +119,27 @@ export default function ProfileScreen({ navigation }) {
               variant="secondary"
               style={{ marginTop: spacing.sm }}
             />
+
+            {/* Quien compró sin cuenta también tiene que poder llegar al
+                seguimiento desde el teléfono: el pie de página es solo de la web
+                de escritorio, así que sin esta puerta el móvil se quedaba sin
+                ninguna. No exige sesión — de eso se trata. */}
+            <Pressable
+              onPress={() => navigation.navigate("TrackOrder")}
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 6,
+                marginTop: spacing.md,
+                paddingVertical: spacing.sm,
+              }}
+            >
+              <Ionicons name="cube-outline" size={17} color={colors.primaryMid} />
+              <AppText weight="semiBold" style={{ fontSize: 14, color: colors.primaryMid }}>
+                Compré sin cuenta: seguir mi pedido
+              </AppText>
+            </Pressable>
           </View>
         </View>
       </ScreenContainer>
@@ -178,7 +199,7 @@ export default function ProfileScreen({ navigation }) {
           icon="cube-outline"
           iconColor={colors.primary}
           title="Mis pedidos"
-          description="Sigue en vivo los pedidos en curso (pago → preparación → retiro) y revisa tu historial de compras finalizadas."
+          description="Sigue en vivo los pedidos en curso (pago → preparación → reparto) y revisa tu historial de compras finalizadas."
           buttonTitle="Ver mis pedidos"
           onPress={() => navigation.navigate("OrdersTab", { mode: "tracking" })}
         />
@@ -255,7 +276,7 @@ export default function ProfileScreen({ navigation }) {
             <AppText style={styles.cardTitle}>Ayuda</AppText>
           </View>
           <AppText style={styles.cardDescription}>
-            ¿Primera vez aquí? Repasa cómo comprar por caja y retirar en bodega.
+            ¿Primera vez aquí? Repasa cómo comprar y cómo te llega el pedido.
           </AppText>
           <AppButton
             title="Ver tutorial"

@@ -32,6 +32,7 @@ import VerifyEmailScreen from "../screens/VerifyEmailScreen";
 import ResetPasswordScreen from "../screens/ResetPasswordScreen";
 import ForgotPasswordScreen from "../screens/ForgotPasswordScreen";
 import OrderFailedScreen from "../screens/OrderFailedScreen";
+import TrackOrderScreen from "../screens/TrackOrderScreen";
 import HowItWorksScreen from "../screens/HowItWorksScreen";
 import AdminOrdersScreen from "../screens/AdminOrdersScreen";
 import ContactScreen from "../screens/ContactScreen";
@@ -268,6 +269,18 @@ export default function AppStack() {
             : { title: "Compra fallida", headerRight: () => null }
         }
       />
+      {/* Seguimiento público: va FUERA del bloque con sesión a propósito. Existe
+          justamente para el que compró sin cuenta y vuelve a ver en qué va su
+          pedido con su número y el correo con el que compró. */}
+      <Stack.Screen
+        name="TrackOrder"
+        component={
+          isWebDesktop ? withWebLayout(TrackOrderScreen) : TrackOrderScreen
+        }
+        options={
+          isWebDesktop ? { headerShown: false } : { title: "Seguir mi pedido" }
+        }
+      />
       {/* Pantallas de gestión: SOLO personal interno (admin/manager/vendor).
           Para clientes normales estas rutas no existen. */}
       {isStaff && (
@@ -383,7 +396,7 @@ export default function AppStack() {
       <Stack.Screen
         name="Despacho"
         component={isWebDesktop ? withWebLayout(DespachoScreen) : DespachoScreen}
-        options={isWebDesktop ? { headerShown: false } : { title: "Despacho y retiro" }}
+        options={isWebDesktop ? { headerShown: false } : { title: "Despacho a domicilio" }}
       />
       <Stack.Screen
         name="Blog"

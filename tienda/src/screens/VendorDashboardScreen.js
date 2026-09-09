@@ -373,13 +373,13 @@ export default function VendorDashboardScreen() {
                             }
                           : normalizedStatus === "ready"
                             ? {
-                                label: "Lista para retiro",
+                                label: "Lista para despachar",
                                 bg: "#E0F2FE",
                                 color: "#0369A1",
                               }
                             : normalizedStatus === "delivered"
                               ? {
-                                  label: "Retirada",
+                                  label: "Entregada",
                                   bg: "#DCFCE7",
                                   color: "#166534",
                                 }

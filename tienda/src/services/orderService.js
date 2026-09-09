@@ -130,8 +130,31 @@ export const adminUpdateOrderStatus = async (orderId, { status, tracking_number,
  * la pinta. `guestToken` permite seguir un pedido hecho sin cuenta.
  */
 export const getOrderTracking = async (orderId, guestToken = null) => {
-  const { data } = await api.get(`/tracking/orders/${orderId}`, {
+  // Iba contra un `api` que en este archivo NUNCA existió (solo se importa
+  // `client`): la llamada reventaba con ReferenceError, y como quien la usa la
+  // envuelve en try/catch, el seguimiento simplemente no aparecía nunca.
+  const { data } = await client.get(`/tracking/orders/${orderId}`, {
     params: guestToken ? { token: guestToken } : undefined,
+  });
+  return data?.data ?? data;
+};
+
+/**
+ * Consulta PÚBLICA del seguimiento, para quien compró sin cuenta y vuelve
+ * después —desde otro teléfono o con el navegador limpio— a ver en qué va.
+ *
+ * Van los DOS datos: el número de pedido y el correo con el que compró. El
+ * número solo no basta a propósito: son 6 caracteres que se adivinan o se leen
+ * por encima del hombro, y detrás está la compra de la persona. El correo es el
+ * segundo dato que solo el dueño del pedido conoce.
+ *
+ * Es POST y no GET para que el correo NO viaje en la URL: de ahí pasaría al
+ * historial del navegador y a los logs del proxy.
+ */
+export const lookupOrderTracking = async ({ folio, email }) => {
+  const { data } = await client.post("/tracking/lookup", {
+    folio: String(folio || "").trim(),
+    email: String(email || "").trim().toLowerCase(),
   });
   return data?.data ?? data;
 };

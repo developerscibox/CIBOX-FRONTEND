@@ -7,6 +7,7 @@ import useBienvenidaStore from "../store/bienvenidaStore";
 import { colors, radius, spacing } from "../constants/theme";
 
 import brand from "../constants/brand";
+import { comunasEnTexto, tarifaEnTexto } from "../constants/delivery";
 // Pasos del tour de bienvenida (texto tal cual, en español).
 const SLIDES = [
   // El tour describía el Cibox mayorista de antes ("solo por caja", "el pago es
@@ -24,9 +25,9 @@ const SLIDES = [
     body: "Puedes llevar una sola unidad si quieres. Algunos productos además tienen un pack con descuento: al llegar a esa cantidad, el precio por unidad baja solo. El pack es un beneficio, no un mínimo de compra.",
   },
   {
-    emoji: "🏬",
-    title: "Retiro en bodega",
-    body: "Hoy retiras tu pedido GRATIS en nuestra bodega y eliges el día en el carrito. El despacho a domicilio viene pronto.",
+    emoji: "🚚",
+    title: "Te lo llevamos a la puerta",
+    body: `Despachamos a domicilio en ${comunasEnTexto()}. El despacho cuesta ${tarifaEnTexto()} por pedido, sin importar cuánto lleves. Si tu comuna no está en esa lista, todavía no llegamos.`,
   },
   {
     emoji: "🔎",
@@ -39,9 +40,9 @@ const SLIDES = [
     body: "Toca el botón de agregar para sumar el producto (puedes elegir cuántos). Verás el contador en la bolsa, arriba a la derecha.",
   },
   {
-    emoji: "💵",
-    title: "Elige el día y cómo pagar",
-    body: "En el checkout eliges el DÍA de retiro y cómo pagar: por transferencia antes de que preparemos tu pedido, o en efectivo al retirarlo. Aceptas los términos y confirmas la compra.",
+    emoji: "💳",
+    title: "Pagas con tarjeta",
+    body: "En el checkout eliges tu comuna, escribes la dirección, aceptas los términos y pagas con tarjeta de crédito o débito en Webpay de Transbank. Cuando el pago se aprueba, preparamos tu pedido.",
   },
   {
     emoji: "📋",

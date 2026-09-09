@@ -19,6 +19,11 @@ import useCartStore from "../store/cartStore";
 import { showAppAlert } from "../utils/appAlerts";
 import AppText from "../components/AppText";
 import UnitPrice from "../components/UnitPrice";
+import {
+  despacho,
+  comunasEnTexto,
+  tarifaEnTexto,
+} from "../constants/delivery";
 
 export default function CartScreen({ navigation }) {
   const [cart, setCart] = useState(null);
@@ -282,7 +287,7 @@ export default function CartScreen({ navigation }) {
             </AppText>
 
             <AppText style={{ color: colors.muted, fontSize: 15 }}>
-              Revisa tus productos antes de continuar al checkout.
+              Revisa tus productos antes de continuar.
             </AppText>
           </View>
         }
@@ -579,7 +584,24 @@ export default function CartScreen({ navigation }) {
                 marginBottom: 6,
               }}
             >
-              Total de tu compra
+              Productos
+            </AppText>
+
+            <AppText
+              style={{
+                fontSize: 20,
+                fontWeight: "800",
+                color: colors.text,
+                marginBottom: 10,
+              }}
+            >
+              ${formatPrice(total)}
+            </AppText>
+
+            {/* El despacho se muestra acá y no recién al final del checkout:
+                un cobro que aparece al confirmar se siente como letra chica. */}
+            <AppText style={{ fontSize: 14, color: colors.muted, marginBottom: 6 }}>
+              Despacho a domicilio: {tarifaEnTexto()}
             </AppText>
 
             <AppText
@@ -587,14 +609,26 @@ export default function CartScreen({ navigation }) {
                 fontSize: 26,
                 fontWeight: "800",
                 color: colors.text,
+                marginBottom: 10,
+              }}
+            >
+              Total ${formatPrice(Number(total || 0) + despacho.tarifa)}
+            </AppText>
+
+            <AppText
+              style={{
+                fontSize: 12.5,
+                color: colors.muted,
+                lineHeight: 18,
                 marginBottom: 16,
               }}
             >
-              ${formatPrice(total)}
+              Despachamos a domicilio en {comunasEnTexto()}. Si tu comuna no
+              está en la lista, todavía no llegamos.
             </AppText>
 
             <AppButton
-              title="Continuar al checkout"
+              title="Continuar con la compra"
               onPress={() => navigation.navigate("Checkout")}
             />
           </View>

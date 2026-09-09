@@ -28,6 +28,9 @@ const linking = {
       // Rutas específicas ANTES que la dinámica
       OrderSuccess: "orders/success",
       OrderFailed: "orders/failed",
+      // Seguimiento público (sin cuenta). Ruta propia y fácil de dictar por
+      // teléfono: es la que le vamos a pasar al cliente que llama preguntando.
+      TrackOrder: "seguir-mi-pedido",
       OrderDetail: "orders/:orderId",
       VerifyEmail: "auth/verify-email",
       ResetPassword: "auth/reset-password",

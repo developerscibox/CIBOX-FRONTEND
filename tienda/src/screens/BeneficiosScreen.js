@@ -2,6 +2,7 @@ import { View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import InfoPageLayout, { InfoCard, SectionHeading } from "../components/InfoPageLayout";
 import { colors, spacing } from "../constants/theme";
+import { comunasEnTexto, tarifaEnTexto } from "../constants/delivery";
 import AppText from "../components/AppText";
 
 import brand from "../constants/brand";
@@ -24,9 +25,9 @@ const BENEFITS = [
     desc: "Ofertas y rebajas permanentes en abarrotes, bebidas, lácteos, aseo y más.",
   },
   {
-    icon: "cash-outline",
-    title: "Paga como prefieras",
-    desc: "Aceptamos efectivo y transferencia bancaria. Sin complicaciones al momento de retirar.",
+    icon: "card-outline",
+    title: "Pago seguro con tarjeta",
+    desc: "Crédito o débito por Webpay Plus de Transbank. Los datos de tu tarjeta los recibe Transbank: nosotros no los vemos ni los guardamos.",
   },
   {
     icon: "albums-outline",
@@ -44,7 +45,7 @@ export default function BeneficiosScreen() {
   return (
     <InfoPageLayout
       title="Beneficios de comprar en Cibox"
-      subtitle="Todo el supermercado a un clic: compra online y retira tu pedido ya preparado."
+      subtitle={`Todo el supermercado a un clic: compra online y te lo dejamos en la puerta en ${comunasEnTexto()}.`}
       icon={ICON}
     >
       <View style={{ flexDirection: "row", flexWrap: "wrap", gap: spacing.md }}>
@@ -70,9 +71,9 @@ export default function BeneficiosScreen() {
         }}
       >
         {[
-          "Explora el catálogo y agrega cajas a tu carrito.",
-          "Confirma tu pedido online y elige retiro en bodega.",
-          "Te avisamos cuando esté listo y pagas al retirar (efectivo o transferencia).",
+          "Explora el catálogo y agrega productos a tu carrito.",
+          `Escribe tu dirección de despacho y paga con tarjeta (despacho ${tarifaEnTexto()}).`,
+          "Preparamos tu pedido, te avisamos por correo y te lo llevamos a tu casa.",
         ].map((step, i) => (
           <View key={i} style={{ flexDirection: "row", gap: 12, marginBottom: i < 2 ? 14 : 0 }}>
             <View

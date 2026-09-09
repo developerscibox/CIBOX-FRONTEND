@@ -22,19 +22,35 @@ const STATUS_FILTERS = [
   { key: "pending",   label: "Pendientes" },
   { key: "paid",      label: "Pagadas" },
   { key: "preparing", label: "Preparando" },
-  { key: "ready",     label: "Listas para retiro" },
-  { key: "delivered", label: "Retiradas" },
+  { key: "ready",     label: "Listas para despachar" },
+  { key: "shipped",   label: "En camino" },
+  { key: "delivered", label: "Entregadas" },
   { key: "cancelled", label: "Canceladas" },
 ];
 
 const NEXT_STATUS = {
   pending:   [{ value: "paid",      label: "✅ Marcar pagada" }],
   paid:      [{ value: "preparing", label: "📦 Comenzar preparación" }],
-  preparing: [{ value: "ready",     label: "🧺 Marcar lista para retiro" }],
-  ready:     [{ value: "delivered", label: "🛍️ Marcar retirada" }],
+  preparing: [{ value: "ready",     label: "🧺 Marcar lista para despachar" }],
+  // Con despacho a domicilio el pedido pasa por "shipped" antes de estar
+  // entregado: el backend no deja saltar de listo a entregado.
+  ready:     [{ value: "shipped",   label: "🚚 Marcar despachada" }],
+  shipped:   [{ value: "delivered", label: "🏠 Marcar entregada" }],
   delivered: [],
   cancelled: [],
   refunded:  [],
+};
+
+// Pedidos ANTIGUOS de retiro en bodega: su camino termina en ready → delivered
+// (el backend solo obliga a pasar por "en camino" cuando hay despacho). Sin
+// esta excepción, la única acción ofrecida para un pedido de retiro listo era
+// "Marcar despachada", que lo empuja a un estado que para él no significa nada
+// y le quita la acción que de verdad lo cierra.
+const nextStepsFor = (order) => {
+  if (order?.delivery_method === "pickup" && order?.status === "ready") {
+    return [{ value: "delivered", label: "🛍️ Marcar retirada" }];
+  }
+  return NEXT_STATUS[order?.status] || [];
 };
 
 const STATUS_META = {
@@ -44,17 +60,22 @@ const STATUS_META = {
   // bodega (bodega/src/theme.js): es el estado que se cruza entre las dos
   // apps y no puede verse de un color en cada una. 10,3:1 sobre su fondo.
   preparing: { label: "Preparando",       bg: "#E6F0F5", text: "#003D49", dot: "#004568" },
-  ready:     { label: "Lista para retiro", bg: "#e0f2fe", text: "#0369a1", dot: "#0ea5e9" },
-  delivered: { label: "Retirada",         bg: "#dcfce7", text: "#166534", dot: "#16a34a" },
+  ready:     { label: "Lista para despachar", bg: "#e0f2fe", text: "#0369a1", dot: "#0ea5e9" },
+  shipped:   { label: "En camino",        bg: "#cffafe", text: "#0e7490", dot: "#06b6d4" },
+  delivered: { label: "Entregada",        bg: "#dcfce7", text: "#166534", dot: "#16a34a" },
   cancelled: { label: "Cancelada",        bg: "#fee2e2", text: "#b91c1c", dot: "#ef4444" },
   refunded:  { label: "Reembolsada",      bg: "#f3f4f6", text: "#374151", dot: "#9ca3af" },
 };
 
-// Etapas del mini indicador de avance: pago → preparación → listo → retiro
+// Etapas del mini indicador de avance: pago → preparación → listo → entrega
+// "shipped" va en las tres primeras etapas: un pedido en camino ya pasó por
+// pago, preparación y listo. Sin él, un pedido despachado — que con el despacho
+// a domicilio es el paso normal antes de entregar — mostraba los cuatro puntos
+// apagados, como si no hubiera avanzado nada.
 const PROGRESS_STEPS = [
-  { key: "paid",      icon: "card-outline",         reached: ["paid", "preparing", "ready", "delivered"] },
-  { key: "preparing", icon: "cube-outline",         reached: ["preparing", "ready", "delivered"] },
-  { key: "ready",     icon: "checkmark-done-outline", reached: ["ready", "delivered"] },
+  { key: "paid",      icon: "card-outline",         reached: ["paid", "preparing", "ready", "shipped", "delivered"] },
+  { key: "preparing", icon: "cube-outline",         reached: ["preparing", "ready", "shipped", "delivered"] },
+  { key: "ready",     icon: "checkmark-done-outline", reached: ["ready", "shipped", "delivered"] },
   { key: "delivered", icon: "bag-handle-outline",   reached: ["delivered"] },
 ];
 
@@ -156,7 +177,7 @@ export default function AdminOrdersScreen({ navigation }) {
   // ── Modal: abrir ──────────────────────────────────────────────────────────
   const openModal = (order) => {
     setModalOrder(order);
-    setNewStatus(NEXT_STATUS[order.status]?.[0]?.value || "");
+    setNewStatus(nextStepsFor(order)?.[0]?.value || "");
     setNoteInput("");
   };
 
@@ -196,7 +217,7 @@ export default function AdminOrdersScreen({ navigation }) {
   // ── Render item ───────────────────────────────────────────────────────────
   const renderOrder = ({ item }) => {
     const meta      = STATUS_META[item.status] || STATUS_META.pending;
-    const nextSteps = NEXT_STATUS[item.status] || [];
+    const nextSteps = nextStepsFor(item);
     const canUpdate = nextSteps.length > 0;
 
     const allItems   = Array.isArray(item.items) ? item.items : [];
@@ -420,7 +441,7 @@ export default function AdminOrdersScreen({ navigation }) {
             {/* Selector de nuevo estado */}
             <AppText style={styles.inputLabel}>Nuevo estado</AppText>
             <View style={styles.statusOptions}>
-              {(NEXT_STATUS[modalOrder?.status] || []).map((opt) => (
+              {nextStepsFor(modalOrder).map((opt) => (
                 <Pressable
                   key={opt.value}
                   onPress={() => setNewStatus(opt.value)}

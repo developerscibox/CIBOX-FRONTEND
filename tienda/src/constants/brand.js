@@ -18,7 +18,9 @@ import api from "../api/client";
 export const brand = {
   name: "Cibox",
   tagline: "Tu supermercado online",
-  description: "Supermercado 100% online: compra desde la web y te preparamos el pedido para que lo retires.",
+  // El valor real lo sirve el backend (config/brand.js); esto es el respaldo
+  // del primer render y no puede contradecir al modelo nuevo.
+  description: "Supermercado 100% online: compra desde la web y te despachamos el pedido a domicilio.",
   logo: require("../../assets/logo-cibox.png"),
   legal: {
     razon_social: "CIBOX COMERCIALIZADORA SPA",
@@ -59,9 +61,10 @@ export const storageKey = (name) => `${brand.web.storage_prefix}_${name}`;
  * ¿Hay una dirección real que mostrar?
  *
  * La ubicación de Cibox todavía no está definida, así que el backend la sirve
- * vacía. Las pantallas que hablan de retiro (mapa, checkout, detalle del
- * pedido, contacto) preguntan por esto antes de dibujar la dirección: es
- * preferible no decir nada a mostrar una dirección equivocada.
+ * vacía. Ojo: esta dirección es la de la empresa, no un punto de retiro — los
+ * pedidos se despachan a domicilio. Las pantallas que la muestran (mapa,
+ * contacto, tiendas) preguntan por esto antes de dibujarla: es preferible no
+ * decir nada a mostrar una dirección equivocada.
  */
 export const hasAddress = () => Boolean(brand.address?.one_line?.trim());
 

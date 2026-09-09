@@ -6,6 +6,7 @@ import { colors, spacing, shadows } from "../constants/theme";
 import AppText from "../components/AppText";
 
 import brand, { addressText, openingHours, links } from "../constants/brand";
+import { comunasEnTexto, tarifaEnTexto } from "../constants/delivery";
 const PHONE = brand.contact.phone;
 const WHATSAPP_URL = links.whatsapp();
 
@@ -25,7 +26,7 @@ export default function StoresScreen() {
   return (
     <InfoPageLayout
       title="Nuestras tiendas"
-      subtitle={`Desde aquí preparamos y despachamos todos los pedidos de ${brand.name}.`}
+      subtitle={`Desde aquí preparamos y despachamos todos los pedidos de ${brand.name}. No atendemos público: los pedidos se entregan a domicilio.`}
     >
       <View style={{ flexDirection: "row", flexWrap: "wrap", gap: spacing.lg }}>
         {/* Datos de la tienda */}
@@ -56,7 +57,10 @@ export default function StoresScreen() {
           <InfoRow icon="call-outline" onPress={() => Linking.openURL(WHATSAPP_URL)}>
             {PHONE} (WhatsApp)
           </InfoRow>
-          <InfoRow icon="cash-outline">Pago en efectivo o transferencia al retirar</InfoRow>
+          <InfoRow icon="card-outline">Pago con tarjeta de crédito o débito (Webpay)</InfoRow>
+          <InfoRow icon="car-outline">
+            {`Despacho a domicilio en ${comunasEnTexto()} — ${tarifaEnTexto()} por pedido`}
+          </InfoRow>
 
           <Pressable
             onPress={() => Linking.openURL(WHATSAPP_URL)}

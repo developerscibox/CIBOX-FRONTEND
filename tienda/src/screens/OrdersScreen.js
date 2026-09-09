@@ -21,7 +21,7 @@ const getStatusMeta = (status) => {
     paid:      { label: "Pagada",           bg: "#dbeafe", text: "#1d4ed8" },
     // Mismo par que bodega/src/theme.js: el estado se cruza entre las dos apps.
     preparing: { label: "Preparando",       bg: "#E6F0F5", text: "#003D49" },
-    ready:     { label: "Lista p/ retiro",  bg: "#e0f2fe", text: "#0369a1" },
+    ready:     { label: "Lista p/ despacho", bg: "#e0f2fe", text: "#0369a1" },
     shipped:   { label: "En camino",        bg: "#cffafe", text: "#0e7490" },
     delivered: { label: "Entregada",        bg: "#dcfce7", text: "#166534" },
     cancelled: { label: "Cancelada",        bg: "#fee2e2", text: "#b91c1c" },
@@ -31,11 +31,26 @@ const getStatusMeta = (status) => {
 };
 
 // ── Mini-timeline: 4 puntos para retiro ──────────────────────────────────────
+// El tercer punto es "shipped" y no "ready": con despacho a domicilio lo que
+// el cliente quiere saber es cuándo salió su pedido, no cuándo quedó listo en
+// bodega. Un pedido en "ready" todavía no enciende este punto, que es la
+// verdad de dónde está.
 const TRACK_STEPS = [
   { key: "paid",      label: "Pago",          color: "#3b82f6" },
   { key: "preparing", label: "Preparación",   color: "#006996" },
-  { key: "ready",     label: "Listo retiro",  color: colors.primaryMid },
+  { key: "shipped",   label: "En camino",     color: colors.primaryMid },
   { key: "delivered", label: "Entregado",     color: colors.success },
+];
+// Pedidos ANTIGUOS de retiro en bodega. El retiro se descontinuó, pero los que
+// ya existen nunca pasan por "shipped": su camino es ready → delivered (así lo
+// define caminoDe() en el backend). Con la línea de despacho quedaban con el
+// tercer punto apagado para siempre y el cliente cuyo pedido ya estaba listo
+// para retirar no veía nada encendido: para él el hito es "listo retiro".
+const TRACK_STEPS_PICKUP = [
+  { key: "paid",      label: "Pago",          color: "#3b82f6" },
+  { key: "preparing", label: "Preparación",   color: "#006996" },
+  { key: "ready",     label: "Listo retiro",  color: colors.primaryMid },
+  { key: "delivered", label: "Retirado",      color: colors.success },
 ];
 // Orden de progreso: estados previos a "paid" aún no completan ningún punto.
 const TRACK_ORDER = ["pending", "paid", "preparing", "ready", "shipped", "delivered"];
@@ -47,7 +62,7 @@ const DONE_STATUSES = ["delivered", "cancelled", "refunded"];
 const TAB_META = {
   tracking: {
     title: "Mi seguimiento",
-    subtitle: "Sigue en vivo cada pedido en curso: pago → preparación → listo para retiro → entregado.",
+    subtitle: "Sigue en vivo cada pedido en curso: pago → preparación → en camino → entregado.",
     empty: "No tienes pedidos en curso ahora mismo.",
   },
   history: {
@@ -163,8 +178,9 @@ export default function OrdersScreen({ navigation, route }) {
   };
 
   // ── Mini-línea de seguimiento ───────────────────────────────────────────────
-  const renderTracker = (status) => {
+  const renderTracker = (status, isPickup = false) => {
     const norm = String(status || "").toLowerCase();
+    const steps = isPickup ? TRACK_STEPS_PICKUP : TRACK_STEPS;
 
     if (norm === "cancelled" || norm === "refunded") {
       const isCanc = norm === "cancelled";
@@ -182,11 +198,11 @@ export default function OrdersScreen({ navigation, route }) {
 
     return (
       <View style={styles.tracker}>
-        {TRACK_STEPS.map((step, i) => {
+        {steps.map((step, i) => {
           const stepIdx = TRACK_ORDER.indexOf(step.key);
           const done = currentIdx >= stepIdx;
-          const isLast = i === TRACK_STEPS.length - 1;
-          const nextDone = !isLast && currentIdx >= TRACK_ORDER.indexOf(TRACK_STEPS[i + 1].key);
+          const isLast = i === steps.length - 1;
+          const nextDone = !isLast && currentIdx >= TRACK_ORDER.indexOf(steps[i + 1].key);
           return (
             <View key={step.key} style={styles.trackStep}>
               <View style={styles.trackTop}>
@@ -571,7 +587,7 @@ export default function OrdersScreen({ navigation, route }) {
               ) : null}
 
               {/* Mini-línea de seguimiento */}
-              {renderTracker(item.status)}
+              {renderTracker(item.status, isPickup)}
 
               {/* Preview de ítems */}
               {renderItemsPreview(item.items)}

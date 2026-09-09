@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
+import { seccionVisible } from "../constants/seccionesOcultas";
 import { colors } from "../constants/theme";
 import useCategoryStore from "../store/categoryStore";
 import { getProducts } from "../services/productService";
@@ -39,7 +40,11 @@ const NAV_LINKS = [
   { label: "Despacho", screen: "Despacho" },
   { label: "Blog", screen: "Blog" },
   { label: "Contacto", screen: "Contact" },
-];
+]
+  // Las secciones escondidas se caen del menú aquí, en un solo punto: la
+  // entrada de arriba se queda escrita para que volver a mostrarlas sea sacar
+  // su clave de constants/seccionesOcultas.js y nada más.
+  .filter((l) => seccionVisible(l.screen));
 
 /**
  * ¿Este enlace apunta a donde ya estamos?
@@ -266,6 +271,7 @@ export default function WebHeader() {
             <AppText weight="semiBold" numberOfLines={1} style={{ color: colors.primaryText, fontSize: 12.5, flexShrink: 1 }}>Bienvenido a {brand.name} · {brand.tagline}</AppText>
           ) : null}
           <View style={{ flexDirection: "row", alignItems: "center", gap: 18 }}>
+            {seccionVisible("Stores") && (
             <Pressable onPress={() => navigation.navigate("Stores")} style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
               {({ hovered }) => (
                 <>
@@ -274,6 +280,7 @@ export default function WebHeader() {
                 </>
               )}
             </Pressable>
+            )}
             <Pressable onPress={() => navigation.navigate("HowItWorks")} style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
               {({ hovered }) => (
                 <>
@@ -337,7 +344,7 @@ export default function WebHeader() {
                 Tu supermercado online
               </AppText>
               <AppText weight="semiBold" style={{ fontSize: 12, color: colors.muted, lineHeight: 15, marginTop: 2 }}>
-                Compra desde donde estés · retira sin filas
+                Compra desde donde estés · te lo llevamos
               </AppText>
             </View>
           ) : null}

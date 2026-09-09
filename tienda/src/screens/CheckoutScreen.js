@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   ScrollView,
@@ -30,7 +30,15 @@ import {
 } from "../services/couponService";
 import useAuthStore from "../store/authStore";
 
-import brand, { hasAddress } from "../constants/brand";
+import {
+  DESPACHO_COMUNAS,
+  DESPACHO_REGION,
+  despacho,
+  comunasEnTexto,
+  esComunaConReparto,
+  tarifaEnTexto,
+} from "../constants/delivery";
+
 const normalizeEmail = (email = "") => String(email).trim().toLowerCase();
 
 const isValidEmail = (email = "") =>
@@ -101,80 +109,11 @@ const isValidRut = (rut = "") => {
   return expected === dv;
 };
 
-// ── Retiro en bodega ──────────────────────────────────────────────────────────
-// Nombre y dirección salen de constants/brand.js (fuente de verdad: backend).
-const PICKUP_LOCATION = {
-  get name() { return brand.name; },
-  get address() { return brand.address.one_line; },
-  get hint() { return brand.address.hint || ""; },
-  get hours() { return brand.address.hours || ""; },
-};
-
-const PAYMENT_OPTIONS = [
-   {
-    value: "webpay",
-    title: "Webpay",
-    desc: "Paga con tarjeta de débito, crédito o prepago a través de Webpay.",
-  },
-  {
-    value: "transfer",
-    title: "Transferencia bancaria",
-    desc: "Al confirmar te mostramos los datos bancarios (también te llegan al correo).",
-  },
-  {
-    value: "cash_on_pickup",
-    title: "Efectivo al retirar",
-    desc: "Pagas en efectivo al retirar en la bodega.",
-  },
-  // Webpay deshabilitado temporalmente — solo efectivo y transferencia.
-];
-
-const pad2 = (n) => String(n).padStart(2, "0");
-
-const toYMD = (date) =>
-  `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`;
-
-// Próximos N días hábiles (Lun-Sáb, sin domingo), incluye "Hoy" si es hábil.
-const getPickupDays = (count = 7) => {
-  const days = [];
-  const cursor = new Date();
-  cursor.setHours(0, 0, 0, 0);
-  const today = new Date(cursor);
-
-  while (days.length < count) {
-    const weekday = cursor.getDay(); // 0 domingo, 6 sábado
-    if (weekday !== 0) {
-      const isToday = cursor.getTime() === today.getTime();
-      let label = new Intl.DateTimeFormat("es-CL", {
-        weekday: "short",
-        day: "numeric",
-        month: "short",
-      })
-        .format(cursor)
-        .replace(/\.,?/g, "")
-        .replace(/\s+/g, " ")
-        .trim();
-      // Capitaliza primera letra del día (es-CL devuelve minúscula).
-      label = label.charAt(0).toUpperCase() + label.slice(1);
-
-      const fullLabel = new Intl.DateTimeFormat("es-CL", {
-        weekday: "long",
-        day: "numeric",
-        month: "long",
-      }).format(cursor);
-
-      days.push({
-        value: toYMD(cursor),
-        label: isToday ? "Hoy" : label,
-        sublabel: isToday ? label : null,
-        fullLabel,
-      });
-    }
-    cursor.setDate(cursor.getDate() + 1);
-  }
-
-  return days;
-};
+// Valor del selector de comuna para quien vive fuera de la zona. Está en la
+// lista a propósito: si el cliente no encuentra su comuna, tiene dónde decirlo
+// y recibe la explicación ahí mismo, en vez de irse sin entender por qué no
+// aparece la suya.
+const COMUNA_FUERA_DE_ZONA = "__fuera__";
 
 export default function CheckoutScreen({ navigation }) {
   const [fullName, setFullName] = useState("");
@@ -182,12 +121,12 @@ export default function CheckoutScreen({ navigation }) {
   const [phone, setPhone] = useState("");
   const [rut, setRut] = useState("");
 
-  const pickupDays = useMemo(() => getPickupDays(7), []);
+  // Dirección de despacho. La región no se pregunta: repartimos en una sola.
+  const [comuna, setComuna] = useState("");
+  const [street, setStreet] = useState("");
+  const [addressLine2, setAddressLine2] = useState("");
+  const [reference, setReference] = useState("");
 
-  const [committedDate, setCommittedDate] = useState(
-    pickupDays[0]?.value || "",
-  );
-  const [paymentMethod, setPaymentMethod] = useState("transfer");
   const [couponCode, setCouponCode] = useState("");
   const [deliveryNotes, setDeliveryNotes] = useState("");
   const [termsAccepted, setTermsAccepted] = useState(false);
@@ -299,10 +238,13 @@ export default function CheckoutScreen({ navigation }) {
         setEmail(saved.email || "");
         setPhone(saved.phone || "");
         setRut(saved.rut || "");
-        // Webpay deshabilitado: si quedó guardado, se ignora y cae a "transfer".
-        if (["transfer", "cash_on_pickup"].includes(saved.paymentMethod)) {
-          setPaymentMethod(saved.paymentMethod);
-        }
+        setStreet(saved.street || "");
+        setAddressLine2(saved.addressLine2 || "");
+        setReference(saved.reference || "");
+        // La comuna guardada se acepta solo si sigue teniendo reparto: si un
+        // día dejamos de llegar a una comuna, el cliente que ya compró ahí no
+        // puede colarse con ella preseleccionada.
+        if (esComunaConReparto(saved.comuna)) setComuna(saved.comuna);
       }
     } catch (error) {
       console.log("LOAD SAVED ADDRESS ERROR:", error);
@@ -321,21 +263,34 @@ export default function CheckoutScreen({ navigation }) {
     : Number(autoDiscount?.discount_amount || 0);
   const items = Array.isArray(cart?.items) ? cart.items : [];
   const productsTotal = Number(cart?.total || 0);
-  const shippingAmount = 0;
+  // Tarifa plana: el mismo precio para las cuatro comunas y para cualquier
+  // peso. Se muestra desde el principio para que el total no cambie al final.
+  // Del objeto vivo, no de una constante: el precio lo fija el backend al
+  // arrancar la app y es el que se va a cobrar en Webpay.
+  const shippingAmount = despacho.tarifa;
   const finalTotal = productsTotal + shippingAmount - discountAmount;
+
+  // El cliente ya dijo que su comuna no está en la lista: no tiene sentido
+  // pedirle el resto de los datos, el formulario se detiene ahí.
+  const fueraDeZona = comuna === COMUNA_FUERA_DE_ZONA;
+  const comunaElegida = esComunaConReparto(comuna);
 
   const validateForm = () => {
     const nextErrors = {};
 
+    if (!comunaElegida) {
+      nextErrors.comuna = "Elige tu comuna para ver si llegamos";
+    }
+    // 5 caracteres es el mínimo que pide el backend para la dirección.
+    if (street.trim().length < 5) {
+      nextErrors.street = "Escribe tu calle y número";
+    }
     if (!fullName.trim()) nextErrors.fullName = "Ingresa tu nombre completo";
     if (!isValidEmail(email)) nextErrors.email = "Ingresa un correo válido";
     if (!isValidPhoneCL(phone)) {
       nextErrors.phone = "Ingresa un teléfono chileno válido";
     }
     if (!isValidRut(rut)) nextErrors.rut = "Ingresa un RUT válido";
-    if (!committedDate) {
-      nextErrors.committedDate = "Selecciona una fecha de retiro";
-    }
 
     setErrors(nextErrors);
     return Object.keys(nextErrors).length === 0;
@@ -407,12 +362,22 @@ export default function CheckoutScreen({ navigation }) {
           phone: normalizePhoneCL(phone),
           rut: formatRut(rut),
         },
+        // Todo pedido se despacha: ya no existe el retiro en bodega.
         delivery: {
-          method: "pickup",
-          committed_date: committedDate,
+          method: "delivery",
         },
+        shipping: {
+          region: DESPACHO_REGION,
+          city: comuna,
+          address: street.trim(),
+          addressLine2: addressLine2.trim() || null,
+          reference: reference.trim() || null,
+        },
+        // Único medio de pago. Va literal y no en una variable de estado
+        // porque no hay nada que elegir; si mañana entra otro medio se agrega
+        // aquí y en la tarjeta de pago, no en tres sitios.
         payment: {
-          method: paymentMethod,
+          method: "webpay",
           platform: Platform.OS === "web" ? "web" : Platform.OS,
         },
         notes: deliveryNotes.trim() || null,
@@ -436,34 +401,22 @@ export default function CheckoutScreen({ navigation }) {
       const guestToken =
         orderResponse?.guest_token || orderResponse?.data?.guest_token || null;
 
+      // La dirección también se guarda: en la segunda compra el cliente no
+      // vuelve a escribir dónde vive.
       await saveCheckoutAddress({
         fullName: fullName.trim(),
         email: normalizeEmail(email),
         phone: normalizePhoneCL(phone),
         rut: formatRut(rut),
-        paymentMethod,
+        comuna,
+        street: street.trim(),
+        addressLine2: addressLine2.trim(),
+        reference: reference.trim(),
       });
 
       await loadCartSummary();
 
-      const committedLabel =
-        pickupDays.find((d) => d.value === committedDate)?.fullLabel ||
-        committedDate;
-
-      // ── Transferencia / Efectivo al retirar → sin Webpay ──
-      if (paymentMethod !== "webpay") {
-        navigation.replace("OrderSuccess", {
-          orderId: order._id,
-          paymentMethod,
-          committedDate,
-          committedLabel,
-          // Invitados: permite subir el comprobante de transferencia (ownership).
-          guestToken,
-        });
-        return;
-      }
-
-      // ── Webpay → flujo de pago existente ──
+      // Un solo camino: la orden nace impaga y se paga con tarjeta en Webpay.
       const payment = await createWebpayTransaction({
         orderId: order._id,
         platform: Platform.OS === "web" ? "web" : Platform.OS,
@@ -472,7 +425,9 @@ export default function CheckoutScreen({ navigation }) {
 
       if (!payment?.paymentToken || !payment?.paymentUrl) {
         showAppAlert("Error", "No se pudo iniciar el pago con Webpay");
-        navigation.replace("OrderDetail", { orderId: order._id });
+        // A OrderFailed y no al detalle: ahí está el botón de reintentar el
+        // pago, que es lo único que el cliente puede hacer en este punto.
+        navigation.replace("OrderFailed", { orderId: order._id });
         return;
       }
 
@@ -492,7 +447,12 @@ export default function CheckoutScreen({ navigation }) {
         "customer.email": { field: "email", label: "Correo electrónico" },
         "customer.phone": { field: "phone", label: "Teléfono" },
         "customer.rut": { field: "rut", label: "RUT" },
-        "delivery.committed_date": { field: "committedDate", label: "Fecha de retiro" },
+        "shipping.city": { field: "comuna", label: "Comuna" },
+        "shipping.address": { field: "street", label: "Dirección" },
+        // La región la fija la tienda, pero si el backend la rechaza el error
+        // tiene que aterrizar en el selector de comuna: es lo único que el
+        // cliente puede corregir.
+        "shipping.region": { field: "comuna", label: "Comuna" },
         couponCode: { field: "couponCode", label: "Código de cupón" },
       };
       const details = Array.isArray(data?.details) ? data.details : [];
@@ -570,8 +530,7 @@ export default function CheckoutScreen({ navigation }) {
               lineHeight: 22,
             }}
           >
-            Agrega productos de Cibox a tu carrito antes de continuar al
-            checkout.
+            Agrega productos de Cibox a tu carrito antes de continuar.
           </AppText>
 
           <AppButton
@@ -598,7 +557,7 @@ export default function CheckoutScreen({ navigation }) {
             marginBottom: 6,
           }}
         >
-          Checkout
+          Finalizar compra
         </AppText>
 
         <AppText
@@ -611,6 +570,188 @@ export default function CheckoutScreen({ navigation }) {
           Completa tus datos y revisa tu compra antes de confirmar.
         </AppText>
 
+        {/* ── Dónde lo dejamos ────────────────────────────────────────
+            Esta tarjeta va primero, y dentro de ella la comuna va antes que la
+            calle: si no llegamos a donde vive el cliente tiene que enterarse
+            ahora, no después de escribir nombre, RUT, correo y teléfono. */}
+        <View style={cardStyle}>
+          <AppText
+            style={{
+              fontSize: 20,
+              fontWeight: "800",
+              color: colors.text,
+              marginBottom: 4,
+            }}
+          >
+            Dirección de despacho
+          </AppText>
+
+          <AppText style={{ color: colors.muted, marginBottom: 14, fontSize: 14 }}>
+            Llevamos tu pedido a domicilio en {comunasEnTexto()}. El despacho
+            cuesta {tarifaEnTexto()} por pedido, sin importar cuánto pidas.
+          </AppText>
+
+          <AppText style={labelStyle}>Comuna</AppText>
+          <View
+            style={{
+              flexDirection: "row",
+              flexWrap: "wrap",
+              gap: 8,
+              marginBottom: errors.comuna ? 6 : 14,
+            }}
+          >
+            {DESPACHO_COMUNAS.map((nombre) => {
+              const isSelected = comuna === nombre;
+              return (
+                <Pressable
+                  key={nombre}
+                  onPress={() => {
+                    setComuna(nombre);
+                    if (errors.comuna) {
+                      setErrors((prev) => ({ ...prev, comuna: "" }));
+                    }
+                  }}
+                  style={{
+                    borderWidth: 1.5,
+                    // La comuna elegida se pinta con el lima de marca, que es
+                    // el color de estado; encima el texto va oscuro.
+                    borderColor: isSelected ? colors.accent : colors.border,
+                    backgroundColor: isSelected ? colors.accent : "#FFFFFF",
+                    borderRadius: 12,
+                    paddingVertical: 11,
+                    paddingHorizontal: 16,
+                    minWidth: 104,
+                    alignItems: "center",
+                  }}
+                >
+                  <AppText
+                    style={{
+                      color: isSelected ? colors.accentText : colors.text,
+                      fontWeight: "800",
+                      fontSize: 14,
+                    }}
+                  >
+                    {nombre}
+                  </AppText>
+                </Pressable>
+              );
+            })}
+
+            {/* Salida explicita para quien vive fuera: sin esta opción el
+                cliente se queda mirando una lista corta sin saber por qué no
+                aparece la suya. */}
+            <Pressable
+              onPress={() => setComuna(COMUNA_FUERA_DE_ZONA)}
+              style={{
+                borderWidth: 1.5,
+                borderColor: fueraDeZona ? colors.primary : colors.border,
+                backgroundColor: fueraDeZona ? `${colors.primary}0A` : "#FFFFFF",
+                borderRadius: 12,
+                paddingVertical: 11,
+                paddingHorizontal: 16,
+                alignItems: "center",
+              }}
+            >
+              <AppText
+                style={{
+                  color: fueraDeZona ? colors.primary : colors.muted,
+                  fontWeight: "700",
+                  fontSize: 14,
+                }}
+              >
+                Mi comuna no está
+              </AppText>
+            </Pressable>
+          </View>
+          {!!errors.comuna && (
+            <AppText style={errorTextStyle}>{errors.comuna}</AppText>
+          )}
+
+          {/* El resto de la dirección aparece solo si llegamos a esa comuna. */}
+          {comunaElegida ? (
+            <>
+              <AppText style={labelStyle}>Calle y número</AppText>
+              <TextInput
+                value={street}
+                onChangeText={(value) => {
+                  setStreet(value);
+                  if (errors.street) {
+                    setErrors((prev) => ({ ...prev, street: "" }));
+                  }
+                }}
+                placeholder="Ej: Av. Libertador 1234"
+                style={{ ...inputStyle, marginBottom: errors.street ? 0 : 14 }}
+                placeholderTextColor="#999"
+              />
+              {!!errors.street && (
+                <AppText style={errorTextStyle}>{errors.street}</AppText>
+              )}
+
+              <AppText style={labelStyle}>
+                Depto, casa u oficina (opcional)
+              </AppText>
+              <TextInput
+                value={addressLine2}
+                onChangeText={setAddressLine2}
+                placeholder="Ej: Depto 402, Torre B"
+                style={{ ...inputStyle, marginBottom: 14 }}
+                placeholderTextColor="#999"
+              />
+
+              <AppText style={labelStyle}>
+                Referencia para llegar (opcional)
+              </AppText>
+              <TextInput
+                value={reference}
+                onChangeText={setReference}
+                placeholder="Ej: reja negra, frente a la plaza"
+                style={inputStyle}
+                placeholderTextColor="#999"
+              />
+            </>
+          ) : null}
+        </View>
+
+        {/* Fuera de zona: el checkout se detiene aquí. No le pedimos datos a
+            alguien a quien no le podemos vender, y le decimos a dónde SÍ
+            llegamos por si se equivocó al elegir. */}
+        {fueraDeZona ? (
+          <View
+            style={{
+              ...cardStyle,
+              borderWidth: 1.5,
+              borderColor: colors.primary,
+              backgroundColor: `${colors.primary}0A`,
+            }}
+          >
+            <AppText
+              style={{
+                fontSize: 18,
+                fontWeight: "800",
+                color: colors.text,
+                marginBottom: 8,
+              }}
+            >
+              Todavía no llegamos a tu comuna
+            </AppText>
+            <AppText
+              style={{
+                color: colors.text,
+                fontSize: 14,
+                lineHeight: 21,
+                marginBottom: 8,
+              }}
+            >
+              Por ahora despachamos solo en {comunasEnTexto()}, en la{" "}
+              {DESPACHO_REGION}. Estamos trabajando para llegar a más comunas.
+            </AppText>
+            <AppText style={{ color: colors.muted, fontSize: 13, lineHeight: 19 }}>
+              Tu carrito queda guardado: si te equivocaste de comuna, elígela
+              arriba y sigues con tu compra.
+            </AppText>
+          </View>
+        ) : (
+          <>
         <View style={cardStyle}>
           <AppText
             style={{
@@ -690,7 +831,10 @@ export default function CheckoutScreen({ navigation }) {
           )}
         </View>
 
-        {/* ── Método de entrega ── */}
+        {/* ── Pago ───────────────────────────────────────────────────
+            Se paga con tarjeta y solo con tarjeta, así que esto informa, no
+            pregunta: una lista de radio de un solo elemento obliga a hacer clic
+            para confirmar lo único que se puede hacer. */}
         <View style={cardStyle}>
           <AppText
             style={{
@@ -700,320 +844,37 @@ export default function CheckoutScreen({ navigation }) {
               marginBottom: 14,
             }}
           >
-            Método de entrega
-          </AppText>
-
-          <View style={{ gap: 10 }}>
-            {/* Retiro en tienda (activo) */}
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                gap: 12,
-                borderWidth: 1.5,
-                borderColor: colors.primary,
-                backgroundColor: `${colors.primary}0A`,
-                borderRadius: 14,
-                paddingVertical: 14,
-                paddingHorizontal: 14,
-              }}
-            >
-              <View
-                style={{
-                  width: 22,
-                  height: 22,
-                  borderRadius: 11,
-                  borderWidth: 2,
-                  borderColor: colors.primary,
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-              >
-                <View
-                  style={{
-                    width: 11,
-                    height: 11,
-                    borderRadius: 6,
-                    backgroundColor: colors.primary,
-                  }}
-                />
-              </View>
-              <View style={{ flex: 1 }}>
-                <AppText style={{ color: colors.text, fontWeight: "800", marginBottom: 2 }}>
-                  Retiro en tienda — Gratis
-                </AppText>
-                <AppText style={{ color: colors.muted, fontSize: 13 }}>
-                  Retira tu pedido en nuestra bodega, sin costo.
-                </AppText>
-              </View>
-            </View>
-
-            {/* Despacho a domicilio (próximamente) */}
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                gap: 12,
-                borderWidth: 1.5,
-                borderColor: colors.border,
-                backgroundColor: "#FAFAFA",
-                borderRadius: 14,
-                paddingVertical: 14,
-                paddingHorizontal: 14,
-                opacity: 0.7,
-              }}
-            >
-              <View
-                style={{
-                  width: 22,
-                  height: 22,
-                  borderRadius: 11,
-                  borderWidth: 2,
-                  borderColor: "#C0C0C0",
-                }}
-              />
-              <View style={{ flex: 1 }}>
-                <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 2 }}>
-                  <AppText style={{ color: colors.text, fontWeight: "800" }}>
-                    Despacho a domicilio
-                  </AppText>
-                  <View
-                    style={{
-                      backgroundColor: colors.discount,
-                      borderRadius: 999,
-                      paddingHorizontal: 8,
-                      paddingVertical: 2,
-                    }}
-                  >
-                    {/* Sobre el lima el texto va oscuro. El café #7a4d00 era el
-                        par del amarillo antiguo; contra el lima nuevo se queda
-                        en 4,47:1, y en 10px negrita eso no se lee. */}
-                    <AppText style={{ fontSize: 10, fontWeight: "900", color: colors.accentText }}>
-                      PRONTO
-                    </AppText>
-                  </View>
-                </View>
-                <AppText style={{ color: colors.muted, fontSize: 13 }}>
-                  Estamos preparando el despacho a domicilio. ¡Muy pronto!
-                </AppText>
-              </View>
-            </View>
-          </View>
-        </View>
-
-        <View style={cardStyle}>
-          <AppText
-            style={{
-              fontSize: 20,
-              fontWeight: "800",
-              color: colors.text,
-              marginBottom: 14,
-            }}
-          >
-            Retiro en bodega
-          </AppText>
-
-          {/* Caja con dirección + horarios reales */}
-          <View
-            style={{
-              borderWidth: 1,
-              borderColor: colors.border,
-              backgroundColor: colors.background,
-              borderRadius: 14,
-              padding: 14,
-              marginBottom: 18,
-            }}
-          >
-            {/* Mientras no haya dirección definida (brand.address viene vacía a
-                propósito desde el backend), esta caja pintaba "📍 Cibox", una
-                línea en blanco, otra en blanco y un "🕘 " con solo el emoji: el
-                cliente comprometía fecha de retiro sin saber dónde ir. El resto
-                de las pantallas ya preguntaba con hasAddress(); esta era la
-                única que dibujaba a ciegas. */}
-            <AppText
-              style={{ color: colors.text, fontWeight: "800", marginBottom: 6 }}
-            >
-              📍 {PICKUP_LOCATION.name}
-            </AppText>
-            {hasAddress() ? (
-              <>
-                <AppText
-                  style={{ color: colors.text, fontSize: 13, lineHeight: 19 }}
-                >
-                  {PICKUP_LOCATION.address}
-                </AppText>
-                {PICKUP_LOCATION.hint ? (
-                  <AppText
-                    style={{ color: colors.muted, fontSize: 12, marginTop: 2 }}
-                  >
-                    {PICKUP_LOCATION.hint}
-                  </AppText>
-                ) : null}
-              </>
-            ) : (
-              <AppText
-                style={{ color: colors.muted, fontSize: 13, lineHeight: 19 }}
-              >
-                Te confirmaremos la dirección exacta de retiro junto con tu pedido.
-              </AppText>
-            )}
-            {PICKUP_LOCATION.hours ? (
-              <AppText
-                style={{
-                  color: colors.accent,
-                  fontWeight: "700",
-                  fontSize: 13,
-                  marginTop: 8,
-                }}
-              >
-                🕘 {PICKUP_LOCATION.hours}
-              </AppText>
-            ) : null}
-          </View>
-
-          {/* Selector de fecha comprometida */}
-          <AppText style={labelStyle}>Fecha comprometida de retiro</AppText>
-          <AppText
-            style={{ color: colors.muted, fontSize: 13, marginBottom: 10 }}
-          >
-            Elige el día en que retirarás tu pedido en la bodega.
+            Pago
           </AppText>
 
           <View
             style={{
               flexDirection: "row",
-              flexWrap: "wrap",
-              gap: 8,
-              marginBottom: errors.committedDate ? 6 : 0,
+              alignItems: "flex-start",
+              gap: 12,
+              borderWidth: 1.5,
+              borderColor: colors.primary,
+              backgroundColor: `${colors.primary}0A`,
+              borderRadius: 14,
+              paddingVertical: 14,
+              paddingHorizontal: 14,
             }}
           >
-            {pickupDays.map((day) => {
-              const isSelected = committedDate === day.value;
-              return (
-                <Pressable
-                  key={day.value}
-                  onPress={() => {
-                    setCommittedDate(day.value);
-                    if (errors.committedDate) {
-                      setErrors((prev) => ({ ...prev, committedDate: "" }));
-                    }
-                  }}
-                  style={{
-                    borderWidth: 1.5,
-                    borderColor: isSelected ? colors.primary : colors.border,
-                    backgroundColor: isSelected ? colors.primary : "#FFFFFF",
-                    borderRadius: 12,
-                    paddingVertical: 10,
-                    paddingHorizontal: 14,
-                    minWidth: 86,
-                    alignItems: "center",
-                  }}
-                >
-                  <AppText
-                    style={{
-                      color: isSelected ? "#FFFFFF" : colors.text,
-                      fontWeight: "800",
-                      fontSize: 13,
-                    }}
-                  >
-                    {day.label}
-                  </AppText>
-                  {day.sublabel ? (
-                    <AppText
-                      style={{
-                        color: isSelected ? colors.primaryLight : colors.muted,
-                        fontSize: 11,
-                        marginTop: 2,
-                      }}
-                    >
-                      {day.sublabel}
-                    </AppText>
-                  ) : null}
-                </Pressable>
-              );
-            })}
-          </View>
-          {!!errors.committedDate && (
-            <AppText style={errorTextStyle}>{errors.committedDate}</AppText>
-          )}
-        </View>
-
-        <View style={cardStyle}>
-          <AppText
-            style={{
-              fontSize: 20,
-              fontWeight: "800",
-              color: colors.text,
-              marginBottom: 14,
-            }}
-          >
-            Método de pago
-          </AppText>
-
-          <AppText style={{ color: colors.muted, marginBottom: 12 }}>
-            Selecciona cómo quieres pagar tu pedido.
-          </AppText>
-
-          <View style={{ gap: 10 }}>
-            {PAYMENT_OPTIONS.map((option) => {
-              const isSelected = paymentMethod === option.value;
-              return (
-                <Pressable
-                  key={option.value}
-                  onPress={() => setPaymentMethod(option.value)}
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    gap: 12,
-                    borderWidth: 1.5,
-                    borderColor: isSelected ? colors.primary : colors.border,
-                    backgroundColor: isSelected ? `${colors.primary}0A` : "#FFFFFF",
-                    borderRadius: 14,
-                    paddingVertical: 14,
-                    paddingHorizontal: 14,
-                  }}
-                >
-                  <View
-                    style={{
-                      width: 22,
-                      height: 22,
-                      borderRadius: 11,
-                      borderWidth: 2,
-                      borderColor: isSelected ? colors.primary : "#C0C0C0",
-                      justifyContent: "center",
-                      alignItems: "center",
-                    }}
-                  >
-                    {isSelected ? (
-                      <View
-                        style={{
-                          width: 11,
-                          height: 11,
-                          borderRadius: 6,
-                          backgroundColor: colors.primary,
-                        }}
-                      />
-                    ) : null}
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <AppText
-                      style={{
-                        color: colors.text,
-                        fontWeight: "800",
-                        marginBottom: 2,
-                      }}
-                    >
-                      {option.title}
-                    </AppText>
-                    <AppText style={{ color: colors.muted, fontSize: 13 }}>
-                      {option.desc}
-                    </AppText>
-                  </View>
-                </Pressable>
-              );
-            })}
+            <AppText style={{ fontSize: 20, lineHeight: 24 }}>💳</AppText>
+            <View style={{ flex: 1 }}>
+              <AppText
+                style={{ color: colors.text, fontWeight: "800", marginBottom: 4 }}
+              >
+                Tarjeta de crédito o débito
+              </AppText>
+              <AppText style={{ color: colors.muted, fontSize: 13, lineHeight: 19 }}>
+                Al confirmar te llevamos a Webpay Plus de Transbank. Los datos de
+                tu tarjeta los recibe Transbank: Cibox no los ve ni los guarda.
+              </AppText>
+            </View>
           </View>
         </View>
+
         <AppText style={labelStyle}>Código de cupón</AppText>
         <View style={{ flexDirection: "row", gap: 8, marginBottom: 8 }}>
           <TextInput
@@ -1231,8 +1092,10 @@ export default function CheckoutScreen({ navigation }) {
               Total productos: {formatPrice(productsTotal)}
             </AppText>
 
+            {/* El costo va a la vista desde el resumen, no aparece recién
+                al final: la tarifa es la misma para toda la zona. */}
             <AppText style={{ color: colors.muted }}>
-              Retiro en bodega — Gratis
+              Despacho a domicilio: {formatPrice(shippingAmount)}
             </AppText>
 
             {discountAmount > 0 ? (
@@ -1327,12 +1190,14 @@ export default function CheckoutScreen({ navigation }) {
         </Pressable>
 
         <AppButton
-          title={submitting ? "Procesando..." : "Confirmar compra"}
+          title={submitting ? "Procesando..." : "Pagar con tarjeta"}
           onPress={handleCheckout}
           disabled={
-            submitting || !items.length || !committedDate || !termsAccepted
+            submitting || !items.length || !comunaElegida || !termsAccepted
           }
         />
+          </>
+        )}
       </ScrollView>
     </ScreenContainer>
   );
