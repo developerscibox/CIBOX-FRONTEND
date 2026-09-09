@@ -254,7 +254,7 @@ export default function CartScreen({ navigation }) {
               maxWidth: 420,
             }}
           >
-            Agrega productos de el catálogo de Cibox para comenzar tu compra.
+            Agrega productos del catálogo para comenzar tu compra.
           </AppText>
 
           <AppButton
