@@ -7,7 +7,10 @@ import { Html5Qrcode, Html5QrcodeSupportedFormats } from "html5-qrcode";
 // html5-qrcode. Cámara con facingMode FLEXIBLE ({ideal:"environment"}) para que
 // los notebooks (sin cámara trasera) también funcionen. Tecleo manual siempre.
 const REGION_ID = "cibox-barcode-reader";
-const PROD_URL = "bodega-nine.vercel.app";
+// El dominio desde el que se está usando el panel: los mensajes de la cámara
+// le dicen al operario dónde abrirlo, y apuntarlo a un dominio fijo mandaba
+// a la gente a un panel viejo que ya no existe.
+const PROD_URL = typeof window !== "undefined" ? window.location.host : "api.bodega.cibox.cl";
 
 const H5_FORMATS = [
   Html5QrcodeSupportedFormats.EAN_13,

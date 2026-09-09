@@ -13,7 +13,20 @@ export const loginRequest = async ({ email, password }) => {
 // cookie httpOnly. Antes el logout solo limpiaba el almacenamiento local y el
 // refresh de siete días seguía vivo en el servidor (y en la cookie).
 export const logoutRequest = async () => {
-  const response = await client.post("/auth/logout", {});
+  // `_retry: true` es la marca que el interceptor de client.js usa para no
+  // volver a intentar: sin ella, un logout con el access token vencido recibe
+  // 401, entra a la cola de refresh, y si es el propio refresh el que falló y
+  // llamó a logout, los dos se esperan mutuamente para siempre.
+  const response = await client.post("/auth/logout", {}, { _retry: true });
+  return response.data;
+};
+
+// Renueva el access token con la cookie httpOnly. Se usa al cargar la app en
+// web: ahí el access token no se persiste (solo el usuario), así que sin esto
+// cada recarga dejaba al cliente "deslogueado" aunque la cookie de 90 días
+// siguiera viva. `_retry: true` evita que el interceptor lo encole.
+export const refreshRequest = async () => {
+  const response = await client.post("/auth/refresh", {}, { _retry: true });
   return response.data;
 };
 

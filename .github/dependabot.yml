@@ -3,7 +3,6 @@
 version: 2
 updates:
   - package-ecosystem: npm
-  - package-ecosystem: npm
     directory: /tienda
     schedule:
       interval: weekly

@@ -3,7 +3,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { create } from "zustand";
 import useCartStore from "./cartStore";
 import { clearGuestId } from "../utils/guestId";
-import { logoutRequest } from "../services/authService";
+import { logoutRequest, refreshRequest } from "../services/authService";
 
 const AUTH_KEY = "auth";
 
@@ -58,14 +58,16 @@ const useAuthStore = create((set) => ({
   },
 
   logout: async () => {
-    // Best-effort: si no hay red o el token ya venció, igual se cierra local.
+    // Primero se cierra la sesión local, pase lo que pase con la red: así la
+    // app nunca queda "logueada" con un token muerto aunque el servidor no
+    // responda. La revocación en el servidor va después, best-effort.
+    await authStorage.removeItem(AUTH_KEY);
+    await clearGuestId();
+    useCartStore.getState().clearCartSummary();
+    set({ user: null, token: null, refreshToken: null });
     try {
       await logoutRequest();
     } catch {}
-    await authStorage.removeItem(AUTH_KEY);
-    await clearGuestId(); // ← importar y agregar
-    useCartStore.getState().clearCartSummary();
-    set({ user: null, token: null, refreshToken: null });
   },
 
   loadAuth: async () => {
@@ -74,10 +76,29 @@ const useAuthStore = create((set) => ({
 
       if (data) {
         const parsed = JSON.parse(data);
+        let token = parsed?.token || null;
+        let user = parsed?.user || null;
+
+        // Web en producción guarda solo el usuario (ver setAuth): el access
+        // token hay que pedirlo con la cookie. Si la cookie ya no sirve, la
+        // sesión local se descarta para no mostrar un perfil sin sesión.
+        if (user && !token) {
+          try {
+            const res = await refreshRequest();
+            token = res?.data?.accessToken || null;
+            user = res?.data?.user || user;
+          } catch {
+            token = null;
+          }
+          if (!token) {
+            await authStorage.removeItem(AUTH_KEY);
+            user = null;
+          }
+        }
 
         set({
-          user: parsed?.user || null,
-          token: parsed?.token || null,
+          user,
+          token,
           refreshToken: parsed?.refreshToken || null,
         });
       } else {

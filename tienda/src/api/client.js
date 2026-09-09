@@ -43,6 +43,12 @@ client.interceptors.response.use(
     const status = error?.response?.status;
     const url = originalRequest?.url || "";
 
+    // El logout nunca se reintenta ni se encola: si ya no hay sesión válida,
+    // que falle rápido. Encolarlo producía un abrazo mortal con el refresh.
+    if (url.includes("/auth/logout")) {
+      return Promise.reject(error);
+    }
+
     // Si el refresh mismo falla, logout y salir
     if (status === 401 && url.includes("/auth/refresh")) {
       await useAuthStore.getState().logout();

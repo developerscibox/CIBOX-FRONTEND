@@ -7,7 +7,6 @@ import "@fontsource/poppins/800.css";
 import App from "./App.jsx";
 import { AuthProvider } from "./auth.jsx";
 import { hydrateBrand } from "./brand.js";
-import { Analytics } from "@vercel/analytics/react";
 import "./index.css";
 
 const mount = () =>
@@ -16,7 +15,6 @@ const mount = () =>
       <AuthProvider>
         <App />
       </AuthProvider>
-      <Analytics />
     </React.StrictMode>
   );
 
