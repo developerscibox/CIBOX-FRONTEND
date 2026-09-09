@@ -12,27 +12,34 @@ export const streamUrl = () => (BASE ? `${BASE}/orders/stream` : null);
 // ── Sesión por usuario (reemplaza el VITE_API_TOKEN admin compartido) ─────────
 const TOKEN_KEY = "cibox_wms_token";
 const USER_KEY = "cibox_wms_user";
-const REFRESH_KEY = "cibox_wms_refresh";
+
+// El refresh token ya NO vive en localStorage: va en una cookie httpOnly que
+// pone el backend (`cibox_rt_panel`), fuera del alcance de cualquier script.
+// El panel maneja inventario y pedidos con privilegios altos; dejar el refresh
+// legible por JS era la forma más barata de robar una sesión de siete días.
+// Se borra la clave vieja para no dejar un token válido tirado en el navegador.
+try { localStorage.removeItem("cibox_wms_refresh"); } catch { /* sin storage */ }
+
+// Con esta cabecera el backend sabe que somos el panel web: manda el refresh
+// solo en la cookie (nunca en el body) y usa una cookie distinta a la de la
+// tienda, para que las dos sesiones no se pisen en el mismo navegador.
+const CLIENTE = { "x-client-platform": "panel" };
 
 export const getToken = () => {
   try { return localStorage.getItem(TOKEN_KEY) || ""; } catch { return ""; }
-};
-const getRefresh = () => {
-  try { return localStorage.getItem(REFRESH_KEY) || ""; } catch { return ""; }
 };
 export const getStoredUser = () => {
   try { return JSON.parse(localStorage.getItem(USER_KEY) || "null"); } catch { return null; }
 };
 // Cada argumento se actualiza solo si NO es undefined (así el refresh puede
 // renovar el access token sin pisar el usuario).
-export const setSession = (token, user, refresh) => {
+export const setSession = (token, user) => {
   try {
     if (token !== undefined) token ? localStorage.setItem(TOKEN_KEY, token) : localStorage.removeItem(TOKEN_KEY);
     if (user !== undefined) user ? localStorage.setItem(USER_KEY, JSON.stringify(user)) : localStorage.removeItem(USER_KEY);
-    if (refresh !== undefined) refresh ? localStorage.setItem(REFRESH_KEY, refresh) : localStorage.removeItem(REFRESH_KEY);
   } catch { /* almacenamiento no disponible */ }
 };
-export const clearSession = () => setSession(null, null, null);
+export const clearSession = () => setSession(null, null);
 
 // ── Puente Reposición → Recepción (borrador one-shot en sessionStorage) ────────
 // La pantalla de Reposición escribe el borrador; Recepción lo lee y lo borra al
@@ -54,19 +61,21 @@ export const takeRecepcionDraft = () => {
 // llamadas que reciben 401 a la vez comparten un solo refresh en vuelo.
 let refreshing = null;
 const tryRefresh = () => {
-  const rt = getRefresh();
-  if (!rt) return Promise.resolve(false);
   if (!refreshing) {
+    // El refresh viaja en la cookie httpOnly: `credentials: "include"` la manda
+    // y el body va vacío. Si no hay cookie (sesión nunca iniciada o ya cerrada)
+    // el backend responde 401 y se cae al login, igual que antes.
     refreshing = fetch(BASE + "/auth/refresh", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ refreshToken: rt }),
+      credentials: "include",
+      headers: { "Content-Type": "application/json", ...CLIENTE },
+      body: "{}",
     })
       .then(async (res) => {
         if (!res.ok) return false;
         const json = await res.json().catch(() => ({}));
         const d = json?.data ?? json;
-        if (d?.accessToken) { setSession(d.accessToken, undefined, d.refreshToken); return true; }
+        if (d?.accessToken) { setSession(d.accessToken, undefined); return true; }
         return false;
       })
       .catch(() => false)
@@ -79,8 +88,12 @@ async function req(path, { method = "GET", body, auth = true, _retry = false } =
   const token = getToken();
   const res = await fetch(BASE + path, {
     method,
+    // La cookie del refresh solo la necesitan login/refresh/logout, pero
+    // mandarla siempre no cuesta nada (su path es /api/auth) y evita olvidarla.
+    credentials: "include",
     headers: {
       "Content-Type": "application/json",
+      ...CLIENTE,
       ...(auth && token ? { Authorization: `Bearer ${token}` } : {}),
     },
     body: body ? JSON.stringify(body) : undefined,
@@ -144,7 +157,7 @@ export const authApi = {
       body: { email, password },
       auth: false,
     });
-    setSession(data.accessToken, data.user, data.refreshToken);
+    setSession(data.accessToken, data.user);
     return data.user;
   },
   // POST /auth/forgot-password → manda el correo con el enlace para cambiarla.
@@ -152,7 +165,13 @@ export const authApi = {
   // están registrados; el panel muestra el mismo mensaje en los dos casos.
   forgotPassword: (email) =>
     req("/auth/forgot-password", { method: "POST", body: { email }, auth: false }),
-  logout: () => clearSession(),
+  // Avisa al backend para que revoque el refresh y borre la cookie httpOnly;
+  // si la red falla igual se limpia lo local. Antes solo se borraba el
+  // localStorage y el refresh de siete días seguía vivo en el servidor.
+  logout: async () => {
+    try { await req("/auth/logout", { method: "POST", body: {} }); } catch { /* sin red o ya vencido */ }
+    clearSession();
+  },
 };
 
 // Endpoints reales (ver backend src/routes/inventoryRoutes.js y orderRoutes.js)

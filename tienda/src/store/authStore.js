@@ -3,6 +3,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { create } from "zustand";
 import useCartStore from "./cartStore";
 import { clearGuestId } from "../utils/guestId";
+import { logoutRequest } from "../services/authService";
 
 const AUTH_KEY = "auth";
 
@@ -57,6 +58,10 @@ const useAuthStore = create((set) => ({
   },
 
   logout: async () => {
+    // Best-effort: si no hay red o el token ya venció, igual se cierra local.
+    try {
+      await logoutRequest();
+    } catch {}
     await authStorage.removeItem(AUTH_KEY);
     await clearGuestId(); // ← importar y agregar
     useCartStore.getState().clearCartSummary();

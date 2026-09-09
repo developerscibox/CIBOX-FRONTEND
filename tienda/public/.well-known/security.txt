@@ -1,0 +1,5 @@
+# RFC 9116 — a quién avisar si encuentras una vulnerabilidad en cibox.cl
+Contact: mailto:developers@cibox.cl
+Preferred-Languages: es, en
+Canonical: https://www.cibox.cl/.well-known/security.txt
+Expires: 2027-09-09T00:00:00.000Z
