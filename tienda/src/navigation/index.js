@@ -9,6 +9,48 @@ import AvisoRelanzamiento from "../components/AvisoRelanzamiento";
 import { colors } from "../constants/theme";
 import { usePushNotifications } from "../hooks/usePushNotifications";
 
+
+/**
+ * Título de la pestaña del navegador, por pantalla.
+ *
+ * Sin esto React Navigation usa el NOMBRE INTERNO de la ruta, que está en
+ * inglés: la pantalla de seguimiento se anunciaba como "TrackOrder" en la
+ * pestaña, en el historial y en los marcadores. El cliente no tiene por qué leer
+ * los nombres que usamos entre nosotros.
+ *
+ * Solo hace falta nombrar las rutas cuyo nombre interno NO sirve como título; el
+ * resto cae al nombre de la ruta, que ya está en español.
+ */
+const TITULOS = {
+  TrackOrder: "Seguir mi pedido",
+  Cart: "Mi carrito",
+  Checkout: "Finalizar compra",
+  Contact: "Contacto",
+  OrderDetail: "Detalle del pedido",
+  OrderSuccess: "Compra realizada",
+  OrderFailed: "No se pudo pagar",
+  HowItWorks: "Quiénes somos",
+  Notifications: "Notificaciones",
+  ForgotPassword: "Recuperar contraseña",
+  ResetPassword: "Nueva contraseña",
+  VerifyEmail: "Verificar correo",
+  Terms: "Términos y condiciones",
+  Privacy: "Política de privacidad",
+  Products: "Catálogo",
+  ProductDetail: "Producto",
+  Auth: "Ingresar",
+  Stores: "Nuestras tiendas",
+};
+
+const documentTitle = {
+  formatter: (options, route) => {
+    const propio = options?.title || TITULOS[route?.name];
+    // El nombre de la marca al final, como es costumbre en la web: lo primero
+    // que se lee en una pestaña angosta es dónde está parado.
+    return propio ? `${propio} · Cibox` : "Cibox · Tu supermercado online";
+  },
+};
+
 const linking = {
   prefixes: [
     "cibox://",
@@ -73,6 +115,7 @@ export default function RootNavigation() {
       ref={navigationRef}
       theme={tema}
       linking={linking}
+      documentTitle={documentTitle}
       fallback={
         <View
           style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
