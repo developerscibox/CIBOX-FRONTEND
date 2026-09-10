@@ -74,6 +74,26 @@ export const HIDDEN_NAV = new Set([
   "lotes",         // no hay lotes: el stock entró por conteo, no por recepción
   "reposicion",    // se alimenta de min_stock y ningún producto lo tiene definido
   "devoluciones",  // la tienda no tiene por dónde crear una devolución todavía
+
+  // ── Ocultas hasta que la operación las necesite (10-sep-2026) ──────────────
+  // Decisión del CEO: con 7 pedidos de prueba y una persona operando, un menú
+  // de 18 entradas estorba. Queda lo justo para operar —Pedidos, Preparación,
+  // Productos y Ajuste de stock— y lo demás se va activando a medida que se
+  // use: basta borrar su línea de acá. Nada se borra; las rutas siguen vivas.
+  "gerencia",         // Centro de mando: tableros sin datos que mirar todavía
+  "dashboard360",     // Dashboard 360°: ídem
+  "dashboard",        // Resumen: Pedidos ya agrupa por estado, que es lo que importa
+  "reportes",         // Reportes: sin volumen que reportar
+  "calendario",       // Calendario de entregas: se activa cuando haya rutas que planificar
+  "precios",          // Precios y márgenes: el precio se edita en Productos
+  "consulta-precios", // Consulta de precios: pantalla de sala de ventas, no hay sala
+  "contenido",        // Contenido de la tienda: marketing, no operación
+  "recepcion",        // Recepción: el stock entra por ajuste directo mientras sea poco
+  "conteo",           // Conteo físico: se activa cuando haya inventario que contar
+  "inventario",       // Inventario: la columna de stock de Productos alcanza
+  "kardex",           // Movimientos: útil cuando haya movimientos que auditar
+  "ventas",           // Ventas: sin ventas reales aún
+  "usuarios",         // Usuarios: una sola persona operando; se activa al sumar gente
 ]);
 
 // Ya no hay alcance por rol: el equipo que entra al panel es chico y todos

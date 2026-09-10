@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Sidebar, Topbar, NAV_PERMS, NAV_MODS, NAV } from "./ui.jsx";
+import { Sidebar, Topbar, NAV_PERMS, NAV_MODS, NAV, HIDDEN_NAV } from "./ui.jsx";
 import { api, useLoad, usingMock, streamUrl } from "./api.js";
 import { useAuth, HOME_BY_ROLE } from "./auth.jsx";
 import Login from "./screens/Login.jsx";
@@ -72,7 +72,7 @@ const VIEW_ORDER = NAV.map((n) => n.key);
 
 export default function App() {
   const { user, can, logout, roleLabel, initials } = useAuth();
-  const [view, setView] = useState("dashboard");
+  const [view, setView] = useState("pedidos");
   const [tourOpen, setTourOpen] = useState(false);
   // Aterrizaje por rol una sola vez por sesión: cada rol cae en su cola.
   const landedRef = useRef(false);
@@ -80,7 +80,7 @@ export default function App() {
     if (!user) { landedRef.current = false; return; }
     if (!landedRef.current) {
       landedRef.current = true;
-      setView(HOME_BY_ROLE[user.role] || "dashboard");
+      setView(HOME_BY_ROLE[user.role] || "pedidos");
     }
   }, [user]);
   // "Ver como": al previsualizar un rol, aterriza en la home de ese rol.
@@ -143,10 +143,12 @@ export default function App() {
   // Si la vista activa no está permitida para el rol o su módulo está apagado,
   // caer al home del rol (o a la primera vista válida).
   useEffect(() => {
-    if (user && (!can(NAV_PERMS[view]) || !modOn(view))) {
-      const ok = (k) => k && can(NAV_PERMS[k]) && modOn(k);
+    // Una vista oculta del menú tampoco sirve de aterrizaje: si el usuario
+    // cayera ahí no tendría cómo volver desde la barra lateral.
+    if (user && (!can(NAV_PERMS[view]) || !modOn(view) || HIDDEN_NAV.has(view))) {
+      const ok = (k) => k && can(NAV_PERMS[k]) && modOn(k) && !HIDDEN_NAV.has(k);
       const home = HOME_BY_ROLE[user.role];
-      setView(ok(home) ? home : VIEW_ORDER.find(ok) || "dashboard");
+      setView(ok(home) ? home : VIEW_ORDER.find(ok) || "pedidos");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, view, can, mods]);
