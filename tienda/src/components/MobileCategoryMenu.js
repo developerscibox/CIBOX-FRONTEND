@@ -106,6 +106,28 @@ export default function MobileCategoryMenu({ visible, onClose }) {
 
           {/* Mega-menú de tarjetas (1 columna en móvil) */}
           <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 16 }}>
+            {/* Seguimiento público del pedido: la única puerta permanente en
+                celular para quien compró sin cuenta (la portada también lo
+                ofrece, pero solo desde la portada). No exige sesión. */}
+            <Pressable
+              onPress={() => {
+                onClose();
+                navigation.navigate("TrackOrder");
+              }}
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 10,
+                paddingVertical: 12,
+                paddingHorizontal: 14,
+                marginBottom: 14,
+                borderRadius: 12,
+                backgroundColor: `${colors.primary}12`,
+              }}
+            >
+              <Ionicons name="cube-outline" size={18} color={colors.primary} />
+              <AppText style={{ color: colors.text, fontWeight: "700", fontSize: 15 }}>Seguir mi pedido</AppText>
+            </Pressable>
             <CategoryMegaMenu
               categories={categories}
               onSelect={(cat) => {

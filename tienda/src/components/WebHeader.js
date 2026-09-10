@@ -289,6 +289,17 @@ export default function WebHeader() {
                 </>
               )}
             </Pressable>
+            {/* Seguimiento público: va en la barra porque quien compró sin
+                cuenta no tiene "Mis pedidos"; este y el correo son sus únicas
+                puertas. Pide número de pedido + correo, no exige sesión. */}
+            <Pressable onPress={() => navigation.navigate("TrackOrder")} style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
+              {({ hovered }) => (
+                <>
+                  <Ionicons name="cube-outline" size={14} color={hovered ? colors.accent : colors.primaryText} />
+                  <AppText weight="semiBold" style={{ color: hovered ? colors.accent : colors.primaryText, fontSize: 12.5 }}>Seguir mi pedido</AppText>
+                </>
+              )}
+            </Pressable>
             <Pressable onPress={() => navigation.navigate(token ? "ProfileTab" : "Auth")} style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
               {({ hovered }) => (
                 <>
