@@ -727,7 +727,10 @@ export default function WebHeader() {
             <Ionicons
               name="basket-outline"
               size={22}
-              color={colors.text}
+              // Blanco, como su etiqueta y como el icono de al lado. Estaba en
+              // `colors.text` —el gris oscuro del cuerpo— desde que esta fila
+              // pasó a fondo azul: 1,9:1, prácticamente invisible.
+              color={colors.primaryText}
               style={{ marginRight: compactActions ? 0 : 6 }}
             />
             {compactActions ? null : (
@@ -739,25 +742,47 @@ export default function WebHeader() {
 
           <Pressable
             onPress={() => navigation.navigate(token ? "FavoritesTab" : "Auth")}
+            // Cápsula detrás del ícono: es el único de la fila sin etiqueta que
+            // lo acompañe, y en trazo fino sobre el azul se perdía.
+            style={{
+              width: 38,
+              height: 38,
+              borderRadius: 19,
+              alignItems: "center",
+              justifyContent: "center",
+              backgroundColor: "rgba(255,255,255,0.12)",
+            }}
           >
-            <Ionicons name="heart-outline" size={24} color={colors.primaryText} />
+            <Ionicons name="heart" size={20} color={colors.primaryText} />
           </Pressable>
 
           <Pressable
             onPress={() => navigation.navigate("Cart")}
-            style={{ position: "relative" }}
+            style={{
+              position: "relative",
+              width: 38,
+              height: 38,
+              borderRadius: 19,
+              alignItems: "center",
+              justifyContent: "center",
+              backgroundColor: "rgba(255,255,255,0.12)",
+            }}
           >
-            <Ionicons name="cart-outline" size={24} color={colors.primaryText} />
+            <Ionicons name="cart" size={20} color={colors.primaryText} />
 
             <View
               style={{
                 position: "absolute",
-                top: -8,
-                right: -10,
+                // Medido desde la cápsula de 38, no desde el icono de 24 de
+                // antes: con los valores viejos el globo se iba flotando lejos.
+                top: -2,
+                right: -2,
                 minWidth: 18,
                 height: 18,
                 borderRadius: 9,
-                backgroundColor: colors.primary,
+                // Lima. Era `primary`: un globo azul sobre la franja azul, o
+                // sea el contador del carrito no se veía nunca.
+                backgroundColor: colors.accent,
                 justifyContent: "center",
                 alignItems: "center",
                 paddingHorizontal: 4,
@@ -766,7 +791,7 @@ export default function WebHeader() {
               <AppText
                 weight="bold"
                 style={{
-                  color: colors.primaryText,
+                  color: colors.accentText,
                   fontSize: 10,
                 }}
               >

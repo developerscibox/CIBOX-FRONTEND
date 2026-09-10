@@ -840,8 +840,14 @@ export default function HomeScreen({ navigation }) {
   );
 
   /* Hero */
+  // El hero arranca separado de la cabecera. Los dos son azules y quedaban casi
+  // pegados —entre medio solo la franja lima, que a ese grosor no alcanza a
+  // separarlos—, así que se leían como una sola mancha de color. Este aire deja
+  // ver el fondo gris y devuelve a la cabecera su condición de franja.
   const bHero = (
-    <Hero key="hero" navigation={navigation} isWebDesktop={isWebDesktop} isWide={isWide} width={width} content={slots?.hero} />
+    <View key="hero" style={{ paddingTop: spacing.lg }}>
+      <Hero navigation={navigation} isWebDesktop={isWebDesktop} isWide={isWide} width={width} content={slots?.hero} />
+    </View>
   );
 
   /* Seguimiento del pedido, a la vista de todos. Pedido explícito: el botón no
