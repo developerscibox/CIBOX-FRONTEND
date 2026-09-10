@@ -458,8 +458,9 @@ export default function ProductCard({
           <View style={{ marginBottom: 14 }}>
             {hasReviews ? (
               /* Aquí quedaba un fontWeight "600" suelto sobre la familia
-                 regular: solo está cargada Inter_400Regular, así que el
-                 navegador la engordaba él mismo (negrita sintética, de bordes
+                 regular: Poppins se carga como una familia POR PESO, así que
+                 pedir 600 sobre la regular no trae la semibold, el navegador
+                 engorda la regular él mismo (negrita sintética, de bordes
                  sucios). Pasa al prop de AppText como el resto del archivo. */
               <AppText weight="semiBold" style={{ color: colors.muted, fontSize: 12 }}>
                 {averageRating.toFixed(1)} · {reviewsCount} reseñas

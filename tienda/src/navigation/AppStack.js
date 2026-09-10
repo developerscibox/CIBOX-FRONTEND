@@ -145,7 +145,7 @@ export default function AppStack() {
     <Stack.Navigator
       screenOptions={{
         headerShadowVisible: false,
-        // Cap. 04: Montserrat Bold en los titulos de cabecera.
+        // Por `fontFamily` y no por peso numerico: Poppins se carga por cara.
         headerTitleStyle: { fontFamily: typography.bold },
         headerRight: () => (!isWebDesktop ? <CartHeaderButton /> : null),
         headerLeft: () => (!isWebDesktop ? <VolverHeaderButton /> : undefined),

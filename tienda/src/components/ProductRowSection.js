@@ -188,9 +188,9 @@ export default function ProductRowSection({
     <View style={{ marginBottom: spacing.lg }}>
       {!!title && (
         <AppText
-          // El grosor va por `weight`: pedir 800 sobre Inter Regular, que es la
-          // única cara de cuerpo cargada, hace que el navegador la engorde a la
-          // fuerza. Montserrat Bold es la que el manual asigna a los títulos.
+          // El grosor va por `weight`, no por `fontWeight`: Poppins se carga
+          // como una familia por peso, así que pedir 800 sobre la regular no
+          // trae una cara más gruesa, la engorda el navegador a la fuerza.
           weight="bold"
           style={{
             fontSize: 22,

@@ -41,10 +41,10 @@ export default function MainTabs() {
         },
         headerTintColor: colors.text,
         headerTitleAlign: "left",
-        // Cap. 04 del manual: Montserrat en titulos y navegacion. El peso
-        // numerico pedia una cara que no esta cargada (solo hay SemiBold y Bold
-        // de Montserrat, y Inter Regular), asi que el navegador engordaba Inter
-        // a la fuerza: negrita fingida, de bordes sucios.
+        // La familia se pide por nombre, no por peso numerico: Poppins se
+        // carga cara por cara (Regular, SemiBold, Bold) y un peso que no
+        // corresponda a una cara cargada lo finge el navegador engordando la
+        // que haya, con bordes sucios.
         headerTitleStyle: {
           fontFamily: typography.bold,
           color: colors.text,
@@ -60,7 +60,7 @@ export default function MainTabs() {
         tabBarInactiveTintColor: colors.muted,
         tabBarLabelStyle: {
           fontSize: 12,
-          // Montserrat SemiBold: el manual la asigna a interfaz y navegación.
+          // La semibold de Poppins, que es la cara de interfaz y navegación.
           fontFamily: typography.semiBold,
         },
       }}

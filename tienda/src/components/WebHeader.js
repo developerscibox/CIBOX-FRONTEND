@@ -348,10 +348,10 @@ export default function WebHeader() {
             source={require("../../assets/logo-cibox-blanco.png")}
             style={{ width: 82, height: 86, resizeMode: "contain" }}
           />
-          {/* El grosor va por `weight`, no por `fontWeight`: Montserrat se
-              carga como una familia por peso (Montserrat_700Bold), así que
-              pedir 900 sobre ella no trae una tipografía más gruesa, el
-              navegador la ENGORDA a la fuerza y sale emborronada. */}
+          {/* El grosor va por `weight`, no por `fontWeight`: Poppins se carga
+              como una familia por peso (Poppins_700Bold), así que pedir 900
+              sobre ella no trae una tipografía más gruesa, el navegador la
+              ENGORDA a la fuerza y sale emborronada. */}
           {width >= 1040 ? (
             <View style={{ justifyContent: "center", borderLeftWidth: 1, borderLeftColor: "rgba(255,255,255,0.28)", paddingLeft: 12 }}>
               <AppText weight="bold" style={{ fontSize: 15, color: colors.primaryText, lineHeight: 18 }}>
@@ -535,8 +535,8 @@ export default function WebHeader() {
                     {hasCategoryResults ? (
                       <View style={{ marginBottom: 14 }}>
                         {/* Mismo motivo que en el rótulo del logo: el grosor
-                            se pide por `weight` para usar la Montserrat real y
-                            no una negrita falsa del navegador. */}
+                            se pide por `weight` para usar la cara real de
+                            Poppins y no una negrita falsa del navegador. */}
                         <AppText
                           weight="bold"
                           style={{
