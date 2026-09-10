@@ -59,6 +59,18 @@ engorda la que haya, y sale una negrita fingida de bordes sucios.
 Sobre la franja azul, el logo va en su versión para fondo oscuro
 (`logo-cibox-blanco.png`: isotipo lima con la palabra en blanco).
 
+**Todo lo que va sobre la franja azul va en blanco**, iconos incluidos. El gris
+oscuro del cuerpo (`colors.text`) sobre el azul rinde 1,9:1 y desaparece; es el
+mismo error dos veces —"Acceso/Registro" primero y el icono de Despensa después—
+y sale siempre de invertir el fondo de una fila sin revisar qué quedaba encima.
+El contador del carrito es la excepción de color: va en **lima con número
+oscuro**, porque un globo azul sobre la franja azul no se ve nunca.
+
+La cabecera necesita **aire por debajo**. El hero también es azul, y con solo la
+franja lima del menú entre medio los dos bloques se leen como una sola mancha:
+el hero arranca con 24 px de separación para que se vea el fondo gris y la
+cabecera siga leyéndose como franja.
+
 ## Logotipo
 
 Isotipo en **lima**; la palabra CIBOX cambia según el fondo:
