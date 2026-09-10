@@ -262,21 +262,23 @@ export default function WebHeader() {
           profundo de la paleta. Antes iba en lima con texto blanco: 1,9:1, es
           decir ilegible. El manual reserva el lima para acentos, no para
           fondos, y sobre azul el texto va blanco (11,9:1). */}
-      <View style={{ backgroundColor: colors.primaryDark, paddingHorizontal: GUTTER, paddingVertical: 7 }}>
+      {/* Franja de servicio en blanco: deja que el azul de la cabecera sea lo
+          primero que pesa en la pantalla, en vez de competir con él. */}
+      <View style={{ backgroundColor: colors.surface, paddingHorizontal: GUTTER, paddingVertical: 7 }}>
         {/* Sin el saludo queda un solo hijo: `space-between` lo dejaría pegado
             a la izquierda, así que se cambia a `flex-end` y los accesos se
             quedan donde el ojo los busca, en el borde derecho de la caja. */}
         <View style={{ width: "100%", maxWidth: MAX_WIDTH, alignSelf: "center", flexDirection: "row", alignItems: "center", justifyContent: showWelcome ? "space-between" : "flex-end", gap: 16 }}>
           {showWelcome ? (
-            <AppText weight="semiBold" numberOfLines={1} style={{ color: colors.primaryText, fontSize: 12.5, flexShrink: 1 }}>Bienvenido a {brand.name} · {brand.tagline}</AppText>
+            <AppText weight="semiBold" numberOfLines={1} style={{ color: colors.primary, fontSize: 12.5, flexShrink: 1 }}>Bienvenido a {brand.name} · {brand.tagline}</AppText>
           ) : null}
           <View style={{ flexDirection: "row", alignItems: "center", gap: 18 }}>
             {seccionVisible("Stores") && (
             <Pressable onPress={() => navigation.navigate("Stores")} style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
               {({ hovered }) => (
                 <>
-                  <Ionicons name="location-outline" size={14} color={hovered ? colors.accent : colors.primaryText} />
-                  <AppText weight="semiBold" style={{ color: hovered ? colors.accent : colors.primaryText, fontSize: 12.5 }}>Nuestras tiendas</AppText>
+                  <Ionicons name="location-outline" size={14} color={hovered ? colors.primaryMid : colors.primary} />
+                  <AppText weight="semiBold" style={{ color: hovered ? colors.primaryMid : colors.primary, fontSize: 12.5 }}>Nuestras tiendas</AppText>
                 </>
               )}
             </Pressable>
@@ -284,8 +286,8 @@ export default function WebHeader() {
             <Pressable onPress={() => navigation.navigate("HowItWorks")} style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
               {({ hovered }) => (
                 <>
-                  <Ionicons name="help-circle-outline" size={14} color={hovered ? colors.accent : colors.primaryText} />
-                  <AppText weight="semiBold" style={{ color: hovered ? colors.accent : colors.primaryText, fontSize: 12.5 }}>Ayuda</AppText>
+                  <Ionicons name="help-circle-outline" size={14} color={hovered ? colors.primaryMid : colors.primary} />
+                  <AppText weight="semiBold" style={{ color: hovered ? colors.primaryMid : colors.primary, fontSize: 12.5 }}>Ayuda</AppText>
                 </>
               )}
             </Pressable>
@@ -295,16 +297,16 @@ export default function WebHeader() {
             <Pressable onPress={() => navigation.navigate("TrackOrder")} style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
               {({ hovered }) => (
                 <>
-                  <Ionicons name="cube-outline" size={14} color={hovered ? colors.accent : colors.primaryText} />
-                  <AppText weight="semiBold" style={{ color: hovered ? colors.accent : colors.primaryText, fontSize: 12.5 }}>Seguir mi pedido</AppText>
+                  <Ionicons name="cube-outline" size={14} color={hovered ? colors.primaryMid : colors.primary} />
+                  <AppText weight="semiBold" style={{ color: hovered ? colors.primaryMid : colors.primary, fontSize: 12.5 }}>Seguir mi pedido</AppText>
                 </>
               )}
             </Pressable>
             <Pressable onPress={() => navigation.navigate(token ? "ProfileTab" : "Auth")} style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
               {({ hovered }) => (
                 <>
-                  <Ionicons name="person-outline" size={14} color={hovered ? colors.accent : colors.primaryText} />
-                  <AppText weight="semiBold" style={{ color: hovered ? colors.accent : colors.primaryText, fontSize: 12.5 }}>Mi cuenta</AppText>
+                  <Ionicons name="person-outline" size={14} color={hovered ? colors.primaryMid : colors.primary} />
+                  <AppText weight="semiBold" style={{ color: hovered ? colors.primaryMid : colors.primary, fontSize: 12.5 }}>Mi cuenta</AppText>
                 </>
               )}
             </Pressable>
@@ -317,9 +319,10 @@ export default function WebHeader() {
       <View
         style={{
           width: "100%",
-          backgroundColor: colors.surface,
-          borderBottomWidth: 1,
-          borderBottomColor: colors.border,
+          // Azul de marca: es la franja que sostiene el logo y el buscador, y la
+          // que fija el color de la tienda de una sola mirada.
+          backgroundColor: colors.primary,
+          borderBottomWidth: 0,
           paddingHorizontal: GUTTER,
           paddingVertical: 12,
           position: "relative",
@@ -342,7 +345,7 @@ export default function WebHeader() {
           style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
         >
           <Image
-            source={require("../../assets/logo-cibox.png")}
+            source={require("../../assets/logo-cibox-blanco.png")}
             style={{ width: 82, height: 86, resizeMode: "contain" }}
           />
           {/* El grosor va por `weight`, no por `fontWeight`: Montserrat se
@@ -350,11 +353,11 @@ export default function WebHeader() {
               pedir 900 sobre ella no trae una tipografía más gruesa, el
               navegador la ENGORDA a la fuerza y sale emborronada. */}
           {width >= 1040 ? (
-            <View style={{ justifyContent: "center", borderLeftWidth: 1, borderLeftColor: colors.border, paddingLeft: 12 }}>
-              <AppText weight="bold" style={{ fontSize: 15, color: colors.primary, lineHeight: 18 }}>
+            <View style={{ justifyContent: "center", borderLeftWidth: 1, borderLeftColor: "rgba(255,255,255,0.28)", paddingLeft: 12 }}>
+              <AppText weight="bold" style={{ fontSize: 15, color: colors.primaryText, lineHeight: 18 }}>
                 Tu supermercado online
               </AppText>
-              <AppText weight="semiBold" style={{ fontSize: 12, color: colors.muted, lineHeight: 15, marginTop: 2 }}>
+              <AppText weight="semiBold" style={{ fontSize: 12, color: "rgba(255,255,255,0.82)", lineHeight: 15, marginTop: 2 }}>
                 Compra desde donde estés · te lo llevamos
               </AppText>
             </View>
@@ -558,7 +561,7 @@ export default function WebHeader() {
                           >
                             <AppText
                               style={{
-                                color: colors.text,
+                                color: colors.primaryText,
                                 fontSize: 14,
                                 textDecorationLine: "underline",
                               }}
@@ -699,7 +702,7 @@ export default function WebHeader() {
             <Ionicons
               name="person-outline"
               size={22}
-              color={colors.text}
+              color={colors.primaryText}
               style={{ marginRight: compactActions ? 0 : 6 }}
             />
             {compactActions ? null : (
@@ -707,7 +710,9 @@ export default function WebHeader() {
                 weight="semiBold"
                 style={{
                   fontSize: 14,
-                  color: colors.text,
+                  // Blanco: esta franja es azul, y el gris oscuro de antes se
+                  // quedaba en 1,6:1 sobre ella.
+                  color: colors.primaryText,
                 }}
               >
                 {token ? "Mi cuenta" : "Acceso/Registro"}
@@ -726,7 +731,7 @@ export default function WebHeader() {
               style={{ marginRight: compactActions ? 0 : 6 }}
             />
             {compactActions ? null : (
-              <AppText weight="semiBold" style={{ fontSize: 14, color: colors.text }}>
+              <AppText weight="semiBold" style={{ fontSize: 14, color: colors.primaryText }}>
                 Despensa
               </AppText>
             )}
@@ -735,14 +740,14 @@ export default function WebHeader() {
           <Pressable
             onPress={() => navigation.navigate(token ? "FavoritesTab" : "Auth")}
           >
-            <Ionicons name="heart-outline" size={24} color={colors.text} />
+            <Ionicons name="heart-outline" size={24} color={colors.primaryText} />
           </Pressable>
 
           <Pressable
             onPress={() => navigation.navigate("Cart")}
             style={{ position: "relative" }}
           >
-            <Ionicons name="cart-outline" size={24} color={colors.text} />
+            <Ionicons name="cart-outline" size={24} color={colors.primaryText} />
 
             <View
               style={{
@@ -775,7 +780,9 @@ export default function WebHeader() {
 
       {/* Barra de navegación azul (`primary`) — z-index BAJO para quedar por
           debajo del dropdown de Categorías, que cuelga del header principal. */}
-      <View style={{ backgroundColor: colors.primary, paddingHorizontal: GUTTER, position: "relative", zIndex: 1 }}>
+      {/* Menú en lima. Es el acento de la marca y aquí funciona como fondo
+          porque encima va texto OSCURO: #003D49 sobre #B6D900 rinde 8,7:1. */}
+      <View style={{ backgroundColor: colors.accent, paddingHorizontal: GUTTER, position: "relative", zIndex: 1 }}>
         <View style={{ width: "100%", maxWidth: MAX_WIDTH, alignSelf: "center" }}>
           {/*
             Los enlaces van CENTRADOS, no pegados a la izquierda (pedido del
@@ -813,7 +820,7 @@ export default function WebHeader() {
                     <View
                       style={{
                         borderBottomWidth: 3,
-                        borderBottomColor: active ? colors.accent : "transparent",
+                        borderBottomColor: active ? colors.primaryDark : "transparent",
                         paddingBottom: 3,
                       }}
                     >
@@ -822,7 +829,7 @@ export default function WebHeader() {
                         numberOfLines={1}
                         style={{
                           // Lima sobre azul: 6,3:1 el activo, 7,3:1 el hover.
-                          color: active ? colors.accent : hovered ? colors.accentLight : colors.primaryText,
+                          color: active ? colors.primaryDark : hovered ? colors.primary : colors.accentText,
                           fontSize: navFontSize,
                         }}
                       >
