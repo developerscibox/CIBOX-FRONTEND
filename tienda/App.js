@@ -8,9 +8,9 @@ import RootNavigation from "./src/navigation";
 // Importar desde el barrel "@expo-google-fonts/poppins" arrastra los ~18 TTF
 // de toda la familia al bundle; los subpaths cargan únicamente su .ttf.
 import { useFonts } from "@expo-google-fonts/montserrat/useFonts";
-import { Montserrat_600SemiBold } from "@expo-google-fonts/montserrat/600SemiBold";
-import { Montserrat_700Bold } from "@expo-google-fonts/montserrat/700Bold";
-import { Inter_400Regular } from "@expo-google-fonts/inter/400Regular";
+import { Poppins_400Regular } from "@expo-google-fonts/poppins/400Regular";
+import { Poppins_600SemiBold } from "@expo-google-fonts/poppins/600SemiBold";
+import { Poppins_700Bold } from "@expo-google-fonts/poppins/700Bold";
 import AppText from "./src/components/AppText";
 import BrandBackdrop from "./src/components/BrandBackdrop";
 import PuertaEdad from "./src/components/PuertaEdad";
@@ -23,9 +23,9 @@ export default function App() {
   const { loadAuth, isLoading } = useAuthStore();
 
   const [fontsLoaded] = useFonts({
-    Montserrat_600SemiBold,
-    Montserrat_700Bold,
-    Inter_400Regular,
+    Poppins_400Regular,
+    Poppins_600SemiBold,
+    Poppins_700Bold,
   });
 
   const cargarEdad = useEdadStore((s) => s.cargar);

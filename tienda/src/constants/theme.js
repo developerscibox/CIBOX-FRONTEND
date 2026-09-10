@@ -71,10 +71,11 @@ export const shadows = {
   },
 };
 
-// Montserrat para títulos, botones y navegación; Inter para textos de cuerpo y
-// descripciones largas (Manual de Diseño Digital, punto 04).
+// Poppins en toda la tienda, en sus tres pesos. Una sola familia mantiene la
+// pantalla tranquila: los saltos de estilo se notan más entre dos tipografías
+// que entre dos pesos de la misma.
 export const typography = {
-  regular: "Inter_400Regular",
-  semiBold: "Montserrat_600SemiBold",
-  bold: "Montserrat_700Bold",
+  regular: "Poppins_400Regular",
+  semiBold: "Poppins_600SemiBold",
+  bold: "Poppins_700Bold",
 };

@@ -844,6 +844,66 @@ export default function HomeScreen({ navigation }) {
     <Hero key="hero" navigation={navigation} isWebDesktop={isWebDesktop} isWide={isWide} width={width} content={slots?.hero} />
   );
 
+  /* Seguimiento del pedido, a la vista de todos. Pedido explícito: el botón no
+     puede quedar escondido en la barra chica de arriba ni en el pie. Va debajo
+     del hero, antes de cualquier producto, y no exige sesión: la pantalla de
+     seguimiento pide número de pedido + correo. */
+  const bSeguimiento = (
+    <Pressable
+      key="seguimiento"
+      onPress={() => navigation.navigate("TrackOrder")}
+      style={({ pressed, hovered }) => ({
+        flexDirection: esMovil ? "column" : "row",
+        alignItems: esMovil ? "stretch" : "center",
+        gap: esMovil ? 12 : 18,
+        backgroundColor: hovered || pressed ? colors.primaryMid : colors.primary,
+        borderRadius: radius.xl,
+        paddingVertical: esMovil ? 16 : 18,
+        paddingHorizontal: esMovil ? 16 : 24,
+        marginBottom: spacing.lg,
+        ...shadows.card,
+      })}
+    >
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 14, flex: 1 }}>
+        <View
+          style={{
+            width: 46,
+            height: 46,
+            borderRadius: 14,
+            backgroundColor: "rgba(255,255,255,0.14)",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+          }}
+        >
+          <Ionicons name="cube-outline" size={24} color={colors.accent} />
+        </View>
+        <View style={{ flex: 1, minWidth: 0 }}>
+          <AppText weight="bold" style={{ color: colors.primaryText, fontSize: esMovil ? 16 : 18 }}>
+            ¿Ya compraste? Sigue tu pedido
+          </AppText>
+          <AppText style={{ color: "rgba(255,255,255,0.82)", fontSize: esMovil ? 13 : 14, marginTop: 2 }}>
+            Solo con tu número de pedido y tu correo. No necesitas cuenta.
+          </AppText>
+        </View>
+      </View>
+      <View
+        style={{
+          backgroundColor: colors.accent,
+          borderRadius: radius.md,
+          paddingVertical: 12,
+          paddingHorizontal: 22,
+          alignItems: "center",
+          flexShrink: 0,
+        }}
+      >
+        <AppText weight="bold" style={{ color: colors.accentText, fontSize: 15 }}>
+          Seguir mi pedido
+        </AppText>
+      </View>
+    </Pressable>
+  );
+
   /* Banners secundarios 1-3 (CMS, opcionales) */
   const bPromos = (
     <PromoBanners key="promos" slots={slots} navigation={navigation} isWebDesktop={isWebDesktop} />
@@ -999,6 +1059,7 @@ export default function HomeScreen({ navigation }) {
   const ordenEscritorio = [
     bBienvenida,
     bHero,
+    bSeguimiento,
     bPromos,
     bAccesos,
     bNewsletterTop,
@@ -1024,6 +1085,7 @@ export default function HomeScreen({ navigation }) {
     bBuscador,
     bBienvenida,
     bHero,
+    bSeguimiento,
     ...(hayImperdibles ? [bImperdibles, bDestacados] : [bDestacados]),
     bOfertas,
     bPromos,
