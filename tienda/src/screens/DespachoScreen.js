@@ -5,6 +5,7 @@ import {
   DESPACHO_COMUNAS,
   DESPACHO_REGION,
   comunasEnTexto,
+  envioGratisEnTexto,
   tarifaEnTexto,
 } from "../constants/delivery";
 import { colors, spacing } from "../constants/theme";
@@ -20,7 +21,7 @@ export default function DespachoScreen() {
   return (
     <InfoPageLayout
       title="Despacho a domicilio"
-      subtitle={`Te llevamos el pedido a la puerta en ${comunasEnTexto()}. Tarifa plana de ${tarifaEnTexto()} por pedido.`}
+      subtitle={`Te llevamos el pedido a la puerta en ${comunasEnTexto()}. ${tarifaEnTexto()} por pedido, y gratis desde ${envioGratisEnTexto()}.`}
       icon={ICON}
     >
       <SectionHeading>Dónde llegamos</SectionHeading>
@@ -70,8 +71,8 @@ export default function DespachoScreen() {
         <View style={{ flexGrow: 1, flexBasis: 300 }}>
           <InfoCard
             icon={<Ionicons name="pricetag-outline" size={22} color={colors.primary} />}
-            title={`Despacho ${tarifaEnTexto()}`}
-            desc="Tarifa plana por pedido: el mismo precio para las cuatro comunas, pidas poco o pidas mucho. Lo ves sumado en el carrito, antes de pagar."
+            title={`Despacho ${tarifaEnTexto()} o gratis`}
+            desc={`Tarifa plana por pedido: el mismo precio para las cuatro comunas. Desde ${envioGratisEnTexto()} en productos el despacho es gratis. Lo ves en el carrito, antes de pagar.`}
           />
         </View>
         <View style={{ flexGrow: 1, flexBasis: 300 }}>

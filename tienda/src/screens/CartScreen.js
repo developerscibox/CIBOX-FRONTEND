@@ -20,9 +20,12 @@ import { showAppAlert } from "../utils/appAlerts";
 import AppText from "../components/AppText";
 import UnitPrice from "../components/UnitPrice";
 import {
-  despacho,
   comunasEnTexto,
-  tarifaEnTexto,
+  costoDespacho,
+  costoDespachoEnTexto,
+  envioGratisEnTexto,
+  faltaParaEnvioGratis,
+  hayEnvioGratisVigente,
 } from "../constants/delivery";
 
 export default function CartScreen({ navigation }) {
@@ -601,8 +604,29 @@ export default function CartScreen({ navigation }) {
             {/* El despacho se muestra acá y no recién al final del checkout:
                 un cobro que aparece al confirmar se siente como letra chica. */}
             <AppText style={{ fontSize: 14, color: colors.muted, marginBottom: 6 }}>
-              Despacho a domicilio: {tarifaEnTexto()}
+              Despacho a domicilio: {costoDespachoEnTexto(total)}
             </AppText>
+
+            {/* Cuánto falta para el envío gratis. Se muestra solo cuando falta
+                algo: alcanzado el mínimo, la línea de arriba ya dice "Gratis" y
+                repetirlo sobra. El monto que se mira es el de los productos,
+                que es la misma base con la que cobra el servidor. */}
+            {faltaParaEnvioGratis(total) > 0 ? (
+              <AppText
+                style={{ fontSize: 13, color: colors.muted, marginBottom: 6 }}
+              >
+                Te faltan ${formatPrice(faltaParaEnvioGratis(total))} para el
+                envío gratis.
+              </AppText>
+            ) : hayEnvioGratisVigente() ? (
+              <AppText
+                weight="semiBold"
+                style={{ fontSize: 13, color: colors.success, marginBottom: 6 }}
+              >
+                Tu compra alcanza los {envioGratisEnTexto()}: el despacho va
+                por nuestra cuenta.
+              </AppText>
+            ) : null}
 
             <AppText
               style={{
@@ -612,7 +636,7 @@ export default function CartScreen({ navigation }) {
                 marginBottom: 10,
               }}
             >
-              Total ${formatPrice(Number(total || 0) + despacho.tarifa)}
+              Total ${formatPrice(Number(total || 0) + costoDespacho(total))}
             </AppText>
 
             <AppText

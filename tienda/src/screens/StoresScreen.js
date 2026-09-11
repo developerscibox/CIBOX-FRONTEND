@@ -6,7 +6,11 @@ import { colors, spacing, shadows } from "../constants/theme";
 import AppText from "../components/AppText";
 
 import brand, { addressText, openingHours, links } from "../constants/brand";
-import { comunasEnTexto, tarifaEnTexto } from "../constants/delivery";
+import {
+  comunasEnTexto,
+  envioGratisEnTexto,
+  tarifaEnTexto,
+} from "../constants/delivery";
 const PHONE = brand.contact.phone;
 const WHATSAPP_URL = links.whatsapp();
 
@@ -59,7 +63,7 @@ export default function StoresScreen() {
           </InfoRow>
           <InfoRow icon="card-outline">Pago con tarjeta de crédito o débito (Webpay)</InfoRow>
           <InfoRow icon="car-outline">
-            {`Despacho a domicilio en ${comunasEnTexto()} — ${tarifaEnTexto()} por pedido`}
+            {`Despacho a domicilio en ${comunasEnTexto()} — ${tarifaEnTexto()} por pedido, gratis desde ${envioGratisEnTexto()}`}
           </InfoRow>
 
           <Pressable

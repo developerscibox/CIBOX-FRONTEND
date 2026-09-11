@@ -12,7 +12,11 @@ import ScreenContainer from "../components/ScreenContainer";
 import AppText from "../components/AppText";
 import AppButton from "../components/AppButton";
 import { colors, radius, shadows, spacing } from "../constants/theme";
-import { comunasEnTexto, tarifaEnTexto } from "../constants/delivery";
+import {
+  comunasEnTexto,
+  envioGratisEnTexto,
+  tarifaEnTexto,
+} from "../constants/delivery";
 import { showAppAlert } from "../utils/appAlerts";
 
 import brand, { links } from "../constants/brand";
@@ -189,7 +193,7 @@ export default function ContactScreen({ navigation }) {
               Dónde despachamos
             </AppText>
             <AppText style={{ fontSize: 13, color: colors.muted, lineHeight: 19 }}>
-              {`${comunasEnTexto()} — despacho a domicilio por ${tarifaEnTexto()} el pedido.`}
+              {`${comunasEnTexto()} — despacho a domicilio por ${tarifaEnTexto()} el pedido, gratis desde ${envioGratisEnTexto()}.`}
             </AppText>
           </View>
         </View>

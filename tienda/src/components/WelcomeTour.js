@@ -7,7 +7,11 @@ import useBienvenidaStore from "../store/bienvenidaStore";
 import { colors, radius, spacing } from "../constants/theme";
 
 import brand from "../constants/brand";
-import { comunasEnTexto, tarifaEnTexto } from "../constants/delivery";
+import {
+  comunasEnTexto,
+  envioGratisEnTexto,
+  tarifaEnTexto,
+} from "../constants/delivery";
 // Pasos del tour de bienvenida (texto tal cual, en español).
 const SLIDES = [
   // El tour describía el Cibox mayorista de antes ("solo por caja", "el pago es
@@ -27,7 +31,7 @@ const SLIDES = [
   {
     emoji: "🚚",
     title: "Te lo llevamos a la puerta",
-    body: `Despachamos a domicilio en ${comunasEnTexto()}. El despacho cuesta ${tarifaEnTexto()} por pedido, sin importar cuánto lleves. Si tu comuna no está en esa lista, todavía no llegamos.`,
+    body: `Despachamos a domicilio en ${comunasEnTexto()}. El despacho cuesta ${tarifaEnTexto()} por pedido, y desde ${envioGratisEnTexto()} en productos lo pagamos nosotros. Si tu comuna no está en esa lista, todavía no llegamos.`,
   },
   {
     emoji: "🔎",

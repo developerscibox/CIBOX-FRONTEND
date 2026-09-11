@@ -1,7 +1,11 @@
 import { Image, Pressable, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { colors, shadows, spacing } from "../constants/theme";
-import { comunasEnTexto, tarifaEnTexto } from "../constants/delivery";
+import {
+  comunasEnTexto,
+  envioGratisEnTexto,
+  tarifaEnTexto,
+} from "../constants/delivery";
 import AppText from "./AppText";
 
 // Azul navy de marca. Antes esta constante era `MORADO = "#2E6116"` —un verde
@@ -18,7 +22,13 @@ export function TrustStrip() {
   const items = [
     // Lo primero que ve el cliente en la portada es a dónde llegamos y cuánto
     // cuesta: es la información que decide si sigue mirando o no.
-    { icon: "car-outline", label: `Despacho ${tarifaEnTexto()}`, sub: "a domicilio en la zona" },
+    {
+      icon: "car-outline",
+      label: `Despacho ${tarifaEnTexto()}`,
+      // La condición va en el sub, no en la etiqueta: la etiqueta es lo que se
+      // lee de reojo y tiene que seguir diciendo el precio normal.
+      sub: `gratis desde ${envioGratisEnTexto()}`,
+    },
     { icon: "card-outline", label: "Pago con tarjeta", sub: "Webpay de Transbank" },
     { icon: "cube-outline", label: "Venta por caja", sub: "precio mayorista" },
     { icon: "time-outline", label: "Lun a Sáb", sub: "horario de atención" },

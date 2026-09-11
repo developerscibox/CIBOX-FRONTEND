@@ -3,7 +3,11 @@ import { Ionicons } from "@expo/vector-icons";
 import ScreenContainer from "../components/ScreenContainer";
 import AppText from "../components/AppText";
 import { colors, spacing } from "../constants/theme";
-import { comunasEnTexto, tarifaEnTexto } from "../constants/delivery";
+import {
+  comunasEnTexto,
+  envioGratisEnTexto,
+  tarifaEnTexto,
+} from "../constants/delivery";
 
 const STEPS = [
   {
@@ -28,7 +32,7 @@ const STEPS = [
     icon: "car-outline",
     title: "4. Te lo llevamos",
     description:
-      `Despachamos a domicilio en ${comunasEnTexto()} por ${tarifaEnTexto()} el pedido. Te avisamos por correo cuando sale a reparto.`,
+      `Despachamos a domicilio en ${comunasEnTexto()} por ${tarifaEnTexto()} el pedido, o gratis si tu compra alcanza ${envioGratisEnTexto()}. Te avisamos por correo cuando sale a reparto.`,
   },
 ];
 

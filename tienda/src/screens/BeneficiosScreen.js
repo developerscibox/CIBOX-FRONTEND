@@ -2,7 +2,11 @@ import { View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import InfoPageLayout, { InfoCard, SectionHeading } from "../components/InfoPageLayout";
 import { colors, spacing } from "../constants/theme";
-import { comunasEnTexto, tarifaEnTexto } from "../constants/delivery";
+import {
+  comunasEnTexto,
+  envioGratisEnTexto,
+  tarifaEnTexto,
+} from "../constants/delivery";
 import AppText from "../components/AppText";
 
 import brand from "../constants/brand";
@@ -72,7 +76,7 @@ export default function BeneficiosScreen() {
       >
         {[
           "Explora el catálogo y agrega productos a tu carrito.",
-          `Escribe tu dirección de despacho y paga con tarjeta (despacho ${tarifaEnTexto()}).`,
+          `Escribe tu dirección de despacho y paga con tarjeta (despacho ${tarifaEnTexto()}, gratis desde ${envioGratisEnTexto()}).`,
           "Preparamos tu pedido, te avisamos por correo y te lo llevamos a tu casa.",
         ].map((step, i) => (
           <View key={i} style={{ flexDirection: "row", gap: 12, marginBottom: i < 2 ? 14 : 0 }}>

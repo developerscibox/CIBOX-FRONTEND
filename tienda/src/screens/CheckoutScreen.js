@@ -33,8 +33,11 @@ import useAuthStore from "../store/authStore";
 import {
   DESPACHO_COMUNAS,
   DESPACHO_REGION,
-  despacho,
   comunasEnTexto,
+  costoDespacho,
+  costoDespachoEnTexto,
+  envioGratisEnTexto,
+  faltaParaEnvioGratis,
   esComunaConReparto,
   tarifaEnTexto,
 } from "../constants/delivery";
@@ -265,9 +268,14 @@ export default function CheckoutScreen({ navigation }) {
   const productsTotal = Number(cart?.total || 0);
   // Tarifa plana: el mismo precio para las cuatro comunas y para cualquier
   // peso. Se muestra desde el principio para que el total no cambie al final.
-  // Del objeto vivo, no de una constante: el precio lo fija el backend al
-  // arrancar la app y es el que se va a cobrar en Webpay.
-  const shippingAmount = despacho.tarifa;
+  // Del objeto vivo, no de una constante: el precio y el mínimo de envío gratis
+  // los fija el backend al arrancar la app, y son los que se van a cobrar.
+  // El mínimo de envío gratis se mide sobre el monto de los PRODUCTOS, antes de
+  // restar el cupón, que es exactamente lo que hace el servidor al cobrar. Si
+  // aquí se midiera sobre el total ya descontado, la pantalla diría "gratis" y
+  // Webpay cobraría el flete —o al revés—, que es la única forma de romper esto
+  // de verdad. El porqué largo está en backend/src/config/despacho.js.
+  const shippingAmount = costoDespacho(productsTotal);
   const finalTotal = productsTotal + shippingAmount - discountAmount;
 
   // El cliente ya dijo que su comuna no está en la lista: no tiene sentido
@@ -588,7 +596,8 @@ export default function CheckoutScreen({ navigation }) {
 
           <AppText style={{ color: colors.muted, marginBottom: 14, fontSize: 14 }}>
             Llevamos tu pedido a domicilio en {comunasEnTexto()}. El despacho
-            cuesta {tarifaEnTexto()} por pedido, sin importar cuánto pidas.
+            cuesta {tarifaEnTexto()} por pedido, y desde {envioGratisEnTexto()}{" "}
+            en productos lo pagamos nosotros.
           </AppText>
 
           <AppText style={labelStyle}>Comuna</AppText>
@@ -1093,10 +1102,22 @@ export default function CheckoutScreen({ navigation }) {
             </AppText>
 
             {/* El costo va a la vista desde el resumen, no aparece recién
-                al final: la tarifa es la misma para toda la zona. */}
+                al final: la tarifa es la misma para toda la zona, y el envío
+                gratis se decide por el monto de los productos, no por la
+                comuna. */}
             <AppText style={{ color: colors.muted }}>
-              Despacho a domicilio: {formatPrice(shippingAmount)}
+              Despacho a domicilio:{" "}
+              {costoDespachoEnTexto(productsTotal)}
             </AppText>
+
+            {/* Cuánto falta, si falta. Es el último lugar donde el cliente
+                todavía puede agregar algo antes de pagar. */}
+            {faltaParaEnvioGratis(productsTotal) > 0 ? (
+              <AppText style={{ color: colors.muted, fontSize: 13 }}>
+                Agregando {formatPrice(faltaParaEnvioGratis(productsTotal))} más
+                el despacho sale gratis.
+              </AppText>
+            ) : null}
 
             {discountAmount > 0 ? (
               <AppText style={{ color: colors.accent, fontWeight: "800" }}>

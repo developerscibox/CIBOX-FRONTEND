@@ -564,6 +564,33 @@ function OrderDetail({ order, busy, can, onClose, onChange, onPay, onDelete, onA
                   ) : null}
                 </div>
               ))}
+              {/* Subtotal y despacho, desglosados. Antes solo estaba el Total,
+                  y ya entonces no cuadraba con la suma de los productos: los
+                  3.990 del despacho estaban ahí sin aparecer en ninguna línea.
+                  Ahora que el despacho puede ser 0 o 3.990 según el monto, la
+                  diferencia cambia de pedido en pedido, y sin estas dos filas
+                  nadie en bodega puede explicarle a un cliente por qué pagó lo
+                  que pagó. El backend ya manda los dos campos. */}
+              <div className="ped-item" style={{ marginTop: 4, color: "var(--muted)" }}>
+                <span className="n">Productos</span>
+                <span className="p">{clp(order.subtotal)}</span>
+              </div>
+              {Number(order.discount_amount) > 0 ? (
+                <div className="ped-item" style={{ color: "var(--muted)" }}>
+                  <span className="n">Descuento</span>
+                  <span className="p">−{clp(order.discount_amount)}</span>
+                </div>
+              ) : null}
+              <div className="ped-item" style={{ color: "var(--muted)" }}>
+                <span className="n">Despacho</span>
+                <span className="p">
+                  {Number(order.shipping_amount) > 0
+                    ? clp(order.shipping_amount)
+                    : order.delivery_method === "pickup"
+                      ? "Sin despacho (retiro)"
+                      : "Gratis por monto"}
+                </span>
+              </div>
               <div className="ped-item tot">
                 <span className="n" style={{ fontWeight: 800 }}>Total</span>
                 <span className="p" style={{ fontWeight: 800 }}>{clp(order.total)}</span>
