@@ -77,12 +77,10 @@ export const HIDDEN_NAV = new Set([
 
   // ── Ocultas hasta que la operación las necesite (10-sep-2026) ──────────────
   // Decisión del CEO: con 7 pedidos de prueba y una persona operando, un menú
-  // de 18 entradas estorba. Queda lo justo para operar —Pedidos, Preparación,
-  // Productos y Ajuste de stock— y lo demás se va activando a medida que se
-  // use: basta borrar su línea de acá. Nada se borra; las rutas siguen vivas.
-  "gerencia",         // Centro de mando: tableros sin datos que mirar todavía
-  "dashboard360",     // Dashboard 360°: ídem
-  "dashboard",        // Resumen: Pedidos ya agrupa por estado, que es lo que importa
+  // de 18 entradas estorba. Queda lo justo para operar —los tableros de inicio
+  // (Centro de mando, Dashboard 360°, Resumen), Pedidos, Preparación, Productos
+  // y Ajuste de stock— y lo demás se va activando a medida que se use: basta
+  // borrar su línea de acá. Nada se borra; las rutas siguen vivas.
   "reportes",         // Reportes: sin volumen que reportar
   "calendario",       // Calendario de entregas: se activa cuando haya rutas que planificar
   "precios",          // Precios y márgenes: el precio se edita en Productos

@@ -23,12 +23,10 @@ const ROLE_LABEL = {
 export const WMS_ROLES = ["admin", "manager", "operator"];
 
 // Home por rol: cada uno aterriza en SU cola al entrar (principio "home = tu cola").
-// Todos aterrizan en Pedidos: lo primero que hay que ver es en qué estado está
-// cada pedido. Antes admin y gerente caían en el Centro de mando, hoy oculto.
 export const HOME_BY_ROLE = {
-  operator: "pedidos",
-  manager: "pedidos",
-  admin: "pedidos",
+  operator: "picking",  // operaciones: directo a preparar
+  manager: "gerencia",
+  admin: "gerencia",
 };
 
 // Roles que admin/gerente puede previsualizar con "ver como".

@@ -72,7 +72,7 @@ const VIEW_ORDER = NAV.map((n) => n.key);
 
 export default function App() {
   const { user, can, logout, roleLabel, initials } = useAuth();
-  const [view, setView] = useState("pedidos");
+  const [view, setView] = useState("dashboard");
   const [tourOpen, setTourOpen] = useState(false);
   // Aterrizaje por rol una sola vez por sesión: cada rol cae en su cola.
   const landedRef = useRef(false);
@@ -80,7 +80,7 @@ export default function App() {
     if (!user) { landedRef.current = false; return; }
     if (!landedRef.current) {
       landedRef.current = true;
-      setView(HOME_BY_ROLE[user.role] || "pedidos");
+      setView(HOME_BY_ROLE[user.role] || "dashboard");
     }
   }, [user]);
   // "Ver como": al previsualizar un rol, aterriza en la home de ese rol.
@@ -148,7 +148,7 @@ export default function App() {
     if (user && (!can(NAV_PERMS[view]) || !modOn(view) || HIDDEN_NAV.has(view))) {
       const ok = (k) => k && can(NAV_PERMS[k]) && modOn(k) && !HIDDEN_NAV.has(k);
       const home = HOME_BY_ROLE[user.role];
-      setView(ok(home) ? home : VIEW_ORDER.find(ok) || "pedidos");
+      setView(ok(home) ? home : VIEW_ORDER.find(ok) || "dashboard");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, view, can, mods]);
