@@ -4,7 +4,7 @@ import InfoPageLayout, { InfoCard, SectionHeading } from "../components/InfoPage
 import { colors, spacing } from "../constants/theme";
 import {
   comunasEnTexto,
-  envioGratisEnTexto,
+  fraseEnvioGratis,
   tarifaEnTexto,
 } from "../constants/delivery";
 import AppText from "../components/AppText";
@@ -76,7 +76,7 @@ export default function BeneficiosScreen() {
       >
         {[
           "Explora el catálogo y agrega productos a tu carrito.",
-          `Escribe tu dirección de despacho y paga con tarjeta (despacho ${tarifaEnTexto()}, gratis desde ${envioGratisEnTexto()}).`,
+          `Escribe tu dirección de despacho y paga con tarjeta (despacho ${tarifaEnTexto()}${fraseEnvioGratis(", gratis desde ")}).`,
           "Preparamos tu pedido, te avisamos por correo y te lo llevamos a tu casa.",
         ].map((step, i) => (
           <View key={i} style={{ flexDirection: "row", gap: 12, marginBottom: i < 2 ? 14 : 0 }}>

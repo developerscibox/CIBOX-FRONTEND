@@ -8,7 +8,7 @@ import brand, { hasAddress } from "../constants/brand";
 import {
   DESPACHO_REGION,
   comunasEnTexto,
-  envioGratisEnTexto,
+  fraseEnvioGratis,
   tarifaEnTexto,
 } from "../constants/delivery";
 
@@ -127,7 +127,7 @@ Medios de pago aceptados:
 
 El pago se procesa en línea, en el entorno seguro de Transbank. ${EMPRESA} no captura, no visualiza ni almacena los datos de la tarjeta del cliente.
 
-Al total de los productos se suma el costo de despacho, que es una tarifa plana de ${tarifaEnTexto()} por pedido dentro de la zona de reparto, informada en el carrito y en el resumen antes de pagar. Cuando el total de los productos del pedido, antes de descuentos y cupones, alcanza ${envioGratisEnTexto()}, el despacho no se cobra.`,
+Al total de los productos se suma el costo de despacho, que es una tarifa plana de ${tarifaEnTexto()} por pedido dentro de la zona de reparto, informada en el carrito y en el resumen antes de pagar.${fraseEnvioGratis(" Cuando el total de los productos del pedido, antes de descuentos y cupones, llega a ", ", el despacho no se cobra.")}`,
       },
     ],
   },
@@ -186,9 +186,7 @@ Fuera de esa zona ${EMPRESA} no realiza entregas y no es posible completar la co
 
 Costo de despacho:
 
-• Tarifa plana de ${tarifaEnTexto()} por pedido dentro de la zona de reparto, con independencia del peso, del volumen y de la comuna.
-
-• El despacho es gratuito cuando el total de los productos del pedido, antes de descuentos y cupones, alcanza ${envioGratisEnTexto()}.
+• Tarifa plana de ${tarifaEnTexto()} por pedido dentro de la zona de reparto, con independencia del peso, del volumen y de la comuna.${fraseEnvioGratis("\n\n• El despacho es gratuito cuando el total de los productos del pedido, antes de descuentos y cupones, llega a ", ".")}
 
 La entrega se realiza en la dirección indicada por el cliente, dentro del plazo informado una vez preparado el pedido. Es responsabilidad del cliente entregar una dirección correcta y completa, y encontrarse en ella o disponer que alguien reciba el pedido.`,
       },

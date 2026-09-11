@@ -3,7 +3,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { colors, shadows, spacing } from "../constants/theme";
 import {
   comunasEnTexto,
-  envioGratisEnTexto,
+  fraseEnvioGratis,
   tarifaEnTexto,
 } from "../constants/delivery";
 import AppText from "./AppText";
@@ -27,7 +27,7 @@ export function TrustStrip() {
       label: `Despacho ${tarifaEnTexto()}`,
       // La condición va en el sub, no en la etiqueta: la etiqueta es lo que se
       // lee de reojo y tiene que seguir diciendo el precio normal.
-      sub: `gratis desde ${envioGratisEnTexto()}`,
+      sub: fraseEnvioGratis("gratis desde ") || "a domicilio en la zona",
     },
     { icon: "card-outline", label: "Pago con tarjeta", sub: "Webpay de Transbank" },
     { icon: "cube-outline", label: "Venta por caja", sub: "precio mayorista" },

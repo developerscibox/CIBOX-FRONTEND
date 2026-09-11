@@ -623,8 +623,8 @@ export default function CartScreen({ navigation }) {
                 weight="semiBold"
                 style={{ fontSize: 13, color: colors.success, marginBottom: 6 }}
               >
-                Tu compra alcanza los {envioGratisEnTexto()}: el despacho va
-                por nuestra cuenta.
+                Tu compra llegó a los {envioGratisEnTexto()}: el despacho va por
+                nuestra cuenta.
               </AppText>
             ) : null}
 

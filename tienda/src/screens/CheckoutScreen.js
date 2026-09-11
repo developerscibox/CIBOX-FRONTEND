@@ -36,8 +36,8 @@ import {
   comunasEnTexto,
   costoDespacho,
   costoDespachoEnTexto,
-  envioGratisEnTexto,
   faltaParaEnvioGratis,
+  fraseEnvioGratis,
   esComunaConReparto,
   tarifaEnTexto,
 } from "../constants/delivery";
@@ -596,8 +596,8 @@ export default function CheckoutScreen({ navigation }) {
 
           <AppText style={{ color: colors.muted, marginBottom: 14, fontSize: 14 }}>
             Llevamos tu pedido a domicilio en {comunasEnTexto()}. El despacho
-            cuesta {tarifaEnTexto()} por pedido, y desde {envioGratisEnTexto()}{" "}
-            en productos lo pagamos nosotros.
+            cuesta {tarifaEnTexto()} por pedido
+            {fraseEnvioGratis(", y desde ", " en productos lo pagamos nosotros")}.
           </AppText>
 
           <AppText style={labelStyle}>Comuna</AppText>
@@ -1114,7 +1114,7 @@ export default function CheckoutScreen({ navigation }) {
                 todavía puede agregar algo antes de pagar. */}
             {faltaParaEnvioGratis(productsTotal) > 0 ? (
               <AppText style={{ color: colors.muted, fontSize: 13 }}>
-                Agregando {formatPrice(faltaParaEnvioGratis(productsTotal))} más
+                Agregando {formatPrice(faltaParaEnvioGratis(productsTotal))} más,
                 el despacho sale gratis.
               </AppText>
             ) : null}

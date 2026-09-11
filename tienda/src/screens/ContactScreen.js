@@ -14,7 +14,7 @@ import AppButton from "../components/AppButton";
 import { colors, radius, shadows, spacing } from "../constants/theme";
 import {
   comunasEnTexto,
-  envioGratisEnTexto,
+  fraseEnvioGratis,
   tarifaEnTexto,
 } from "../constants/delivery";
 import { showAppAlert } from "../utils/appAlerts";
@@ -193,7 +193,7 @@ export default function ContactScreen({ navigation }) {
               Dónde despachamos
             </AppText>
             <AppText style={{ fontSize: 13, color: colors.muted, lineHeight: 19 }}>
-              {`${comunasEnTexto()} — despacho a domicilio por ${tarifaEnTexto()} el pedido, gratis desde ${envioGratisEnTexto()}.`}
+              {`${comunasEnTexto()} — despacho a domicilio por ${tarifaEnTexto()} el pedido${fraseEnvioGratis(", gratis desde ")}.`}
             </AppText>
           </View>
         </View>

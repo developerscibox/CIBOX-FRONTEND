@@ -8,7 +8,7 @@ import AppText from "../components/AppText";
 import brand, { addressText, openingHours, links } from "../constants/brand";
 import {
   comunasEnTexto,
-  envioGratisEnTexto,
+  fraseEnvioGratis,
   tarifaEnTexto,
 } from "../constants/delivery";
 const PHONE = brand.contact.phone;
@@ -63,7 +63,7 @@ export default function StoresScreen() {
           </InfoRow>
           <InfoRow icon="card-outline">Pago con tarjeta de crédito o débito (Webpay)</InfoRow>
           <InfoRow icon="car-outline">
-            {`Despacho a domicilio en ${comunasEnTexto()} — ${tarifaEnTexto()} por pedido, gratis desde ${envioGratisEnTexto()}`}
+            {`Despacho a domicilio en ${comunasEnTexto()} — ${tarifaEnTexto()} por pedido${fraseEnvioGratis(", gratis desde ")}`}
           </InfoRow>
 
           <Pressable

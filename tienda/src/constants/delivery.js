@@ -101,6 +101,20 @@ export const costoDespachoEnTexto = (subtotal) =>
     : `$${despacho.tarifa.toLocaleString("es-CL")}`;
 
 /**
+ * La frase que menciona el envío gratis, o cadena vacía si la promoción está
+ * apagada (mínimo en 0).
+ *
+ * Existe porque apagar la promoción es cambiar una variable en el servidor,
+ * sin desplegar nada. Si cada pantalla interpolara el monto por su cuenta, al
+ * apagarla la tienda quedaría publicando "gratis desde $0" en nueve sitios y
+ * habría que salir a corregir textos a mano. Cada pantalla pasa lo que va
+ * ANTES y DESPUÉS del monto, así conserva su redacción y la frase entera
+ * desaparece junto con la promoción.
+ */
+export const fraseEnvioGratis = (antes = "", despues = "") =>
+  hayEnvioGratisVigente() ? `${antes}${envioGratisEnTexto()}${despues}` : "";
+
+/**
  * Cuánto falta para el envío gratis. 0 cuando ya se alcanzó o cuando la
  * promoción está apagada, para que quien llame solo tenga que preguntar por
  * mayor que cero.
