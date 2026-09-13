@@ -178,6 +178,20 @@ export default function WebFooter() {
             </AppText>
           </View>
         </Col>
+
+        {/* Medios de pago */}
+        <Col title="Medios de pago">
+          <Image
+            source={{ uri: "https://res.cloudinary.com/dwhycvdsj/image/upload/v1789343305/webpay_logo_extltx.png" }}
+            style={{ width: 110, height: 40, resizeMode: "contain", marginBottom: 12 }}
+            accessibilityLabel="Webpay Transbank"
+          />
+          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6 }}>
+            <PayChip label="VISA" />
+            <PayChip label="Mastercard" />
+            <PayChip label="Redcompra" />
+          </View>
+        </Col>
       </View>
 
       {/* Bottom bar */}
@@ -199,16 +213,11 @@ export default function WebFooter() {
           <AppText style={{ fontSize: 12.5, color: MUTED }}>
             © {new Date().getFullYear()} {brand.legal.razon_social || brand.name}. Todos los derechos reservados.
           </AppText>
-          <View style={{ flexDirection: "row", gap: 8, alignItems: "center" }}>
-            <Image
-              source={{ uri: "https://res.cloudinary.com/dwhycvdsj/image/upload/v1789343305/webpay_logo_extltx.png" }}
-              style={{ width: 90, height: 32, resizeMode: "contain" }}
-              accessibilityLabel="Webpay Transbank"
-            />
-            <PayChip label="VISA" />
-            <PayChip label="Mastercard" />
-            <PayChip label="Redcompra" />
-          </View>
+          <Image
+            source={{ uri: "https://res.cloudinary.com/dwhycvdsj/image/upload/v1789343305/webpay_logo_extltx.png" }}
+            style={{ width: 80, height: 28, resizeMode: "contain" }}
+            accessibilityLabel="Webpay Transbank"
+          />
         </View>
       </View>
     </LinearGradient>
