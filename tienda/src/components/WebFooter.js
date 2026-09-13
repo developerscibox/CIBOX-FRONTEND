@@ -200,7 +200,11 @@ export default function WebFooter() {
             © {new Date().getFullYear()} {brand.legal.razon_social || brand.name}. Todos los derechos reservados.
           </AppText>
           <View style={{ flexDirection: "row", gap: 8, alignItems: "center" }}>
-            <PayChip label="webpay" />
+            <Image
+              source={{ uri: "https://res.cloudinary.com/dwhycvdsj/image/upload/v1789343305/webpay_logo_extltx.png" }}
+              style={{ width: 90, height: 32, resizeMode: "contain" }}
+              accessibilityLabel="Webpay Transbank"
+            />
             <PayChip label="VISA" />
             <PayChip label="Mastercard" />
             <PayChip label="Redcompra" />
