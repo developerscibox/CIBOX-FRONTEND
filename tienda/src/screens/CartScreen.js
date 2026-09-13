@@ -121,8 +121,7 @@ export default function CartScreen({ navigation }) {
     try {
       setUpdatingId(item.product_id);
 
-      // Cibox vende por caja: el + suma una caja completa.
-      const step = Number(item.box_qty) || 1;
+      const step = isBoxProduct(item) ? (Number(item.box_qty) || 1) : 1;
       const newQuantity = Number(item.quantity || 0) + step;
 
       const updated = await updateCartItem({
@@ -142,8 +141,7 @@ export default function CartScreen({ navigation }) {
   };
 
   const handleDecrease = async (item) => {
-    // Cibox vende por caja: el − resta una caja; bajo el mínimo, elimina.
-    const step = Number(item.box_qty) || 1;
+    const step = isBoxProduct(item) ? (Number(item.box_qty) || 1) : 1;
     if (Number(item.quantity || 0) <= step) {
       await handleRemove(item.product_id);
       return;
@@ -352,7 +350,7 @@ export default function CartScreen({ navigation }) {
                     {item.name}
                   </AppText>
 
-                  {Number(item.box_qty) > 1 ? (
+                  {isBoxProduct(item) && Number(item.box_qty) > 1 ? (
                     <>
                       <AppText
                         style={{
@@ -521,7 +519,7 @@ export default function CartScreen({ navigation }) {
                         marginHorizontal: 8,
                       }}
                     >
-                      {Number(item.box_qty) > 1
+                      {isBoxProduct(item) && Number(item.box_qty) > 1
                         ? Math.max(1, Math.round(Number(item.quantity) / Number(item.box_qty)))
                         : item.quantity}
                     </AppText>
@@ -545,7 +543,7 @@ export default function CartScreen({ navigation }) {
                   </View>
 
                   <AppText style={{ color: colors.muted, fontSize: 13, fontWeight: "700" }}>
-                    {Number(item.box_qty) > 1 ? "caja(s)" : "unidad(es)"}
+                    {isBoxProduct(item) && Number(item.box_qty) > 1 ? "caja(s)" : "unidad(es)"}
                   </AppText>
                 </View>
 
