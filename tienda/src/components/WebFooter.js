@@ -183,14 +183,9 @@ export default function WebFooter() {
         <Col title="Medios de pago">
           <Image
             source={{ uri: "https://res.cloudinary.com/dwhycvdsj/image/upload/v1789343305/webpay_logo_extltx.png" }}
-            style={{ width: 110, height: 40, resizeMode: "contain", marginBottom: 12 }}
+            style={{ width: 110, height: 40, resizeMode: "contain" }}
             accessibilityLabel="Webpay Transbank"
           />
-          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6 }}>
-            <PayChip label="VISA" />
-            <PayChip label="Mastercard" />
-            <PayChip label="Redcompra" />
-          </View>
         </Col>
       </View>
 
@@ -213,11 +208,6 @@ export default function WebFooter() {
           <AppText style={{ fontSize: 12.5, color: MUTED }}>
             © {new Date().getFullYear()} {brand.legal.razon_social || brand.name}. Todos los derechos reservados.
           </AppText>
-          <Image
-            source={{ uri: "https://res.cloudinary.com/dwhycvdsj/image/upload/v1789343305/webpay_logo_extltx.png" }}
-            style={{ width: 80, height: 28, resizeMode: "contain" }}
-            accessibilityLabel="Webpay Transbank"
-          />
         </View>
       </View>
     </LinearGradient>
