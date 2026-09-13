@@ -928,17 +928,6 @@ export default function HomeScreen({ navigation }) {
     </View>
   );
 
-  /* Newsletter de arriba: en el teléfono no se dibuja. Son 240px justo entre el
-     banner y el primer producto, y el formulario del pie hace exactamente lo
-     mismo unas pantallas más abajo. No se borra: sigue en escritorio. */
-  const bNewsletterTop = (
-    <Newsletter
-      key="newsletter-top"
-      title="Entérate de nuestras ofertas y novedades"
-      subtitle="Suscríbete y recibe beneficios exclusivos"
-      isWebDesktop={isWebDesktop}
-    />
-  );
 
   /* Productos destacados */
   const bDestacados = (
@@ -1068,7 +1057,6 @@ export default function HomeScreen({ navigation }) {
     bSeguimiento,
     bPromos,
     bAccesos,
-    bNewsletterTop,
     bDestacados,
     bConfianza,
     bOfertas,

@@ -152,7 +152,7 @@ export default function WebFooter() {
               tiene ningún camino para volver a ver su pedido. */}
           <FooterLink label="Seguir mi pedido" onPress={() => navigation.navigate("TrackOrder")} />
           {seccionVisible("Stores") && <FooterLink label="Nuestras tiendas" onPress={() => navigation.navigate("Stores")} />}
-          <FooterLink label="Preguntas frecuentes" onPress={() => navigation.navigate("Contact")} />
+          <FooterLink label="Preguntas frecuentes" onPress={() => navigation.navigate("HowItWorks")} />
         </Col>
 
         {/* Contacto */}
