@@ -424,18 +424,14 @@ export default function WebHeader() {
                   elevation: 12,
                 }}
               >
-                <ScrollView style={{ maxHeight: 480 }} nestedScrollEnabled showsVerticalScrollIndicator>
-                  <View style={{ padding: 16 }}>
-                    <CategoryMegaMenu
-                      categories={categories}
-                      onSelect={(cat) => {
-                        setCategoriesOpen(false);
-                        setHoveredCategory(null);
-                        navigation.navigate("Products", { search: "", category: cat?._id || "" });
-                      }}
-                    />
-                  </View>
-                </ScrollView>
+                <CategoryMegaMenu
+                  categories={categories}
+                  onSelect={(cat) => {
+                    setCategoriesOpen(false);
+                    setHoveredCategory(null);
+                    navigation.navigate("Products", { search: "", category: cat?._id || "" });
+                  }}
+                />
               </View>
             ) : null}
           </View>
