@@ -303,7 +303,7 @@ export default function ProductCard({
               // (sobre lima el blanco rinde 1,9:1 y no pasa AA).
               <View style={chipStyle(colors.accent)}>
                 <AppText numberOfLines={1} weight="bold" style={{ color: colors.accentText, fontSize: 11 }}>
-                  {esPackCerrado ? "Venta por caja" : `Ahorra desde ${boxQty}`}
+                  {esPackCerrado ? "Venta por caja" : "Desc. por cantidad"}
                 </AppText>
               </View>
             ) : null}
@@ -334,7 +334,7 @@ export default function ProductCard({
             {hasPackTier && (
               <View style={chipStyle(colors.accent)}>
                 <AppText numberOfLines={1} weight="bold" style={{ color: colors.accentText, fontSize: 10 }}>
-                  {esPackCerrado ? "Por caja" : `${boxQty}+`}
+                  {esPackCerrado ? "Por caja" : "Desc."}
                 </AppText>
               </View>
             )}
@@ -364,11 +364,9 @@ export default function ProductCard({
           </AppText>
         </View>
 
-        {/* Precio por caja */}
+        {/* Precio */}
         <View style={{ marginBottom: 4 }}>
-          {/* Precio anterior tachado + cuánto se rebaja. La franja existe
-              siempre para que todas las tarjetas midan igual; cuando no hay
-              descuento se queda vacía. */}
+          {/* Precio anterior tachado — franja de altura fija para alinear tarjetas */}
           <View style={{ height: comparePriceHeight, flexDirection: "row", alignItems: "center", gap: 6 }}>
             {hayDescuento && (
               <>
@@ -382,8 +380,6 @@ export default function ProductCard({
                 >
                   {formatPrice(comparaTotal)}
                 </AppText>
-                {/* El descuento es lo que hay que mirar: lima de acento con
-                    texto oscuro encima, el mismo patrón que la ficha. */}
                 <View style={chipStyle(colors.accent)}>
                   <AppText weight="bold" style={{ color: colors.accentText, fontSize: mini ? 10 : 11 }}>
                     -{descuentoPct}%
@@ -392,53 +388,53 @@ export default function ProductCard({
               </>
             )}
           </View>
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "baseline",
-              gap: 6,
-              flexWrap: "wrap",
-            }}
-          >
-            <AppText
-              weight="bold"
-              style={{ fontSize: priceSize, color: colors.text }}
-            >
+
+          {/* Precio principal */}
+          <View style={{ flexDirection: "row", alignItems: "baseline", gap: 6, flexWrap: "wrap" }}>
+            <AppText weight="bold" style={{ fontSize: priceSize, color: colors.text }}>
               {formatPrice(esVolumen ? unitPrice : boxTotal)}
             </AppText>
-            <AppText
-              weight="semiBold"
-              style={{
-                // El sufijo iba en lima sobre blanco: 1,68:1, ilegible. El lima
-                // es color de RELLENO (botón, badge), no de texto sobre blanco.
-                fontSize: mini ? 11 : 13,
-                color: colors.muted,
-              }}
-            >
+            <AppText weight="semiBold" style={{ fontSize: mini ? 11 : 13, color: colors.muted }}>
               {esPackCerrado ? "/ caja" : "/ un"}
             </AppText>
           </View>
 
-          {/* PPUM (decreto 38/2024, art. 9°): junto al precio, mismo campo visual. */}
+          {/* PPUM (decreto 38/2024, art. 9°) */}
           <UnitPrice product={product} unitPrice={esVolumen ? unitPrice : boxUnitPrice} priceSize={priceSize} />
 
-          <AppText
-            style={{ fontSize: mini ? 10 : 12, color: colors.muted, marginTop: 1 }}
-          >
-            {esVolumen ? `${boxQty} o más · ${formatPrice(perUnit)} c/u` : boxLabel}
-            {!esVolumen && perUnit ? ` · ≈ ${formatPrice(perUnit)} c/u` : ""}
-          </AppText>
+          {/* Tramos de descuento por volumen — formato tabla como Alvi/Jumbo */}
+          {esVolumen && sortedTiers.filter((t) => (t?.min_qty || 1) > 1).slice(0, mini ? 1 : 2).map((t) => {
+            const pct = unitPrice && t.price && unitPrice > t.price
+              ? Math.round((1 - t.price / unitPrice) * 100)
+              : 0;
+            return (
+              <View
+                key={t.min_qty}
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 4,
+                  marginTop: 3,
+                }}
+              >
+                <AppText style={{ fontSize: mini ? 10 : 11, color: colors.muted, flex: 1 }}>
+                  Desde {t.min_qty} un · {formatPrice(t.price)} c/u
+                </AppText>
+                {pct >= 3 && (
+                  <View style={{ backgroundColor: `${colors.success}22`, borderRadius: 999, paddingHorizontal: 5, paddingVertical: 1 }}>
+                    <AppText weight="bold" style={{ fontSize: 10, color: colors.success }}>
+                      -{pct}%
+                    </AppText>
+                  </View>
+                )}
+              </View>
+            );
+          })}
 
-          {boxSavingsPct >= 3 && (
-            <AppText
-              weight="semiBold"
-              style={{
-                fontSize: mini ? 10 : 12,
-                color: colors.success,
-                marginTop: 2,
-              }}
-            >
-              Ahorra {boxSavingsPct}% {esVolumen ? `llevando ${boxQty} o más` : "por caja"}
+          {/* Pack cerrado: mostrar precio por unidad dentro del pack */}
+          {esPackCerrado && perUnit && (
+            <AppText style={{ fontSize: mini ? 10 : 12, color: colors.muted, marginTop: 2 }}>
+              {boxLabel} · ≈ {formatPrice(perUnit)} c/u
             </AppText>
           )}
         </View>
