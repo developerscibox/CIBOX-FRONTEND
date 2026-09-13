@@ -152,10 +152,12 @@ export default function CategoryMegaMenu({ categories = [], onSelect }) {
               >
                 {activeCategory.name}
               </AppText>
-              <Ionicons name="arrow-forward" size={14} color={colors.muted} />
+              {subcategories.length > 0 && (
+                <Ionicons name="arrow-forward" size={14} color={colors.muted} />
+              )}
             </Pressable>
 
-            {subcategories.length > 0 ? (
+            {subcategories.length > 0 && (
               <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6 }}>
                 {subcategories.map((sub) => (
                   <Pressable
@@ -186,10 +188,6 @@ export default function CategoryMegaMenu({ categories = [], onSelect }) {
                   </Pressable>
                 ))}
               </View>
-            ) : (
-              <AppText style={{ color: colors.muted, fontSize: 13 }}>
-                Sin subcategorías
-              </AppText>
             )}
           </>
         )}
