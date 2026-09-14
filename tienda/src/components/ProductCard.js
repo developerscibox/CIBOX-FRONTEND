@@ -122,18 +122,9 @@ export default function ProductCard({
   const reviewsCount = Number(product?.reviews_count ?? 0);
   const hasReviews = reviewsCount > 0;
 
-  // Disponible real: el backend expone `available` como virtual (stock − reserved − allocated).
-  // Si no viene (catálogo viejo), se calcula localmente como fallback.
-  const available =
-    product?.available != null
-      ? Number(product.available)
-      : Math.max(
-          0,
-          Number(product?.stock || 0) -
-            Number(product?.reserved || 0) -
-            Number(product?.allocated || 0),
-        );
-  const isOutOfStock = available <= 0;
+  // "Sin stock" solo cuando el stock físico es 0.
+  // El control de reservas/allocated lo hace el servidor al agregar al carrito.
+  const isOutOfStock = Number(product?.stock || 0) <= 0;
 
   const ciboxPlusEnabled = !!product?.cibox_plus?.enabled;
   const imageUrl = imgFailed ? null : getProductImage(product);
