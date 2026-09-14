@@ -122,6 +122,19 @@ export default function ProductCard({
   const reviewsCount = Number(product?.reviews_count ?? 0);
   const hasReviews = reviewsCount > 0;
 
+  // Disponible real: el backend expone `available` como virtual (stock − reserved − allocated).
+  // Si no viene (catálogo viejo), se calcula localmente como fallback.
+  const available =
+    product?.available != null
+      ? Number(product.available)
+      : Math.max(
+          0,
+          Number(product?.stock || 0) -
+            Number(product?.reserved || 0) -
+            Number(product?.allocated || 0),
+        );
+  const isOutOfStock = available <= 0;
+
   const ciboxPlusEnabled = !!product?.cibox_plus?.enabled;
   const imageUrl = imgFailed ? null : getProductImage(product);
 
@@ -559,31 +572,21 @@ export default function ProductCard({
 
         <Pressable
           onPress={async () => {
-            // Agrega siempre, tenga o no formato de caja.
-            //
-            // ANTES: si el producto no tenía tramo de pack, el botón no agregaba
-            // nada y solo navegaba al detalle. Era una regla de cuando Cibox
-            // vendía solo por caja; al pasar a venta por unidad (ver
-            // utils/boxPricing.js, que documenta el cambio) quedó viva y dejó el
-            // botón muerto en TODO el catálogo: los 763 productos tienen un solo
-            // tramo min_qty:1, así que hasPackTier era false en todos. De paso
-            // volvía código muerto la puerta de edad de alcohol, que vive dentro
-            // de los handleAddFromCard de las pantallas.
+            if (isOutOfStock) return;
             try {
               await onAddToCart?.(product, cajas);
-              setCajas(1); // resetea el selector tras agregar exitoso
+              setCajas(1);
             } catch (e) {
               // si falla, no reseteamos el selector
             }
           }}
-          disabled={adding}
+          disabled={adding || isOutOfStock}
           style={{
-            // Botón principal = lima, el color de ACCIÓN de la marca, con texto
-            // oscuro encima (accentText). Mientras agrega NO se baja la opacidad:
-            // al 70% el par texto/fondo caía a 4,29:1 y dejaba de cumplir AA; se
-            // cambia al lima claro (accentLight), que es el tono de resalte del
-            // manual y mantiene 11,7:1.
-            backgroundColor: adding ? colors.accentLight : colors.accent,
+            backgroundColor: isOutOfStock
+              ? colors.border
+              : adding
+                ? colors.accentLight
+                : colors.accent,
             height: mini ? 34 : 42,
             borderRadius: 12,
             alignItems: "center",
@@ -592,13 +595,18 @@ export default function ProductCard({
         >
           <AppText
             weight="bold"
-            style={{ color: colors.accentText, fontSize: mini ? 12 : 14 }}
+            style={{
+              color: isOutOfStock ? colors.muted : colors.accentText,
+              fontSize: mini ? 12 : 14,
+            }}
           >
-            {adding
-              ? "Agregando..."
-              : cajas > 1
-                ? `Agregar ${cajas}`
-                : "Agregar"}
+            {isOutOfStock
+              ? "Sin stock"
+              : adding
+                ? "Agregando..."
+                : cajas > 1
+                  ? `Agregar ${cajas}`
+                  : "Agregar"}
           </AppText>
         </Pressable>
 
