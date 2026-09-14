@@ -9,6 +9,7 @@ import UnitPrice from "./UnitPrice";
 // azuladas. Todas comparten ahora el mismo gris muy suave (colors.background).
 import { getProductImage, productEmoji } from "../utils/productImage";
 import useAuthStore from "../store/authStore";
+import useCartStore from "../store/cartStore";
 import { addFavorite, removeFavorite } from "../services/favoriteService";
 import { addItemToPantry } from "../services/pantryService";
 import { showToast } from "../store/toastStore";
@@ -27,6 +28,7 @@ export default function ProductCard({
   const [cajas, setCajas] = useState(1);
   const [savingPantry, setSavingPantry] = useState(false);
   const token = useAuthStore((s) => s.token);
+  const cartItems = useCartStore((s) => s.cartItems);
 
   // Sincroniza fav cuando la lista recicla la tarjeta con otro producto
   useEffect(() => {
@@ -122,9 +124,14 @@ export default function ProductCard({
   const reviewsCount = Number(product?.reviews_count ?? 0);
   const hasReviews = reviewsCount > 0;
 
-  // "Sin stock" solo cuando el stock físico es 0.
-  // El control de reservas/allocated lo hace el servidor al agregar al carrito.
-  const isOutOfStock = Number(product?.stock || 0) <= 0;
+  // "Sin stock" cuando el stock físico es 0, o cuando lo que hay en el carrito
+  // cubre todo el stock disponible (descontando allocated de órdenes confirmadas).
+  const cartQty = cartItems?.find(
+    (i) => String(i.product_id) === String(product?._id)
+  )?.quantity ?? 0;
+  const stockFisico = Number(product?.stock || 0);
+  const allocated = Number(product?.allocated || 0);
+  const isOutOfStock = stockFisico <= 0 || stockFisico - allocated - cartQty <= 0;
 
   const ciboxPlusEnabled = !!product?.cibox_plus?.enabled;
   const imageUrl = imgFailed ? null : getProductImage(product);

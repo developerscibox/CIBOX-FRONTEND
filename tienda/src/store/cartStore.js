@@ -4,6 +4,7 @@ import { getCart } from "../services/cartService";
 const useCartStore = create((set) => ({
   cartCount: 0,
   cartTotal: 0,
+  cartItems: [],
   loadingCart: false,
 
   loadCartSummary: async () => {
@@ -26,6 +27,7 @@ const useCartStore = create((set) => ({
       set({
         cartCount: count,
         cartTotal: Number(cart?.total || 0),
+        cartItems: items,
       });
     } catch (error) {
       console.log(
@@ -36,6 +38,7 @@ const useCartStore = create((set) => ({
       set({
         cartCount: 0,
         cartTotal: 0,
+        cartItems: [],
       });
     } finally {
       set({ loadingCart: false });
@@ -46,6 +49,7 @@ const useCartStore = create((set) => ({
     set({
       cartCount: 0,
       cartTotal: 0,
+      cartItems: [],
     });
   },
 }));
