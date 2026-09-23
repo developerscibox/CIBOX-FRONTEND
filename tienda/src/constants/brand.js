@@ -33,8 +33,8 @@ export const brand = {
   contact: {
     email: "contacto@cibox.cl",
     email_soporte: "soporte@cibox.cl",
-    phone: "+56 9 3244 5772",
-    whatsapp: "56932445772",
+    phone: "+56 9 9126 4828",
+    whatsapp: "56991264828",
     instagram: "cibox.cl",
     tiktok: "cibox.cl",
   },

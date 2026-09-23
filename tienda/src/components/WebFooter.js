@@ -6,7 +6,7 @@ import AppText from "./AppText";
 import useAuthStore from "../store/authStore";
 import { useHomeSlots, cmsText } from "../services/contentService";
 
-import brand, { links } from "../constants/brand";
+import brand, { links, hasAddress } from "../constants/brand";
 import { seccionVisible } from "../constants/seccionesOcultas";
 import { colors } from "../constants/theme";
 const TEXT = colors.primaryText;
@@ -152,12 +152,12 @@ export default function WebFooter() {
               tiene ningún camino para volver a ver su pedido. */}
           <FooterLink label="Seguir mi pedido" onPress={() => navigation.navigate("TrackOrder")} />
           {seccionVisible("Stores") && <FooterLink label="Nuestras tiendas" onPress={() => navigation.navigate("Stores")} />}
-          <FooterLink label="Preguntas frecuentes" onPress={() => navigation.navigate("HowItWorks")} />
+          <FooterLink label="Preguntas frecuentes" onPress={() => navigation.navigate("Contact")} />
         </Col>
 
         {/* Contacto */}
         <Col title="Contacto">
-          <Pressable onPress={() => Linking.openURL("https://wa.me/56932445772")} style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 12 }}>
+          <Pressable onPress={() => Linking.openURL(links.whatsapp())} style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 12 }}>
             <Ionicons name="call-outline" size={16} color="#fff" />
             <AppText style={{ fontSize: 13, color: MUTED }}>{brand.contact.phone}</AppText>
           </Pressable>
@@ -165,27 +165,24 @@ export default function WebFooter() {
             <Ionicons name="mail-outline" size={16} color="#fff" />
             <AppText style={{ fontSize: 13, color: MUTED }}>{brand.contact.email}</AppText>
           </Pressable>
-          <View style={{ flexDirection: "row", alignItems: "flex-start", gap: 8, marginBottom: 12 }}>
-            <Ionicons name="location-outline" size={16} color="#fff" style={{ marginTop: 2 }} />
-            <AppText style={{ fontSize: 12.5, color: MUTED, lineHeight: 17, flex: 1 }}>
-              {brand.address.one_line}
-            </AppText>
-          </View>
+          {/* La dirección de la bodega todavía no está definida. Mientras no lo
+              esté, esta fila no se dibuja: un alfiler de ubicación junto a un
+              texto vacío se lee como un error de la página. Vuelve sola en
+              cuanto `brand.address` tenga valor. */}
+          {hasAddress() ? (
+            <View style={{ flexDirection: "row", alignItems: "flex-start", gap: 8, marginBottom: 12 }}>
+              <Ionicons name="location-outline" size={16} color="#fff" style={{ marginTop: 2 }} />
+              <AppText style={{ fontSize: 12.5, color: MUTED, lineHeight: 17, flex: 1 }}>
+                {brand.address.one_line}
+              </AppText>
+            </View>
+          ) : null}
           <View style={{ flexDirection: "row", alignItems: "flex-start", gap: 8 }}>
             <Ionicons name="time-outline" size={16} color="#fff" style={{ marginTop: 2 }} />
             <AppText style={{ fontSize: 12.5, color: MUTED, lineHeight: 17, flex: 1 }}>
               Lun a Vie 09:00–18:00 · Sáb 09:00–13:00
             </AppText>
           </View>
-        </Col>
-
-        {/* Medios de pago */}
-        <Col title="Medios de pago">
-          <Image
-            source={{ uri: "https://res.cloudinary.com/dwhycvdsj/image/upload/v1789343305/webpay_logo_extltx.png" }}
-            style={{ width: 110, height: 40, resizeMode: "contain" }}
-            accessibilityLabel="Webpay Transbank"
-          />
         </Col>
       </View>
 
@@ -208,6 +205,12 @@ export default function WebFooter() {
           <AppText style={{ fontSize: 12.5, color: MUTED }}>
             © {new Date().getFullYear()} {brand.legal.razon_social || brand.name}. Todos los derechos reservados.
           </AppText>
+          <View style={{ flexDirection: "row", gap: 8, alignItems: "center" }}>
+            <PayChip label="webpay" />
+            <PayChip label="VISA" />
+            <PayChip label="Mastercard" />
+            <PayChip label="Redcompra" />
+          </View>
         </View>
       </View>
     </LinearGradient>

@@ -498,7 +498,7 @@ Las condiciones específicas de membresías, incluyendo beneficios, descuentos, 
         content: `Para consultas, reclamos o solicitudes:
 
 📧 ${EMAIL}
-📞 +56 9 3244 5772
+📞 ${brand.contact.phone}
 ${DOMICILIO_LINEA}`,
       },
     ],
@@ -690,7 +690,7 @@ export default function TermsScreen() {
               {hasAddress() ? brand.address.one_line : `RUT: ${RUT}`}
             </AppText>
             <AppText style={{ fontSize: 12, color: colors.muted }}>📧 {EMAIL}</AppText>
-            <AppText style={{ fontSize: 12, color: colors.muted }}>📞 +56 9 3244 5772</AppText>
+            <AppText style={{ fontSize: 12, color: colors.muted }}>📞 {brand.contact.phone}</AppText>
           </View>
 
           {/* Fecha */}

@@ -5,7 +5,7 @@ import MapEmbed from "../components/MapEmbed";
 import { colors, spacing, shadows } from "../constants/theme";
 import AppText from "../components/AppText";
 
-import brand, { addressText, openingHours, links } from "../constants/brand";
+import brand, { addressText, openingHours, links, hasAddress } from "../constants/brand";
 import {
   comunasEnTexto,
   fraseEnvioGratis,
@@ -56,7 +56,12 @@ export default function StoresScreen() {
             </AppText>
           ) : null}
 
-          <InfoRow icon="location-outline">{addressText()}</InfoRow>
+          {/* Sin dirección definida no se anuncia ninguna: "Dirección por
+              confirmar" junto a un alfiler no le sirve a nadie y deja la página
+              con aire de inacabada. Cibox despacha a domicilio y no atiende
+              público, así que la ubicación no es un dato que el cliente
+              necesite. Reaparece sola cuando `brand.address` tenga valor. */}
+          {hasAddress() ? <InfoRow icon="location-outline">{addressText()}</InfoRow> : null}
           {openingHours() ? <InfoRow icon="time-outline">{openingHours()}</InfoRow> : null}
           <InfoRow icon="call-outline" onPress={() => Linking.openURL(WHATSAPP_URL)}>
             {PHONE} (WhatsApp)
@@ -86,10 +91,16 @@ export default function StoresScreen() {
           </Pressable>
         </View>
 
-        {/* Minimapa interactivo */}
-        <View style={{ flexGrow: 1.2, flexBasis: 340 }}>
-          <MapEmbed height={340} />
-        </View>
+        {/* Minimapa interactivo. Solo con una dirección real: mientras no la
+            haya, MapEmbed dibujaba una caja punteada de "dirección por
+            confirmar" que ocupaba media pantalla sin aportar nada. Con la
+            columna fuera, la ficha de datos queda centrada y la página se lee
+            completa. */}
+        {hasAddress() ? (
+          <View style={{ flexGrow: 1.2, flexBasis: 340 }}>
+            <MapEmbed height={340} />
+          </View>
+        ) : null}
       </View>
     </InfoPageLayout>
   );

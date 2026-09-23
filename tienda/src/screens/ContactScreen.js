@@ -152,7 +152,7 @@ export default function ContactScreen({ navigation }) {
             icon="logo-whatsapp"
             title="WhatsApp"
             value={brand.contact.phone}
-            onPress={() => Linking.openURL("https://wa.me/56932445772")}
+            onPress={() => Linking.openURL(links.whatsapp())}
           />
           <ContactCard
             icon="mail-outline"
