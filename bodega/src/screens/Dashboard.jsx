@@ -5,6 +5,7 @@ import { ORDER_STATUS, clp } from "../theme.js";
 import { StatusBadge, NAV_PERMS } from "../ui.jsx";
 import { useAuth } from "../auth.jsx";
 import { Kpi } from "../components/Ui.jsx";
+import PausaTienda from "../components/PausaTienda.jsx";
 
 const THRESHOLD = 10;
 // Fecha de HOY en zona horaria de Chile (el backend usa America/Santiago). Con UTC,
@@ -75,6 +76,20 @@ export default function Dashboard({ onNav }) {
 
   return (
     <div>
+      {/* Apagado de emergencia de la tienda online. Va ARRIBA DEL TODO y en
+          esta pantalla porque es donde el equipo aterriza: antes vivía al
+          final de "Contenido de la tienda", que es de marketing y además está
+          oculta en el menú, así que el interruptor no se podía alcanzar justo
+          cuando hace falta. Quien pausa necesita también poder reanudar sin
+          buscar, y el estado (ACTIVA / EN PAUSA) se ve de un vistazo al
+          entrar. Solo para quien puede administrar el catálogo, que es el
+          permiso que exige el backend en PUT /content/store-status. */}
+      {can("products.manage") ? (
+        <div style={{ marginBottom: 14 }}>
+          <PausaTienda />
+        </div>
+      ) : null}
+
       {acciones.length > 0 && (
         <div className="card" style={{ padding: "10px 12px", marginBottom: 14, borderLeft: "4px solid var(--warn)" }}>
           <div style={{ fontSize: 11, fontWeight: 800, color: "var(--muted)", textTransform: "uppercase", letterSpacing: ".05em", marginBottom: 8 }}>Acciones recomendadas hoy</div>
