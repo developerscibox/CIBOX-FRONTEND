@@ -4,6 +4,7 @@ import { ActivityIndicator, View } from "react-native";
 import AppStack from "./AppStack";
 import StorePausedGate from "../components/StorePausedGate";
 import Toast from "../components/Toast";
+import AppAlert from "../components/AppAlert";
 import WelcomeTour from "../components/WelcomeTour";
 import AvisoRelanzamiento from "../components/AvisoRelanzamiento";
 import { colors } from "../constants/theme";
@@ -138,6 +139,10 @@ export default function RootNavigation() {
           <AvisoRelanzamiento navigationRef={navigationRef} />
         </StorePausedGate>
         <Toast />
+        {/* Va FUERA de StorePausedGate y después del Toast: un aviso tiene que
+            poder salir aunque la tienda esté en pausa, y quedar por encima de
+            todo lo demás. */}
+        <AppAlert />
       </View>
     </NavigationContainer>
   );

@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   Image,
   Platform,
   Pressable,
@@ -15,7 +14,7 @@ import { addItemToCart } from "../services/cartService";
 import { esAlcohol } from "../constants/alcohol";
 import { exigirMayoriaDeEdad } from "../store/edadStore";
 import useAuthStore from "../store/authStore";
-import { showAppAlert } from "../utils/appAlerts";
+import { showAppAlert, showAppError } from "../utils/appAlerts";
 import { showToast } from "../store/toastStore";
 import { boxTierOf, unitPriceOf } from "../utils/boxPricing";
 import UnitPrice from "../components/UnitPrice";
@@ -83,9 +82,9 @@ export default function PantryScreen({ navigation }) {
         "ADD PANTRY ITEM TO CART ERROR:",
         error?.response?.data || error.message
       );
-      Alert.alert(
-        "Error",
-        error?.response?.data?.message || "No se pudo agregar al carrito"
+      showAppError(
+        "No pudimos agregarlo",
+        error?.response?.data?.message || "No se pudo agregar al carrito."
       );
     } finally {
       setMovingId(null);
@@ -116,9 +115,9 @@ export default function PantryScreen({ navigation }) {
       showToast("Despensa agregada al carrito");
       navigation.navigate("Cart");
     } catch (error) {
-      Alert.alert(
-        "Error",
-        error?.response?.data?.message || "No se pudo recomprar la despensa",
+      showAppError(
+        "No pudimos recomprar",
+        error?.response?.data?.message || "No se pudo recomprar la despensa.",
       );
     } finally {
       setMovingAll(false);

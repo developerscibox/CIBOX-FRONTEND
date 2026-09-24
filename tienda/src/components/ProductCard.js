@@ -1,5 +1,10 @@
 import { useEffect, useState } from "react";
-import { Alert, Image, Platform, Pressable, View } from "react-native";
+import {
+  Image,
+  Platform,
+  Pressable,
+  View,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { colors, radius, shadows, spacing } from "../constants/theme";
 import AppText from "./AppText";
@@ -9,12 +14,12 @@ import UnitPrice from "./UnitPrice";
 // azuladas. Todas comparten ahora el mismo gris muy suave (colors.background).
 import { getProductImage, productEmoji } from "../utils/productImage";
 import useAuthStore from "../store/authStore";
-import useCartStore from "../store/cartStore";
 import { addFavorite, removeFavorite } from "../services/favoriteService";
 import { addItemToPantry } from "../services/pantryService";
 import { showToast } from "../store/toastStore";
 
 import brand from "../constants/brand";
+import { showAppAlert } from "../utils/appAlerts";
 export default function ProductCard({
   product,
   onPress,
@@ -28,7 +33,6 @@ export default function ProductCard({
   const [cajas, setCajas] = useState(1);
   const [savingPantry, setSavingPantry] = useState(false);
   const token = useAuthStore((s) => s.token);
-  const cartItems = useCartStore((s) => s.cartItems);
 
   // Sincroniza fav cuando la lista recicla la tarjeta con otro producto
   useEffect(() => {
@@ -37,7 +41,7 @@ export default function ProductCard({
 
   const handleToggleFav = async () => {
     if (!token) {
-      Alert.alert("Favoritos", "Inicia sesión para guardar favoritos");
+      showAppAlert("Favoritos", "Inicia sesión para guardar favoritos");
       return;
     }
     const next = !fav;
@@ -123,15 +127,6 @@ export default function ProductCard({
   const averageRating = Number(product?.average_rating ?? 0);
   const reviewsCount = Number(product?.reviews_count ?? 0);
   const hasReviews = reviewsCount > 0;
-
-  // "Sin stock" cuando el stock físico es 0, o cuando lo que hay en el carrito
-  // cubre todo el stock disponible (descontando allocated de órdenes confirmadas).
-  const cartQty = cartItems?.find(
-    (i) => String(i.product_id) === String(product?._id)
-  )?.quantity ?? 0;
-  const stockFisico = Number(product?.stock || 0);
-  const allocated = Number(product?.allocated || 0);
-  const isOutOfStock = stockFisico <= 0 || stockFisico - allocated - cartQty <= 0;
 
   const ciboxPlusEnabled = !!product?.cibox_plus?.enabled;
   const imageUrl = imgFailed ? null : getProductImage(product);
@@ -314,7 +309,7 @@ export default function ProductCard({
               // (sobre lima el blanco rinde 1,9:1 y no pasa AA).
               <View style={chipStyle(colors.accent)}>
                 <AppText numberOfLines={1} weight="bold" style={{ color: colors.accentText, fontSize: 11 }}>
-                  {esPackCerrado ? "Venta por caja" : "Desc. por cantidad"}
+                  {esPackCerrado ? "Venta por caja" : `Ahorra desde ${boxQty}`}
                 </AppText>
               </View>
             ) : null}
@@ -345,7 +340,7 @@ export default function ProductCard({
             {hasPackTier && (
               <View style={chipStyle(colors.accent)}>
                 <AppText numberOfLines={1} weight="bold" style={{ color: colors.accentText, fontSize: 10 }}>
-                  {esPackCerrado ? "Por caja" : "Desc."}
+                  {esPackCerrado ? "Por caja" : `${boxQty}+`}
                 </AppText>
               </View>
             )}
@@ -375,9 +370,11 @@ export default function ProductCard({
           </AppText>
         </View>
 
-        {/* Precio */}
+        {/* Precio por caja */}
         <View style={{ marginBottom: 4 }}>
-          {/* Precio anterior tachado — franja de altura fija para alinear tarjetas */}
+          {/* Precio anterior tachado + cuánto se rebaja. La franja existe
+              siempre para que todas las tarjetas midan igual; cuando no hay
+              descuento se queda vacía. */}
           <View style={{ height: comparePriceHeight, flexDirection: "row", alignItems: "center", gap: 6 }}>
             {hayDescuento && (
               <>
@@ -391,6 +388,8 @@ export default function ProductCard({
                 >
                   {formatPrice(comparaTotal)}
                 </AppText>
+                {/* El descuento es lo que hay que mirar: lima de acento con
+                    texto oscuro encima, el mismo patrón que la ficha. */}
                 <View style={chipStyle(colors.accent)}>
                   <AppText weight="bold" style={{ color: colors.accentText, fontSize: mini ? 10 : 11 }}>
                     -{descuentoPct}%
@@ -399,53 +398,53 @@ export default function ProductCard({
               </>
             )}
           </View>
-
-          {/* Precio principal */}
-          <View style={{ flexDirection: "row", alignItems: "baseline", gap: 6, flexWrap: "wrap" }}>
-            <AppText weight="bold" style={{ fontSize: priceSize, color: colors.text }}>
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "baseline",
+              gap: 6,
+              flexWrap: "wrap",
+            }}
+          >
+            <AppText
+              weight="bold"
+              style={{ fontSize: priceSize, color: colors.text }}
+            >
               {formatPrice(esVolumen ? unitPrice : boxTotal)}
             </AppText>
-            <AppText weight="semiBold" style={{ fontSize: mini ? 11 : 13, color: colors.muted }}>
+            <AppText
+              weight="semiBold"
+              style={{
+                // El sufijo iba en lima sobre blanco: 1,68:1, ilegible. El lima
+                // es color de RELLENO (botón, badge), no de texto sobre blanco.
+                fontSize: mini ? 11 : 13,
+                color: colors.muted,
+              }}
+            >
               {esPackCerrado ? "/ caja" : "/ un"}
             </AppText>
           </View>
 
-          {/* PPUM (decreto 38/2024, art. 9°) */}
+          {/* PPUM (decreto 38/2024, art. 9°): junto al precio, mismo campo visual. */}
           <UnitPrice product={product} unitPrice={esVolumen ? unitPrice : boxUnitPrice} priceSize={priceSize} />
 
-          {/* Tramos de descuento por volumen — formato tabla como Alvi/Jumbo */}
-          {esVolumen && sortedTiers.filter((t) => (t?.min_qty || 1) > 1).slice(0, mini ? 1 : 2).map((t) => {
-            const pct = unitPrice && t.price && unitPrice > t.price
-              ? Math.round((1 - t.price / unitPrice) * 100)
-              : 0;
-            return (
-              <View
-                key={t.min_qty}
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  gap: 4,
-                  marginTop: 3,
-                }}
-              >
-                <AppText style={{ fontSize: mini ? 10 : 11, color: colors.muted, flex: 1 }}>
-                  Desde {t.min_qty} un · {formatPrice(t.price)} c/u
-                </AppText>
-                {pct >= 3 && (
-                  <View style={{ backgroundColor: `${colors.success}22`, borderRadius: 999, paddingHorizontal: 5, paddingVertical: 1 }}>
-                    <AppText weight="bold" style={{ fontSize: 10, color: colors.success }}>
-                      -{pct}%
-                    </AppText>
-                  </View>
-                )}
-              </View>
-            );
-          })}
+          <AppText
+            style={{ fontSize: mini ? 10 : 12, color: colors.muted, marginTop: 1 }}
+          >
+            {esVolumen ? `${boxQty} o más · ${formatPrice(perUnit)} c/u` : boxLabel}
+            {!esVolumen && perUnit ? ` · ≈ ${formatPrice(perUnit)} c/u` : ""}
+          </AppText>
 
-          {/* Pack cerrado: mostrar precio por unidad dentro del pack */}
-          {esPackCerrado && perUnit && (
-            <AppText style={{ fontSize: mini ? 10 : 12, color: colors.muted, marginTop: 2 }}>
-              {boxLabel} · ≈ {formatPrice(perUnit)} c/u
+          {boxSavingsPct >= 3 && (
+            <AppText
+              weight="semiBold"
+              style={{
+                fontSize: mini ? 10 : 12,
+                color: colors.success,
+                marginTop: 2,
+              }}
+            >
+              Ahorra {boxSavingsPct}% {esVolumen ? `llevando ${boxQty} o más` : "por caja"}
             </AppText>
           )}
         </View>
@@ -570,21 +569,31 @@ export default function ProductCard({
 
         <Pressable
           onPress={async () => {
-            if (isOutOfStock) return;
+            // Agrega siempre, tenga o no formato de caja.
+            //
+            // ANTES: si el producto no tenía tramo de pack, el botón no agregaba
+            // nada y solo navegaba al detalle. Era una regla de cuando Cibox
+            // vendía solo por caja; al pasar a venta por unidad (ver
+            // utils/boxPricing.js, que documenta el cambio) quedó viva y dejó el
+            // botón muerto en TODO el catálogo: los 763 productos tienen un solo
+            // tramo min_qty:1, así que hasPackTier era false en todos. De paso
+            // volvía código muerto la puerta de edad de alcohol, que vive dentro
+            // de los handleAddFromCard de las pantallas.
             try {
               await onAddToCart?.(product, cajas);
-              setCajas(1);
+              setCajas(1); // resetea el selector tras agregar exitoso
             } catch (e) {
               // si falla, no reseteamos el selector
             }
           }}
-          disabled={adding || isOutOfStock}
+          disabled={adding}
           style={{
-            backgroundColor: isOutOfStock
-              ? colors.border
-              : adding
-                ? colors.accentLight
-                : colors.accent,
+            // Botón principal = lima, el color de ACCIÓN de la marca, con texto
+            // oscuro encima (accentText). Mientras agrega NO se baja la opacidad:
+            // al 70% el par texto/fondo caía a 4,29:1 y dejaba de cumplir AA; se
+            // cambia al lima claro (accentLight), que es el tono de resalte del
+            // manual y mantiene 11,7:1.
+            backgroundColor: adding ? colors.accentLight : colors.accent,
             height: mini ? 34 : 42,
             borderRadius: 12,
             alignItems: "center",
@@ -593,18 +602,13 @@ export default function ProductCard({
         >
           <AppText
             weight="bold"
-            style={{
-              color: isOutOfStock ? colors.muted : colors.accentText,
-              fontSize: mini ? 12 : 14,
-            }}
+            style={{ color: colors.accentText, fontSize: mini ? 12 : 14 }}
           >
-            {isOutOfStock
-              ? "Sin stock"
-              : adding
-                ? "Agregando..."
-                : cajas > 1
-                  ? `Agregar ${cajas}`
-                  : "Agregar"}
+            {adding
+              ? "Agregando..."
+              : cajas > 1
+                ? `Agregar ${cajas}`
+                : "Agregar"}
           </AppText>
         </Pressable>
 

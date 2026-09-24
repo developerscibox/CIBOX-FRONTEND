@@ -1,6 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useState } from "react";
 import {
-  Alert,
   FlatList,
   Image,
   ImageBackground,
@@ -34,6 +33,7 @@ import { useHomeSlots, cmsText } from "../services/contentService";
 
 import brand from "../constants/brand";
 import { seccionVisible } from "../constants/seccionesOcultas";
+import { showAppError } from "../utils/appAlerts";
 // Degradado de marca de Cibox: navy → azul Cibox → azul medio. La rampa se queda
 // entera dentro de la familia azul; el lima no cierra el degradado porque en el
 // manual es color de acción (botones, precios, badges), no fondo extenso, y como
@@ -690,7 +690,7 @@ export default function HomeScreen({ navigation }) {
       await loadCartSummary();
       showToast(n > 1 ? `${n} agregados al carrito` : "Agregado al carrito");
     } catch (error) {
-      Alert.alert("Error", error?.response?.data?.message || "No se pudo agregar al carrito");
+      showAppError("No pudimos agregarlo", error?.response?.data?.message || "No se pudo agregar al carrito.");
     } finally {
       setAddingProductId(null);
     }
@@ -928,6 +928,17 @@ export default function HomeScreen({ navigation }) {
     </View>
   );
 
+  /* Newsletter de arriba: en el teléfono no se dibuja. Son 240px justo entre el
+     banner y el primer producto, y el formulario del pie hace exactamente lo
+     mismo unas pantallas más abajo. No se borra: sigue en escritorio. */
+  const bNewsletterTop = (
+    <Newsletter
+      key="newsletter-top"
+      title="Entérate de nuestras ofertas y novedades"
+      subtitle="Suscríbete y recibe beneficios exclusivos"
+      isWebDesktop={isWebDesktop}
+    />
+  );
 
   /* Productos destacados */
   const bDestacados = (
@@ -1057,6 +1068,7 @@ export default function HomeScreen({ navigation }) {
     bSeguimiento,
     bPromos,
     bAccesos,
+    bNewsletterTop,
     bDestacados,
     bConfianza,
     bOfertas,

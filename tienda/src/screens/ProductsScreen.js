@@ -1,7 +1,6 @@
 import { useEffect, useLayoutEffect, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   FlatList,
   Platform,
   Pressable,
@@ -21,7 +20,7 @@ import { addItemToCart } from "../services/cartService";
 import { esAlcohol } from "../constants/alcohol";
 import { exigirMayoriaDeEdad } from "../store/edadStore";
 import useCartStore from "../store/cartStore";
-import { showAppAlert } from "../utils/appAlerts";
+import { showAppAlert, showAppError } from "../utils/appAlerts";
 import { showToast } from "../store/toastStore";
 import { boxQtyOf } from "../utils/boxPricing";
 import AppText from "../components/AppText";
@@ -210,9 +209,9 @@ export default function ProductsScreen({ navigation, route }) {
         "ADD FROM CARD ERROR:",
         error?.response?.data || error.message,
       );
-      Alert.alert(
-        "Error",
-        error?.response?.data?.message || "No se pudo agregar al carrito",
+      showAppError(
+        "No pudimos agregarlo",
+        error?.response?.data?.message || "No se pudo agregar al carrito.",
       );
     } finally {
       setAddingProductId(null);

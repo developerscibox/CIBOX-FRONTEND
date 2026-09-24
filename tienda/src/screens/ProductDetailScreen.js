@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   Image,
   Modal,
   PanResponder,
@@ -37,7 +36,7 @@ import {
 import { getProductById, getRelatedProducts } from "../services/productService";
 import useCartStore from "../store/cartStore";
 import useAuthStore from "../store/authStore";
-import { showAppAlert } from "../utils/appAlerts";
+import { showAppAlert, showAppError } from "../utils/appAlerts";
 import { showToast } from "../store/toastStore";
 import { boxTierOf } from "../utils/boxPricing";
 import AppText from "../components/AppText";
@@ -259,9 +258,9 @@ export default function ProductDetailScreen({ route, navigation }) {
       showToast("Producto agregado al carrito");
     } catch (error) {
       console.log("ADD TO CART ERROR:", error?.response?.data || error.message);
-      Alert.alert(
-        "Error",
-        error?.response?.data?.message || "No se pudo agregar al carrito",
+      showAppError(
+        "No pudimos agregarlo",
+        error?.response?.data?.message || "No se pudo agregar al carrito.",
       );
     } finally {
       setAdding(false);
@@ -291,9 +290,9 @@ export default function ProductDetailScreen({ route, navigation }) {
         "ADD TO PANTRY ERROR:",
         error?.response?.data || error.message,
       );
-      Alert.alert(
-        "Error",
-        error?.response?.data?.message || "No se pudo agregar a la despensa",
+      showAppError(
+        "No pudimos guardarlo",
+        error?.response?.data?.message || "No se pudo agregar a la despensa.",
       );
     } finally {
       setAddingToPantry(false);
@@ -366,9 +365,9 @@ export default function ProductDetailScreen({ route, navigation }) {
         "SUBMIT REVIEW ERROR:",
         error?.response?.data || error.message,
       );
-      Alert.alert(
-        "Error",
-        error?.response?.data?.message || "No se pudo guardar la reseña",
+      showAppError(
+        "No pudimos guardar tu reseña",
+        error?.response?.data?.message || "No se pudo guardar la reseña.",
       );
     } finally {
       setReviewSubmitting(false);
@@ -394,9 +393,9 @@ export default function ProductDetailScreen({ route, navigation }) {
         "DELETE REVIEW ERROR:",
         error?.response?.data || error.message,
       );
-      Alert.alert(
-        "Error",
-        error?.response?.data?.message || "No se pudo eliminar la reseña",
+      showAppError(
+        "No pudimos eliminar la reseña",
+        error?.response?.data?.message || "No se pudo eliminar la reseña.",
       );
     } finally {
       setReviewSubmitting(false);

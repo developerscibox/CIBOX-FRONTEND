@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   FlatList,
   Platform,
   Pressable,
@@ -19,7 +18,7 @@ import { getOrderById, cancelOrder, getOrderTracking, retryOrderPayment } from "
 import { addItemToCart } from "../services/cartService";
 import useAuthStore from "../store/authStore";
 import useCartStore from "../store/cartStore";
-import { showAppAlert } from "../utils/appAlerts";
+import { showAppAlert, showAppSuccess, showAppError, confirmAppAction } from "../utils/appAlerts";
 import { showToast } from "../store/toastStore";
 import { esAlcohol } from "../constants/alcohol";
 import { exigirMayoriaDeEdad } from "../store/edadStore";
@@ -190,35 +189,31 @@ export default function OrderDetailScreen({ route, navigation }) {
 
   // ── Cancelar orden ────────────────────────────────────────────────────────
   const handleCancel = () => {
-    Alert.alert(
-      "Cancelar orden",
-      "¿Estás seguro que deseas cancelar esta orden? Esta acción no se puede deshacer.",
-      [
-        { text: "No, mantener", style: "cancel" },
-        {
-          text: "Sí, cancelar",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              setCancelling(true);
-              // Detener el auto-refresh para que el setInterval no vuelva a pisar
-              // el estado mientras/después de cancelar (race).
-              clearInterval(refreshTimer.current);
-              await cancelOrder(orderId);
-              showAppAlert("Orden cancelada", "Tu orden fue cancelada correctamente.");
-              fetchOrder(); // refresca el estado
-            } catch (err) {
-              showAppAlert(
-                "Error",
-                err?.response?.data?.message || "No se pudo cancelar la orden.",
-              );
-            } finally {
-              setCancelling(false);
-            }
-          },
-        },
-      ],
-    );
+    confirmAppAction({
+      title: "Cancelar orden",
+      message: "¿Estás seguro que deseas cancelar esta orden? Esta acción no se puede deshacer.",
+      confirmText: "Sí, cancelar",
+      cancelText: "No, mantener",
+      destructive: true,
+      onConfirm: async () => {
+        try {
+          setCancelling(true);
+          // Detener el auto-refresh para que el setInterval no vuelva a pisar
+          // el estado mientras/después de cancelar (race).
+          clearInterval(refreshTimer.current);
+          await cancelOrder(orderId);
+          showAppSuccess("Orden cancelada", "Tu orden fue cancelada correctamente.");
+          fetchOrder(); // refresca el estado
+        } catch (err) {
+          showAppError(
+            "No pudimos cancelarla",
+            err?.response?.data?.message || "No se pudo cancelar la orden.",
+          );
+        } finally {
+          setCancelling(false);
+        }
+      },
+    });
   };
 
   // Auto-refresh cada 30 s mientras la orden está activa
