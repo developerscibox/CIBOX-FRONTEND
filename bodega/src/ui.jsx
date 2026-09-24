@@ -28,6 +28,7 @@ export const NAV = [
   // Pedidos — del pago a la entrega
   { key: "pedidos", ic: "📋", label: "Pedidos", perm: "orders.read", mod: "web", group: "Pedidos" },
   { key: "picking", ic: "🧺", label: "Preparación", pillKey: "pick", perm: "orders.prepare", mod: "bodega", group: "Pedidos" },
+  { key: "ruta", ic: "🚚", label: "En ruta", perm: "orders.read", mod: "web", group: "Pedidos" },
   { key: "calendario", ic: "🗓️", label: "Calendario entregas", perm: "orders.read", mod: "web", group: "Pedidos" },
 
   // Inventario · Catálogo

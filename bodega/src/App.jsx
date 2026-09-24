@@ -14,6 +14,7 @@ import FEFO from "./screens/FEFO.jsx";
 import Pedidos from "./screens/Pedidos.jsx";
 import Calendario from "./screens/Calendario.jsx";
 import Picking from "./screens/Picking.jsx";
+import Ruta from "./screens/Ruta.jsx";
 import Inventario from "./screens/Inventario.jsx";
 import Lotes from "./screens/Lotes.jsx";
 import Kardex from "./screens/Kardex.jsx";
@@ -42,6 +43,7 @@ const TITLES = {
   fefo: { title: "FEFO · por vencer", sub: "Despacha primero lo que vence antes" },
   ventas: { title: "Ventas · Negocio", sub: "KPIs de ventas, inventario en cajas y top productos" },
   pedidos: { title: "Pedidos", sub: "Seguimiento completo de cada pedido y su historial de estados" },
+  ruta: { title: "En ruta", sub: "Qué sale ahora y qué anda en la calle · agrupado por comuna" },
   calendario: { title: "Calendario de entregas", sub: "Agenda de despachos · vista mensual, semanal, diaria y lista" },
   picking: { title: "Preparación de pedidos", sub: "Toma los pedidos pagados, prepáralos y verifícalos por escaneo" },
   inventario: { title: "Inventario", sub: "Panorama gráfico del stock en bodega" },
@@ -203,6 +205,7 @@ export default function App() {
               {view === "pedidos" && <Pedidos />}
               {view === "calendario" && <Calendario />}
               {view === "picking" && <Picking />}
+              {view === "ruta" && <Ruta />}
               {view === "inventario" && <Inventario onNav={setView} />}
               {view === "lotes" && <Lotes />}
               {view === "kardex" && <Kardex />}
