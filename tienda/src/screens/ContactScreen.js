@@ -20,6 +20,7 @@ import {
 import { showAppAlert } from "../utils/appAlerts";
 
 import brand, { links } from "../constants/brand";
+import { enviarMensajeDeContacto } from "../services/contactService";
 const PRIMARY = colors.primary;
 
 // ─── Tarjeta de contacto directo ─────────────────────────────────────────────
@@ -81,14 +82,38 @@ export default function ContactScreen({ navigation }) {
       return;
     }
 
+    if (message.trim().length < 10) {
+      showAppAlert("Cuéntanos un poco más", "Escribe al menos 10 caracteres para que podamos ayudarte.");
+      return;
+    }
+
     setSending(true);
     try {
-      const body = `Nombre: ${name}\nEmail: ${email}\nAsunto: ${subject}\n\n${message}`;
-      const mailto = links.mailto(subject || `Contacto desde ${brand.name}`, body);
-      await Linking.openURL(mailto);
+      // El mensaje va al servidor, que lo guarda y recién después avisa por
+      // correo. Antes esto abría el programa de correo del visitante: en un
+      // navegador sin cliente configurado no pasaba nada y el mensaje se
+      // perdía sin que nadie se enterara.
+      const { folio } = await enviarMensajeDeContacto({
+        nombre: name.trim(),
+        email: email.trim(),
+        asunto: subject.trim(),
+        mensaje: message.trim(),
+      });
       setForm({ name: "", email: "", subject: "", message: "" });
-    } catch {
-      showAppAlert("Error", `No se pudo abrir el cliente de correo. Escríbenos directamente a ${brand.contact.email_soporte}`);
+      showAppAlert(
+        "Mensaje enviado",
+        folio
+          ? `Lo recibimos y te responderemos a ${email.trim()}. Tu número de referencia es #${folio}.`
+          : `Lo recibimos y te responderemos a ${email.trim()}.`,
+      );
+    } catch (error) {
+      const status = error?.response?.status;
+      showAppAlert(
+        "No pudimos enviar tu mensaje",
+        status === 429
+          ? "Recibimos varios mensajes tuyos. Espera un rato antes de enviar otro."
+          : `Intenta de nuevo en un momento. Si el problema sigue, escríbenos directamente a ${brand.contact.email_soporte}.`,
+      );
     } finally {
       setSending(false);
     }
