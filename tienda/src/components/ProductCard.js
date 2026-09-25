@@ -30,7 +30,7 @@ export default function ProductCard({
 }) {
   const [imgFailed, setImgFailed] = useState(false);
   const [fav, setFav] = useState(Boolean(product?.is_favorite));
-  const [cajas, setCajas] = useState(1);
+  const [cantidad, setCantidad] = useState(1);
   const [savingPantry, setSavingPantry] = useState(false);
   const token = useAuthStore((s) => s.token);
 
@@ -431,8 +431,15 @@ export default function ProductCard({
           <AppText
             style={{ fontSize: mini ? 10 : 12, color: colors.muted, marginTop: 1 }}
           >
-            {esVolumen ? `${boxQty} o más · ${formatPrice(perUnit)} c/u` : boxLabel}
-            {!esVolumen && perUnit ? ` · ≈ ${formatPrice(perUnit)} c/u` : ""}
+            {/* Sin tramo por cantidad no hay caja que anunciar: `boxLabel`
+                caía en "Por caja" por defecto y lo mostraba igual, así que un
+                producto que se vende por unidad decía venir en caja. */}
+            {esVolumen
+              ? `${boxQty} o más · ${formatPrice(perUnit)} c/u`
+              : boxQty
+                ? boxLabel
+                : ""}
+            {!esVolumen && boxQty && perUnit ? ` · ≈ ${formatPrice(perUnit)} c/u` : ""}
           </AppText>
 
           {boxSavingsPct >= 3 && (
@@ -492,7 +499,7 @@ export default function ProductCard({
           blanco. El overflow:hidden + radius del root le redondea las esquinas.
           Va al final del eje, después del espaciador: el botón "Agregar" queda
           SIEMPRE a la misma distancia del borde inferior en todas las tarjetas.
-          El selector de cajas, cuando existe, crece hacia arriba y no lo mueve. */}
+          El selector de cantidad crece hacia arriba y no lo mueve. */}
       <View
         style={{
           borderTopWidth: 1,
@@ -506,8 +513,17 @@ export default function ProductCard({
           paddingBottom: cardPadding,
         }}
       >
-        {/* Selector de cajas — solo con pack tier y fuera de modo mini */}
-        {hasPackTier && !mini && (
+        {/* Selector de cantidad.
+            ANTES estaba condicionado a `hasPackTier`, o sea que solo aparecía
+            en los productos con un tramo de precio por cantidad. En los demás
+            —10 de los 57 del catálogo, entre ellos el azúcar y la sal— no había
+            forma de pedir dos: el botón agregaba de a una. Era el resto de la
+            época en que Cibox vendía SOLO por caja; el botón "Agregar" ya se
+            había arreglado para funcionar siempre (ver su comentario más abajo)
+            y este selector se quedó con la regla vieja.
+            La cantidad es universal: no depende de que el producto venga en
+            caja. Solo se oculta en modo mini, donde no cabe. */}
+        {!mini && (
           <View
             style={{
               flexDirection: "row",
@@ -518,7 +534,7 @@ export default function ProductCard({
             }}
           >
             <Pressable
-              onPress={() => setCajas((n) => Math.max(1, n - 1))}
+              onPress={() => setCantidad((n) => Math.max(1, n - 1))}
               hitSlop={8}
               style={{
                 width: 34,
@@ -544,10 +560,10 @@ export default function ProductCard({
                 textAlign: "center",
               }}
             >
-              {cajas}
+              {cantidad}
             </AppText>
             <Pressable
-              onPress={() => setCajas((n) => n + 1)}
+              onPress={() => setCantidad((n) => n + 1)}
               hitSlop={8}
               style={{
                 width: 34,
@@ -580,8 +596,8 @@ export default function ProductCard({
             // volvía código muerto la puerta de edad de alcohol, que vive dentro
             // de los handleAddFromCard de las pantallas.
             try {
-              await onAddToCart?.(product, cajas);
-              setCajas(1); // resetea el selector tras agregar exitoso
+              await onAddToCart?.(product, cantidad);
+              setCantidad(1); // resetea el selector tras agregar exitoso
             } catch (e) {
               // si falla, no reseteamos el selector
             }
@@ -606,8 +622,8 @@ export default function ProductCard({
           >
             {adding
               ? "Agregando..."
-              : cajas > 1
-                ? `Agregar ${cajas}`
+              : cantidad > 1
+                ? `Agregar ${cantidad}`
                 : "Agregar"}
           </AppText>
         </Pressable>
