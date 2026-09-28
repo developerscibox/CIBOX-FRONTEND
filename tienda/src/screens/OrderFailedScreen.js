@@ -1,11 +1,11 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Platform, Pressable, View, useWindowDimensions } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import ScreenContainer from "../components/ScreenContainer";
 import AppButton from "../components/AppButton";
 import AppText from "../components/AppText";
 import { colors, radius, spacing, shadows } from "../constants/theme";
-import { retryOrderPayment } from "../services/orderService";
+import { getOrderById, retryOrderPayment } from "../services/orderService";
 import { showAppAlert } from "../utils/appAlerts";
 
 export default function OrderFailedScreen({ route, navigation }) {
@@ -33,6 +33,21 @@ export default function OrderFailedScreen({ route, navigation }) {
   }, [params.status]);
 
   const isCancelled = status === "cancelled";
+
+  // Si la orden ya está pagada (el backend comprometió pero el redirect llegó
+  // aquí por algún motivo), redirigir a success en vez de mostrar error.
+  useEffect(() => {
+    if (!orderId) return;
+    let cancelled = false;
+    getOrderById(orderId).then((res) => {
+      if (cancelled) return;
+      const order = res?.data ?? res;
+      if (order?.status === "paid" || order?.payment?.status === "approved") {
+        navigation.replace("OrderSuccess", { orderId });
+      }
+    }).catch(() => {});
+    return () => { cancelled = true; };
+  }, [orderId]);
 
   const goHome = () => {
     const home = isWebDesktop ? "Inicio" : "MainTabs";
