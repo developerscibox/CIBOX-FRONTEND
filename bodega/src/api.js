@@ -340,7 +340,8 @@ export const api = {
   rLibroVentas: (month) => req(`/reports/libro-ventas${month ? `?month=${encodeURIComponent(month)}` : ""}`),
 
   // ── Gestión de usuarios (adminController) — gate users.manage ─────────────────
-  // GET /admin/users?page&limit&search&role&is_active  → { users, pagination }
+  // GET /admin/users?page&limit&search&role&is_active  → { items, pagination }
+  // (el backend manda `items`, no `users`: el comentario decía mal el nombre)
   adminUsers: (params = {}) => {
     const clean = Object.fromEntries(Object.entries(params).filter(([, v]) => v != null && v !== ""));
     const qs = new URLSearchParams(clean).toString();
@@ -480,13 +481,29 @@ export const api = {
   rejectRefund: (refundId, reason) =>
     req(`/refunds/admin/reject`, { method: "POST", body: { refund_id: refundId, reason } }),
 
-  // ── Documentos tributarios (taxDocumentController) — admin/gerente, read-only ──
+  // ── Documentos tributarios (taxDocumentController) — admin/gerente ────────────
   // GET /tax-documents/admin?status&type&order_id&page&limit  → { items, total }
+  // El `status` viaja tal cual al backend y ESE filtro no se valida contra el
+  // enum: mandar "pendiente" en español devuelve una lista vacía en silencio.
+  // Los valores buenos son pending | accepted | rejected | voided.
   taxDocsAdmin: (params = {}) => {
     const clean = Object.fromEntries(Object.entries(params).filter(([, v]) => v != null && v !== ""));
     const qs = new URLSearchParams(clean).toString();
     return req(`/tax-documents/admin${qs ? `?${qs}` : ""}`);
   },
+
+  // POST /tax-documents/admin/:id/emitida { folio, emitted_at? } → documento
+  //
+  // Mientras la emisión automática al SII esté apagada, cada venta pagada deja
+  // una boleta registrada SIN folio y en estado pendiente. Alguien la emite a
+  // mano en el portal del SII y con esto la marca como emitida, guardando el
+  // folio real. Es la forma de ir saneando la cola de pendientes sin perder la
+  // cuenta de cuáles faltan.
+  marcarBoletaEmitida: (id, { folio, emitted_at = null }) =>
+    req(`/tax-documents/admin/${id}/emitida`, {
+      method: "POST",
+      body: emitted_at ? { folio, emitted_at } : { folio },
+    }),
 
   // ── Cobranza / aging (cobranzaController) — gate reports.read ─────────────────
   // GET /cobranza/resumen → { hoy, aging:{total,buckets}, llamarHoy:[...], chequesPorVencer:[...] }

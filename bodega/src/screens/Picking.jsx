@@ -3,7 +3,6 @@ import { api, useLoad, usingMock, streamUrl } from "../api.js";
 import { ORDERS_RES } from "../data.js";
 import { StatusBadge } from "../ui.jsx";
 import { useAuth } from "../auth.jsx";
-import { imprimirEtiquetaDespacho } from "../print.js";
 
 // PREPARACIÓN DE PEDIDOS. Cola en vivo (SSE), claim atómico al tomar, avance
 // PERSISTIDO en el backend (sobrevive recargas y lo continúa otra persona),
@@ -28,6 +27,88 @@ const ordCust = (o) => {
 };
 const hydrate = (o) => ({ ...o, items: normItems(o), pick_progress: (o.pick_progress || []).map(String), pick_scanned: (o.pick_scanned || []).map(String) });
 
+// ── Fusión del avance local con lo que llega del servidor ────────────────────
+// Cada clic se pinta al instante (optimista) y recién después el backend lo
+// confirma. Pero la lista se refresca cada 20 s Y en cada evento SSE — eventos
+// que dispara el propio clic —, así que un refresco que llegue con datos un
+// pelo más viejos que el último clic lo borraba de la pantalla.
+//
+// Solución: en vez de reemplazar el pedido entero con lo del servidor, se
+// guarda la INTENCIÓN de cada clic (marcar / desmarcar / tomar / marcar listo)
+// y se vuelve a aplicar encima de lo que llega, hasta que el servidor la
+// refleje. Se guarda la intención y no "la unión de lo marcado" porque la unión
+// ingenua nunca dejaría DESMARCAR: el servidor sigue contestando por unos
+// milisegundos que el ítem está marcado y la unión lo volvería a marcar solo.
+// Con la intención ("este ítem lo quiero desmarcado") el desmarcado también
+// sobrevive al refresco, y la intención se descarta apenas el servidor coincide.
+const RANGO_ESTADO = { pending: 0, paid: 1, preparing: 2, ready: 3, delivered: 4 };
+
+// Red de seguridad: si el servidor nunca confirma (otra persona movió el pedido,
+// un PATCH que se perdió), la intención se suelta al minuto para que la pantalla
+// no quede clavada mostrando algo que ya no es cierto.
+const TTL_INTENCION = 60000;
+
+// ¿el pedido que llegó del servidor ya refleja esta intención sobre un ítem?
+const itemConfirmado = (srv, pid, intento) => {
+  const marcado = (srv.pick_progress || []).includes(pid);
+  const escaneado = (srv.pick_scanned || []).includes(pid);
+  if (!intento.picked) return !marcado && !escaneado; // desmarcar: limpio en ambos
+  if (intento.scanned) return marcado && escaneado;   // marcado por escaneo
+  return marcado;                                      // marcado a mano: el escaneo da igual
+};
+
+// ¿el servidor ya alcanzó (o pasó) el estado que dejó el clic? Un estado que no
+// está en el ranking (cancelled, etc.) también cuenta como confirmado: el pedido
+// se salió del flujo normal y manda el servidor.
+const estadoConfirmado = (srv, intento) => {
+  const rSrv = RANGO_ESTADO[srv.status];
+  const rLocal = RANGO_ESTADO[intento];
+  if (rSrv == null || rLocal == null) return true;
+  return rSrv >= rLocal;
+};
+
+// Deja vivas solo las intenciones que el servidor todavía no refleja.
+function podarIntenciones(mapa, srv, ahora) {
+  const p = mapa.get(srv._id);
+  if (!p) return null;
+  p.items.forEach((intento, pid) => {
+    if (ahora - intento.at > TTL_INTENCION || itemConfirmado(srv, pid, intento)) p.items.delete(pid);
+  });
+  if (p.status && (ahora - p.status.at > TTL_INTENCION || estadoConfirmado(srv, p.status.value))) p.status = null;
+  if (p.items.size === 0 && !p.status) { mapa.delete(srv._id); return null; }
+  return p;
+}
+
+// El backend no siempre enriquece items con barcode/location: preservar lo ya
+// conocido por product_id (📍 ubicación, código) del estado previo.
+const fundirItems = (prevItems, nextItems) => {
+  const prev = new Map((prevItems || []).map((it) => [it.product_id, it]));
+  return nextItems.map((it) => {
+    const p = prev.get(it.product_id);
+    if (!p) return it;
+    return { ...it, barcode: it.barcode || p.barcode || null, location: it.location || p.location || null };
+  });
+};
+
+// Pedido del servidor + las intenciones locales que todavía están pendientes.
+function fundirPedido(local, srv, pendiente) {
+  const items = fundirItems(local?.items, srv.items);
+  if (!pendiente) return { ...srv, items };
+  const prog = new Set(srv.pick_progress || []);
+  const scn = new Set(srv.pick_scanned || []);
+  pendiente.items.forEach((intento, pid) => {
+    if (intento.picked) { prog.add(pid); if (intento.scanned) scn.add(pid); }
+    else { prog.delete(pid); scn.delete(pid); }
+  });
+  return {
+    ...srv,
+    items,
+    pick_progress: [...prog],
+    pick_scanned: [...scn],
+    status: pendiente.status ? pendiente.status.value : srv.status,
+  };
+}
+
 export default function Picking() {
   const { user } = useAuth();
   const [tick, setTick] = useState(0);
@@ -45,15 +126,39 @@ export default function Picking() {
   const [bultos, setBultos] = useState("");
   const [peso, setPeso] = useState("");
   const inputRef = useRef(null);
+  // Intenciones locales todavía no confirmadas por el servidor:
+  // order_id → { items: Map(product_id → {picked, scanned, at}), status: {value, at} }
+  const pend = useRef(new Map());
+
+  const bolsa = (oid) => {
+    let b = pend.current.get(oid);
+    if (!b) { b = { items: new Map(), status: null }; pend.current.set(oid, b); }
+    return b;
+  };
+  const anotarItem = (oid, pid, intento) => { bolsa(oid).items.set(String(pid), { ...intento, at: Date.now() }); };
+  const anotarEstado = (oid, value) => { bolsa(oid).status = { value, at: Date.now() }; };
+  const olvidarItem = (oid, pid) => { pend.current.get(oid)?.items.delete(String(pid)); };
 
   // FEFO: product_id → días para vencer (guía visual; sin modelo de lotes no se fuerza).
   const fefo = {};
   (exp.data?.items || []).forEach((p) => { fefo[String(p._id)] = p.days_left; });
 
+  // Llegada de datos del servidor: FUNDIR, no reemplazar. Los pedidos nuevos
+  // entran tal cual, los que ya no vienen del servidor salen de la lista, y los
+  // que siguen conservan el avance local que el servidor aún no refleja.
   useEffect(() => {
     const list = (load.data?.orders || []).map(hydrate);
-    setOrders(list);
-    setSelId((cur) => (cur && list.some((o) => o._id === cur) ? cur : list[0]?._id || null));
+    const ahora = Date.now();
+    const vigentes = new Set(list.map((o) => o._id));
+    // Un pedido que ya salió de la cola no necesita intenciones guardadas.
+    [...pend.current.keys()].forEach((id) => { if (!vigentes.has(id)) pend.current.delete(id); });
+    const podadas = new Map();
+    list.forEach((srv) => { const p = podarIntenciones(pend.current, srv, ahora); if (p) podadas.set(srv._id, p); });
+    setOrders((prev) => {
+      const prevById = new Map(prev.map((o) => [o._id, o]));
+      return list.map((srv) => fundirPedido(prevById.get(srv._id), srv, podadas.get(srv._id)));
+    });
+    setSelId((cur) => (cur && vigentes.has(cur) ? cur : list[0]?._id || null));
   }, [load.data]);
 
   // En vivo: SSE + polling de respaldo (se ven los pedidos recién pagados).
@@ -87,25 +192,19 @@ export default function Picking() {
       </span>
     ) : null;
 
+  // Respuesta de una acción puntual (PATCH de avance, faltante). También se funde
+  // con las intenciones pendientes: si la persona alcanzó a dar otro clic mientras
+  // esta respuesta viajaba, ese clic no se pierde.
   function applyOrder(updated) {
     const h = hydrate(updated);
-    setOrders((os) => os.map((o) => {
-      if (o._id !== h._id) return o;
-      // El backend no siempre enriquece items con barcode/location: preservar lo
-      // ya conocido por product_id (📍 ubicación, código) del estado previo.
-      const prev = new Map((o.items || []).map((it) => [it.product_id, it]));
-      const items = h.items.map((it) => {
-        const p = prev.get(it.product_id);
-        if (!p) return it;
-        return { ...it, barcode: it.barcode || p.barcode || null, location: it.location || p.location || null };
-      });
-      return { ...o, ...h, items };
-    }));
+    const p = podarIntenciones(pend.current, h, Date.now());
+    setOrders((os) => os.map((o) => (o._id === h._id ? { ...o, ...fundirPedido(o, h, p) } : o)));
   }
 
   async function setPick(pid, picked, scanned) {
     if (!sel) return;
-    // optimista
+    // optimista + se anota la intención para que el próximo refresco no la pise
+    anotarItem(sel._id, pid, { picked, scanned });
     setOrders((os) => os.map((o) => {
       if (o._id !== sel._id) return o;
       const prog = new Set((o.pick_progress || []).map(String));
@@ -114,7 +213,9 @@ export default function Picking() {
       return { ...o, pick_progress: [...prog], pick_scanned: [...scn] };
     }));
     try { if (!usingMock) { const r = await api.patchPick(sel._id, { product_id: pid, picked, scanned }); if (r.order) applyOrder(r.order); } }
-    catch (e) { setMsg({ ok: false, text: e.message }); setTick((n) => n + 1); }
+    // Si el PATCH falla se borra la intención: si no, quedaría pisando al servidor
+    // para siempre y la pantalla mostraría un avance que nunca se guardó.
+    catch (e) { olvidarItem(sel._id, pid); setMsg({ ok: false, text: e.message }); setTick((n) => n + 1); }
   }
 
   async function onScan(e) {
@@ -139,6 +240,7 @@ export default function Picking() {
     setBusy(true); setMsg(null);
     try {
       if (!usingMock) await api.aceptar(sel._id);
+      anotarEstado(sel._id, "preparing");
       setOrders((os) => os.map((o) => (o._id === sel._id ? { ...o, status: "preparing" } : o)));
       setMsg({ ok: true, text: `Pedido ${ordNum(sel)} a tu cargo — puedes empezar a prepararlo` });
     } catch (err) {
@@ -180,9 +282,13 @@ export default function Picking() {
       const nb = bultos === "" ? null : Math.round(Number(bultos));
       const np = peso === "" ? null : Number(peso);
       if (!usingMock) await api.marcarListo(sel._id, { bultos: nb, peso: np });
-      imprimirEtiquetaDespacho({ _id: sel._id, customer: sel.customer }, { bultos: nb, peso: np });
+      // Antes acá se abría el diálogo de impresión con la etiqueta de bulto. Se
+      // sacó: el seguimiento del despacho es por computador y nadie pega etiquetas.
+      // El helper imprimirEtiquetaDespacho() de print.js sigue disponible si algún
+      // día se quiere de vuelta (basta volver a llamarlo desde acá).
+      anotarEstado(sel._id, "ready");
       setOrders((os) => os.map((o) => (o._id === sel._id ? { ...o, status: "ready" } : o)));
-      setMsg({ ok: true, text: `Pedido ${ordNum(sel)} empacado y LISTO${nb ? ` · ${nb} bulto${nb === 1 ? "" : "s"}` : ""} · ${nb > 1 ? "etiquetas impresas (una por bulto)" : "etiqueta impresa"}` });
+      setMsg({ ok: true, text: `Pedido ${ordNum(sel)} empacado y LISTO${nb ? ` · ${nb} bulto${nb === 1 ? "" : "s"}` : ""}` });
       setEmpaque(false); setBultos(""); setPeso("");
     } catch (err) {
       if (err.status === 409 || err.status === 403) { setTick((n) => n + 1); setMsg({ ok: false, text: "Este pedido ya cambió de estado (lo completó o movió otra persona)." }); }
@@ -204,11 +310,22 @@ export default function Picking() {
       <div>
         <div style={{ fontSize: 12, fontWeight: 700, color: "var(--muted)", letterSpacing: ".5px", margin: "2px 4px 10px" }}>
           PEDIDOS POR PREPARAR ({orders.length}){porTomar > 0 ? <span style={{ color: "var(--magenta,#004568)" }}> · {porTomar} nuevo{porTomar === 1 ? "" : "s"} por tomar</span> : null}
+          {/* Aviso discreto de refresco: la lista NO se reemplaza por "Cargando". */}
+          {load.loading && load.data ? <span style={{ fontWeight: 600, opacity: .7 }}> · actualizando…</span> : null}
         </div>
-        {load.loading ? (
+        {/* "Cargando pedidos…" SOLO en la primera carga (load.data todavía vacío).
+            Los refrescos siguen mostrando la lista: antes cada refresco —y el SSE
+            dispara uno por cada clic— la borraba y parecía que se pegaba. */}
+        {load.loading && !load.data ? (
           <div className="ord" style={{ color: "var(--muted)" }}>Cargando pedidos…</div>
         ) : orders.length === 0 ? (
-          <div className="ord" style={{ color: "var(--muted)" }}>No hay pedidos por preparar. La cola está al día.</div>
+          // Sin datos + error de red decía "la cola está al día", que es mentira:
+          // avisar que no se pudo cargar en vez de dar por vacía la cola.
+          load.error && !load.data ? (
+            <div className="ord" style={{ color: "var(--danger)" }}>No se pudo cargar la cola de pedidos. Se reintenta solo en unos segundos.</div>
+          ) : (
+            <div className="ord" style={{ color: "var(--muted)" }}>No hay pedidos por preparar. La cola está al día.</div>
+          )
         ) : (
           orders.map((o) => {
             const done = o.items.filter((it) => isPicked(o, it.product_id)).length;

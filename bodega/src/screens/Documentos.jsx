@@ -115,8 +115,46 @@ function Kpi({ ic, bg, value, label }) {
 
 export default function Documentos() {
   const [status, setStatus] = useState("");
-  const res = useLoad(() => api.taxDocsAdmin({ status, limit: 200 }), MOCK, [status]);
+  // `tick` fuerza la recarga después de marcar una boleta: useLoad no expone
+  // un reload, así que se refresca cambiando una dependencia.
+  const [tick, setTick] = useState(0);
+  const res = useLoad(() => api.taxDocsAdmin({ status, limit: 200 }), MOCK, [status, tick]);
   const items = res.data?.items || [];
+
+  // Marcar una boleta como emitida en el SII: se abre el formulario en la fila.
+  const [emitiendo, setEmitiendo] = useState(null); // id del documento
+  const [folioSii, setFolioSii] = useState("");
+  const [fechaSii, setFechaSii] = useState("");
+  const [guardando, setGuardando] = useState(false);
+  const [avisoSii, setAvisoSii] = useState(null); // { ok, texto }
+
+  const abrirEmision = (d) => {
+    setEmitiendo(String(d._id));
+    setFolioSii("");
+    setFechaSii("");
+    setAvisoSii(null);
+  };
+
+  const confirmarEmision = async (d) => {
+    const folio = folioSii.trim();
+    if (!folio) { setAvisoSii({ ok: false, texto: "Escribe el folio que te dio el SII." }); return; }
+    setGuardando(true); setAvisoSii(null);
+    try {
+      if (!usingMock) await api.marcarBoletaEmitida(d._id, { folio, emitted_at: fechaSii || null });
+      setEmitiendo(null);
+      setAvisoSii({ ok: true, texto: `Boleta marcada como emitida con folio ${folio}.` });
+      setTick((n) => n + 1);
+    } catch (e) {
+      // El backend responde 409 con un motivo claro (ya emitida, anulada, folio
+      // repetido). Se muestra tal cual: es exactamente lo que necesita saber
+      // quien está saneando la cola.
+      setAvisoSii({ ok: false, texto: e.message || "No se pudo marcar la boleta" });
+    } finally {
+      setGuardando(false);
+    }
+  };
+
+  const pendientes = items.filter((d) => d.status === "pending").length;
 
   const agg = useMemo(() => {
     const totals = { count: items.length, total: 0, neto: 0, iva: 0 };
@@ -256,18 +294,42 @@ export default function Documentos() {
         <div className="card-h">
           <h2>Documentos tributarios</h2>
           <span className="badge" style={{ background: "#E6F0F5", color: "#006996" }}>{res.loading ? "…" : `${items.length}`}</span>
+          {pendientes > 0 ? (
+            <span className="badge" style={{ background: "#fef3c7", color: "#92400e" }}>
+              {pendientes} por emitir
+            </span>
+          ) : null}
         </div>
+
+        {/* La emisión automática al SII está apagada: cada venta pagada deja una
+            boleta registrada sin folio y en estado pendiente. Alguien la emite
+            en el portal del SII y la marca acá con su folio real. Este aviso
+            existe para que la cola de pendientes no pase inadvertida. */}
+        {pendientes > 0 ? (
+          <div style={{ margin: "0 16px 12px", padding: "10px 14px", borderRadius: 8, background: "#fffbeb", border: "1px solid #fde68a", fontSize: 13, lineHeight: 1.5 }}>
+            Hay <b>{pendientes}</b> boleta{pendientes === 1 ? "" : "s"} sin emitir. Emítela{pendientes === 1 ? "" : "s"} en
+            el portal del SII y marca acá cada una con su folio, para no perder la cuenta de cuáles faltan.
+          </div>
+        ) : null}
+
+        {avisoSii ? (
+          <div style={{ margin: "0 16px 12px", padding: "10px 14px", borderRadius: 8, fontSize: 13, fontWeight: 600,
+            background: avisoSii.ok ? "#ecfdf5" : "#fee2e2", color: avisoSii.ok ? "#166534" : "var(--danger)" }}>
+            {avisoSii.texto}
+          </div>
+        ) : null}
+
         <table>
           <thead>
-            <tr><th>Tipo</th><th>Folio</th><th>Neto</th><th>IVA</th><th>Total</th><th>Fecha</th><th>Estado</th></tr>
+            <tr><th>Tipo</th><th>Folio</th><th>Neto</th><th>IVA</th><th>Total</th><th>Fecha</th><th>Estado</th><th></th></tr>
           </thead>
           <tbody>
             {res.loading ? (
-              <tr><td colSpan="7" style={{ padding: 22, color: "var(--muted)" }}>Cargando documentos…</td></tr>
+              <tr><td colSpan="8" style={{ padding: 22, color: "var(--muted)" }}>Cargando documentos…</td></tr>
             ) : res.error ? (
-              <tr><td colSpan="7" style={{ padding: 22, color: "var(--danger)" }}>Error: {res.error}</td></tr>
+              <tr><td colSpan="8" style={{ padding: 22, color: "var(--danger)" }}>Error: {res.error}</td></tr>
             ) : items.length === 0 ? (
-              <tr><td colSpan="7" style={{ padding: 22, color: "var(--muted)" }}>Sin documentos emitidos.</td></tr>
+              <tr><td colSpan="8" style={{ padding: 22, color: "var(--muted)" }}>Sin documentos emitidos.</td></tr>
             ) : items.map((d) => {
               const m = DOC_STATUS[d.status] || { label: d.status, bg: "#f3f4f6", text: "#374151" };
               return (
@@ -282,9 +344,49 @@ export default function Documentos() {
                   <td style={{ fontWeight: 700 }}>{clp(d.total || 0)}</td>
                   <td style={{ fontSize: 13 }}>{fmt(d.created_at)}</td>
                   <td><span className="badge" style={{ background: m.bg, color: m.text }}>{m.label}</span></td>
+                  <td style={{ textAlign: "right" }}>
+                    {d.status === "pending" ? (
+                      <button className="btn btn-primary" style={{ padding: "5px 12px", fontSize: 12.5 }}
+                        onClick={() => abrirEmision(d)} disabled={guardando}>
+                        Marcar emitida
+                      </button>
+                    ) : null}
+                  </td>
                 </tr>
               );
             })}
+            {/* Formulario de emisión: se dibuja como una fila extra bajo la del
+                documento que se está marcando, para no perder de vista cuál es. */}
+            {items.map((d) => (emitiendo === String(d._id) ? (
+              <tr key={`emitir-${d._id}`}>
+                <td colSpan="8" style={{ background: "#f8fafc", padding: "14px 16px" }}>
+                  <div style={{ display: "flex", gap: 12, alignItems: "flex-end", flexWrap: "wrap" }}>
+                    <div>
+                      <div style={{ fontSize: 11.5, fontWeight: 700, color: "var(--muted)", textTransform: "uppercase", letterSpacing: ".04em", marginBottom: 4 }}>
+                        Folio del SII
+                      </div>
+                      <input value={folioSii} onChange={(e) => setFolioSii(e.target.value.slice(0, 40))}
+                        placeholder="El que te dio el portal"
+                        style={{ padding: "8px 12px", borderRadius: 8, border: "1px solid var(--border)", fontSize: 13.5, width: 200 }} />
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 11.5, fontWeight: 700, color: "var(--muted)", textTransform: "uppercase", letterSpacing: ".04em", marginBottom: 4 }}>
+                        Fecha de emisión (opcional)
+                      </div>
+                      <input type="datetime-local" value={fechaSii} onChange={(e) => setFechaSii(e.target.value)}
+                        style={{ padding: "8px 12px", borderRadius: 8, border: "1px solid var(--border)", fontSize: 13.5 }} />
+                    </div>
+                    <button className="btn btn-primary" onClick={() => confirmarEmision(d)} disabled={guardando}>
+                      {guardando ? "Guardando…" : "Confirmar"}
+                    </button>
+                    <button className="btn" onClick={() => setEmitiendo(null)} disabled={guardando}>Cancelar</button>
+                    <span style={{ fontSize: 12.5, color: "var(--muted)" }}>
+                      Sin fecha se guarda la de ahora · pedido #{String(d.order_id || "").slice(-6).toUpperCase() || "—"}
+                    </span>
+                  </div>
+                </td>
+              </tr>
+            ) : null))}
           </tbody>
         </table>
         {usingMock ? <div style={{ padding: "10px 16px", fontSize: 12, color: "var(--muted)" }}>Modo demostración.</div> : null}

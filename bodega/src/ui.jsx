@@ -44,6 +44,7 @@ export const NAV = [
   { key: "ajustes", ic: "⚖️", label: "Ajuste de stock", perm: "inventory.adjust", mod: "web", group: "Inventario · Movimiento" },
 
   // Inventario · Control
+  { key: "bajo-stock", ic: "🪫", label: "Bajo stock", perm: "inventory.read", mod: "web", group: "Inventario · Control" },
   { key: "inventario", ic: "🗃️", label: "Inventario", perm: "inventory.read", mod: "web", group: "Inventario · Control" },
   { key: "fefo", ic: "⏰", label: "FEFO · por vencer", perm: "inventory.read", mod: "bodega", group: "Inventario · Control" },
   { key: "lotes", ic: "🧫", label: "Lotes y costos", perm: "inventory.read", mod: "bodega", group: "Inventario · Control" },
@@ -53,6 +54,7 @@ export const NAV = [
   { key: "ventas", ic: "💰", label: "Ventas", perm: "reports.read", mod: "gerencia", group: "Reportes · admin" },
   { key: "documentos", ic: "📄", label: "Documentos SII", perm: "reports.read", mod: "gerencia", group: "Reportes · admin" },
   { key: "devoluciones", ic: "↩️", label: "Devoluciones", perm: "orders.cancel", mod: "gerencia", group: "Reportes · admin" },
+  { key: "cuentas", ic: "🧍", label: "Cuentas creadas", perm: "users.manage", mod: "web", group: "Reportes · admin" },
   { key: "usuarios", ic: "👥", label: "Usuarios", perm: "users.manage", mod: "web", group: "Reportes · admin" },
 ];
 
@@ -68,7 +70,6 @@ export const HIDDEN_NAV = new Set([
   // Pantallas que hoy no tienen de qué alimentarse. NO están borradas: sacar la
   // key de este set las devuelve al menú tal como estaban. Se ocultan porque un
   // panel lleno de secciones vacías hace dudar de las que sí tienen datos.
-  "documentos",    // el SII está en modo simulado: sin certificado ni RUT cargados
   "cobranza",      // no hay cuentas por cobrar: se paga al comprar
   "clientes",      // no hay crédito a clientes
   "fefo",          // ningún producto tiene fecha de vencimiento cargada
