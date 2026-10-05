@@ -4,9 +4,9 @@ import useAuthStore from "../store/authStore";
 import { getGuestId } from "../utils/guestId";
 
 const client = axios.create({
-// baseURL: process.env.EXPO_PUBLIC_API_URL,
+baseURL: process.env.EXPO_PUBLIC_API_URL,
   //baseURL: "http://localhost:3001/api",
-  baseURL: "https://backend-app-cibox-tmvlv.ondigitalocean.app/api",
+  //baseURL: "https://backend-app-cibox-tmvlv.ondigitalocean.app/api",
   // Envía la cookie httpOnly del refresh token (cibox_rt) en producción
   // same-site/HTTPS. En dev cross-origin la cookie no viaja y el refresh cae al
   // body (fallback), sin romper el desarrollo local.
